@@ -238,6 +238,34 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .note-input:focus { border-color: var(--acc); }
 .note-add-btn { background: var(--acc); border: none; color: #000; font-family: var(--fm); font-size: 11px; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
 .stop-dist { font-family: var(--fm); font-size: 10px; color: var(--acc); margin-top: 2px; }
+
+/* MAP STOP POPUP */
+.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(--sur); border: 1px solid var(--acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,.6); display: none; }
+.map-stop-popup.show { display: block; }
+.map-popup-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--mut); font-size: 18px; cursor: pointer; }
+.map-popup-name { font-family: var(--fd); font-size: 22px; color: var(--acc); letter-spacing: 1px; padding-right: 24px; }
+.map-popup-addr { font-family: var(--fm); font-size: 11px; color: var(--mut); margin-top: 3px; }
+.map-popup-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.map-popup-tag { font-family: var(--fm); font-size: 10px; color: var(--txt); background: var(--sur2); border: 1px solid var(--bdr); padding: 3px 8px; border-radius: 4px; }
+.map-popup-tag.done { border-color: var(--grn); color: var(--grn); }
+.map-popup-tag.overdue { border-color: var(--red); color: var(--red); }
+.map-popup-btns { display: flex; gap: 8px; margin-top: 12px; }
+.map-nav-btn { flex: 1; padding: 11px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
+.map-nav-start { background: var(--acc); color: #000; }
+.map-nav-waze { background: #33ccff; color: #000; }
+.map-nav-gmaps { background: #4285f4; color: #fff; }
+
+/* NAVIGATION HUD */
+.nav-hud { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 2px solid var(--acc); padding: 14px 16px; z-index: 25; display: none; }
+.nav-hud.show { display: block; }
+.nav-hud-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.nav-hud-dest { font-family: var(--fd); font-size: 20px; color: var(--acc); letter-spacing: 1px; }
+.nav-stop-btn { background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+.nav-hud-stats { display: flex; gap: 16px; }
+.nav-stat { text-align: center; }
+.nav-stat-val { font-family: var(--fd); font-size: 26px; color: var(--txt); line-height: 1; }
+.nav-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.nav-route-line { stroke: #ff6b2b; stroke-width: 4; stroke-opacity: 0.8; }
 .dots-btn { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(--bdr); }
 .freq-menu { display: none; position: absolute; right: 16px; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
@@ -406,6 +434,33 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ef476f;flex-shrink:0;"></div>Pending</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ff6b2b;flex-shrink:0;"></div>Active</div>
     <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:50%;background:#888;flex-shrink:0;"></div>Done</div>
+  </div>
+
+  <!-- NAVIGATION HUD (shown during navigation) -->
+  <div class="nav-hud" id="navHud">
+    <div class="nav-hud-top">
+      <div class="nav-hud-dest" id="navDest">Navigating...</div>
+      <button class="nav-stop-btn" onclick="stopNavigation()">■ STOP NAV</button>
+    </div>
+    <div class="nav-hud-stats">
+      <div class="nav-stat"><div class="nav-stat-val" id="navDist">--</div><div class="nav-stat-lbl">Miles</div></div>
+      <div class="nav-stat"><div class="nav-stat-val" id="navTime">--</div><div class="nav-stat-lbl">Minutes</div></div>
+      <div class="nav-stat"><div class="nav-stat-val" id="navETA">--</div><div class="nav-stat-lbl">ETA</div></div>
+      <div class="nav-stat"><div class="nav-stat-val" id="navTraffic" style="font-size:18px;">--</div><div class="nav-stat-lbl">Traffic</div></div>
+    </div>
+  </div>
+
+  <!-- STOP POPUP (shown when tapping a pin) -->
+  <div class="map-stop-popup" id="mapStopPopup">
+    <button class="map-popup-close" onclick="closeMapPopup()">✕</button>
+    <div class="map-popup-name" id="popupName">Stop Name</div>
+    <div class="map-popup-addr" id="popupAddr">Address</div>
+    <div class="map-popup-meta" id="popupMeta"></div>
+    <div class="map-popup-btns">
+      <button class="map-nav-btn map-nav-start" onclick="startInAppNav()" id="popupNavBtn">▶ NAVIGATE</button>
+      <button class="map-nav-btn map-nav-waze" onclick="openWazeToPopup()">🚗 WAZE</button>
+      <button class="map-nav-btn map-nav-gmaps" onclick="openGMapsToPopup()">🗺️ MAPS</button>
+    </div>
   </div>
 </div>
 
@@ -1915,12 +1970,8 @@ function renderMapMarkers() {
       + (stop.opens ? '<div style="font-size:10px;color:#888;margin-top:4px;">Opens: ' + stop.opens + '</div>' : '')
       + '</div>';
 
-    var infoWin = new google.maps.InfoWindow({ content: infoContent });
     marker.addListener('click', function() {
-      infoWin.open(mapView, marker);
-      // Switch to route tab and open this stop
-      switchTab('route');
-      toggleStop(i);
+      showMapStopPopup(i);
     });
 
     mapMarkers.push(marker);
@@ -2066,6 +2117,183 @@ function centerOnMe() {
     mapView.setZoom(15);
   }, function() {
     alert('Could not get your location. Please allow location access.');
+  });
+}
+
+// Current popup stop index
+var popupStopIdx = null;
+var navInterval = null;
+var navPolyline = null;
+var isNavigating = false;
+
+function showMapStopPopup(i) {
+  var stop = stops[currentDay][i];
+  var d = stopData[currentDay][i] || blankStopData();
+  if (!stop) return;
+  popupStopIdx = i;
+
+  document.getElementById('popupName').textContent = stop.name;
+  document.getElementById('popupAddr').textContent = stop.addr;
+
+  // Meta tags
+  var meta = document.getElementById('popupMeta');
+  var svc = getServiceStatus(stop);
+  var statusTxt = d.status === 'done' ? 'Done' : d.status === 'active' ? 'Active' : 'Stop ' + (i+1);
+  var statusCls = d.status === 'done' ? 'done' : '';
+  meta.innerHTML = '<span class="map-popup-tag ' + statusCls + '">' + statusTxt + '</span>'
+    + '<span class="map-popup-tag">' + (stop.opens || 'TBD') + '</span>'
+    + (stop.frequency && stop.frequency !== 'weekly' ? '<span class="map-popup-tag">' + stop.frequency + '</span>' : '')
+    + '<span class="map-popup-tag ' + (svc.cls === 'svc-late' ? 'overdue' : '') + '">' + svc.label + '</span>';
+
+  // Distance
+  if (userLat && stop.lat && stop.lng) {
+    var mi = distanceMiles(userLat, userLng, stop.lat, stop.lng).toFixed(1);
+    meta.innerHTML += '<span class="map-popup-tag">📍 ' + mi + ' mi</span>';
+  }
+
+  // Nav button text
+  var navBtn = document.getElementById('popupNavBtn');
+  if (navBtn) navBtn.textContent = isNavigating && popupStopIdx === i ? '■ NAVIGATING' : '▶ NAVIGATE';
+
+  document.getElementById('mapStopPopup').classList.add('show');
+
+  // Pan map to stop
+  if (stop.lat && stop.lng && mapView) {
+    mapView.panTo({ lat: stop.lat, lng: stop.lng });
+  }
+}
+
+function closeMapPopup() {
+  document.getElementById('mapStopPopup').classList.remove('show');
+  popupStopIdx = null;
+}
+
+function openWazeToPopup() {
+  if (popupStopIdx === null) return;
+  var stop = stops[currentDay][popupStopIdx];
+  window.open('https://waze.com/ul?q=' + encodeURIComponent(stop.addr) + '&navigate=yes', '_blank');
+}
+
+function openGMapsToPopup() {
+  if (popupStopIdx === null) return;
+  var stop = stops[currentDay][popupStopIdx];
+  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(stop.addr) + '&travelmode=driving', '_blank');
+}
+
+function startInAppNav() {
+  if (popupStopIdx === null) return;
+  var stop = stops[currentDay][popupStopIdx];
+  if (!stop.lat || !stop.lng) { alert('No coordinates for this stop.'); return; }
+
+  isNavigating = true;
+  autoFollow = true;
+  closeMapPopup();
+
+  // Show HUD
+  document.getElementById('navHud').classList.add('show');
+  document.getElementById('navDest').textContent = stop.name;
+
+  // Update follow button
+  var followBtn = document.getElementById('followBtn');
+  if (followBtn) {
+    followBtn.textContent = '🔵 FOLLOWING';
+    followBtn.style.background = 'var(--acc)';
+    followBtn.style.color = '#000';
+  }
+
+  // Draw route line on map
+  drawRouteToStop(popupStopIdx);
+
+  // Start live updates every 15 seconds
+  updateNavStats(popupStopIdx);
+  navInterval = setInterval(function() {
+    if (isNavigating) updateNavStats(popupStopIdx);
+  }, 15000);
+}
+
+function stopNavigation() {
+  isNavigating = false;
+  clearInterval(navInterval);
+  navInterval = null;
+
+  // Hide HUD
+  document.getElementById('navHud').classList.remove('show');
+
+  // Clear route line
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+
+  // Reset follow button
+  autoFollow = false;
+  var followBtn = document.getElementById('followBtn');
+  if (followBtn) {
+    followBtn.textContent = '📍 FOLLOW ME';
+    followBtn.style.background = 'var(--sur)';
+    followBtn.style.color = 'var(--txt)';
+  }
+}
+
+function drawRouteToStop(idx) {
+  var stop = stops[currentDay][idx];
+  if (!stop.lat || !stop.lng || !mapsReady) return;
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (!userLat) return;
+
+  var directionsService = new google.maps.DirectionsService();
+  directionsService.route({
+    origin: { lat: userLat, lng: userLng },
+    destination: { lat: stop.lat, lng: stop.lng },
+    travelMode: google.maps.TravelMode.DRIVING
+  }, function(result, status) {
+    if (status === 'OK') {
+      navPolyline = new google.maps.Polyline({
+        path: result.routes[0].overview_path,
+        geodesic: true,
+        strokeColor: '#ff6b2b',
+        strokeOpacity: 0.9,
+        strokeWeight: 5,
+        map: mapView
+      });
+    }
+  });
+}
+
+function updateNavStats(idx) {
+  var stop = stops[currentDay][idx];
+  if (!stop || !stop.lat || !stop.lng || !mapsReady || !userLat) return;
+
+  var svc = new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins: [{ lat: userLat, lng: userLng }],
+    destinations: [{ lat: stop.lat, lng: stop.lng }],
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+  }, function(response, status) {
+    if (status !== 'OK') return;
+    var el = response.rows[0].elements[0];
+    if (!el || el.status !== 'OK') return;
+
+    var distM = el.distance.value; // meters
+    var distMi = (distM * 0.000621371).toFixed(1);
+    var normal = el.duration.value;
+    var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
+    var mins = Math.round(withTraffic / 60);
+    var delay = Math.round((withTraffic - normal) / 60);
+    var eta = new Date(Date.now() + withTraffic * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    var trafficTxt = delay >= 5 ? '+' + delay + 'm' : 'Clear';
+
+    document.getElementById('navDist').textContent = distMi;
+    document.getElementById('navTime').textContent = mins;
+    document.getElementById('navETA').textContent = eta;
+    document.getElementById('navTraffic').textContent = trafficTxt;
+    document.getElementById('navTraffic').style.color = delay >= 5 ? 'var(--red)' : 'var(--grn)';
+
+    // Redraw route line as we move
+    if (isNavigating) drawRouteToStop(idx);
+
+    // Check if arrived (within 0.05 miles)
+    if (parseFloat(distMi) < 0.05) {
+      document.getElementById('navDest').textContent = '📍 Arrived at ' + stop.name + '!';
+    }
   });
 }
 

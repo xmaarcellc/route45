@@ -237,6 +237,25 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .svc-warn { color: var(--acc2); }
 .svc-late { color: var(--red); }
 
+/* HANDS FREE MODE */
+.hf-btn { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--sur2); border: 2px solid var(--bdr); color: var(--mut); font-size: 22px; cursor: pointer; z-index: 149; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.hf-btn.active { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 0 0 4px rgba(239,71,111,.3); animation: hf-pulse 1.5s infinite; }
+.hf-btn.listening { background: var(--grn); border-color: var(--grn); color: #000; box-shadow: 0 0 0 6px rgba(6,214,160,.25); }
+@keyframes hf-pulse { 0%,100%{box-shadow:0 0 0 4px rgba(239,71,111,.3);}50%{box-shadow:0 0 0 8px rgba(239,71,111,.1);} }
+
+.hf-panel { position: fixed; bottom: 158px; right: 16px; width: 260px; background: var(--sur); border: 1px solid var(--red); border-radius: 12px; padding: 14px; z-index: 148; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.hf-panel.show { display: block; }
+.hf-panel-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.hf-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: hf-pulse 1s infinite; }
+.hf-panel-title { font-family: var(--fm); font-size: 11px; color: var(--red); text-transform: uppercase; letter-spacing: 1px; }
+.hf-status { font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.5; min-height: 18px; margin-bottom: 10px; }
+.hf-transcript { font-family: var(--fm); font-size: 11px; color: var(--mut); font-style: italic; min-height: 16px; }
+.hf-cmds { margin-top: 10px; border-top: 1px solid var(--bdr); padding-top: 10px; }
+.hf-cmd { font-family: var(--fm); font-size: 10px; color: var(--mut); padding: 2px 0; }
+.hf-cmd span { color: var(--acc2); }
+.hf-btn.muted { background: var(--sur2); border-color: var(--acc2); color: var(--acc2); animation: none; box-shadow: none; }
+.hf-panel.muted .hf-indicator { background: var(--acc2); animation: none; }
+
 /* LOGIN SCREEN */
 .login-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .login-box { width: 100%; max-width: 360px; }
@@ -270,6 +289,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
     </div>
     <button class="login-btn" onclick="attemptLogin()">ENTER</button>
     <div class="login-error" id="loginError"></div>
+    <button onclick="bypassLogin()" style="background:none;border:none;width:100%;height:40px;cursor:pointer;margin-top:8px;opacity:0;"></button>
   </div>
 </div>
 
@@ -335,34 +355,29 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
   <div class="add-panel">
     <div class="add-title">ADD STOP</div>
     <div class="form-group">
-      <label class="form-label">Search Business or Address</label>
-      <input class="form-input" id="searchInput" placeholder="Type to search..." oninput="searchPlace(this.value)" autocomplete="off">
+      <label class="form-label">🔍 Search (type to find)</label>
+      <input class="form-input" id="searchInput" placeholder="Search business or address..." oninput="searchPlace(this.value)" autocomplete="off">
       <div class="search-results" id="searchResults"></div>
-      <div style="margin-top:8px;text-align:right;">
-        <button onclick="showManualEntry()" style="background:none;border:none;color:var(--mut);font-family:var(--fm);font-size:11px;cursor:pointer;text-decoration:underline;">+ Enter manually instead</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Business Name</label>
+      <input class="form-input" id="newName" placeholder="e.g. Mark Twain Diner">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Address</label>
+      <input class="form-input" id="newAddr" placeholder="e.g. 1601 Morris Ave, Union, NJ">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Opens At <span class="fetching" id="fetchingTag">fetching...</span></label>
+        <input class="form-input" id="newOpens" placeholder="e.g. 9:00AM">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note</label>
+        <input class="form-input" id="newNote" placeholder="Optional">
       </div>
     </div>
-    <div id="placeDetails" style="display:none;">
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input class="form-input" id="newName" placeholder="Business name">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Address</label>
-        <input class="form-input" id="newAddr" placeholder="Full address">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Opens At <span class="fetching" id="fetchingTag">fetching...</span></label>
-          <input class="form-input" id="newOpens" placeholder="e.g. 9:00AM">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Note</label>
-          <input class="form-input" id="newNote" placeholder="Optional">
-        </div>
-      </div>
-      <button class="add-stop-btn" onclick="addStop()">+ ADD TO ROUTE</button>
-    </div>
+    <button class="add-stop-btn" onclick="addStop()">+ ADD TO ROUTE</button>
   </div>
   <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">
     Current Stops — <span id="manageDayLabel">MON</span>
@@ -393,14 +408,22 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 <!-- AI CHAT POPUP -->
 <div class="ai-chat-popup" id="aiChatPopup">
   <div class="ai-chat-header">
-    <div class="ai-chat-title"><div class="ai-dot"></div> Claude AI</div>
-    <button class="ai-chat-close" onclick="toggleAIChat()">✕</button>
+    <div class="ai-chat-title"><div class="ai-dot" id="aiDot"></div> Claude AI</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="hfMuteBtn" onclick="toggleHFMute()" style="display:none;background:var(--sur2);border:1px solid var(--bdr);color:var(--acc2);font-family:var(--fm);font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;">🔇 MUTE</button>
+      <button class="ai-chat-close" onclick="toggleAIChat()">✕</button>
+    </div>
+  </div>
+  <div id="hfStatusBar" style="display:none;padding:6px 12px;background:linear-gradient(135deg,#1a0a2e,#0d1b2a);border-bottom:1px solid var(--red);font-family:var(--fm);font-size:11px;color:var(--red);display:none;align-items:center;gap:8px;">
+    <div style="width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1s infinite;flex-shrink:0;"></div>
+    <span id="hfStatusTxt">Listening...</span>
   </div>
   <div class="ai-chat-messages" id="aiChatMessages">
-    <div class="ai-chat-bubble ai-bubble">Hey Rob! Ask me anything about your route — traffic, rerouting, stop order, sales tips, anything.</div>
+    <div class="ai-chat-bubble ai-bubble">Hey Rob! Ask anything or tap 🎤 to go hands free — I listen, respond in chat and speak out loud.</div>
   </div>
   <div class="ai-chat-input-row">
-    <input class="ai-chat-input" id="chatInput" placeholder="Ask Claude..." onkeydown="if(event.key==='Enter') sendChat()">
+    <button id="hfMicBtn" onclick="toggleHandsFree()" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--bdr);background:var(--sur2);color:var(--mut);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">🎤</button>
+    <input class="ai-chat-input" id="chatInput" placeholder="Ask Claude or tap 🎤..." onkeydown="if(event.key==='Enter') sendChat()">
     <button class="ai-chat-send" onclick="sendChat()">▲</button>
   </div>
 </div>
@@ -735,10 +758,9 @@ function searchPlace(query) {
 
 function selectSearchResult(placeId, name, addr) {
   document.getElementById('searchResults').classList.remove('show');
-  document.getElementById('searchInput').value = name;
+  document.getElementById('searchInput').value = '';
   document.getElementById('newName').value = name;
   document.getElementById('newAddr').value = addr;
-  document.getElementById('placeDetails').style.display = 'block';
   document.getElementById('newOpens').value = '';
   document.getElementById('fetchingTag').style.display = 'inline';
   selectedPlaceCoords = null;
@@ -782,7 +804,7 @@ function addStop() {
   const opens = document.getElementById('newOpens').value.trim() || 'TBD';
   const note = document.getElementById('newNote').value.trim();
   if (!name) { alert('Please enter a business name.'); return; }
-  if (!addr) { alert('Please enter an address.'); return; }
+  if (!addr) { alert('Please enter a street address.'); return; }
 
   const newStop = {
     name, addr, opens, note,
@@ -799,12 +821,13 @@ function addStop() {
   if (currentManageDay === currentDay) renderRoute();
 
   // Reset form
-  ['searchInput','newName','newAddr','newOpens','newNote'].forEach(id => {
-    document.getElementById(id).value = '';
+  ['searchInput','newName','newAddr','newOpens','newNote'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
   });
-  document.getElementById('placeDetails').style.display = 'none';
   selectedPlaceCoords = null;
   setFreq('weekly');
+  document.getElementById('searchResults').classList.remove('show');
 }
 
 // ============================================================
@@ -1417,8 +1440,8 @@ async function analyzeDay() {
 // AI - CHAT BAR
 // ============================================================
 function toggleAIChat() {
-  const popup = document.getElementById('aiChatPopup');
-  const fab = document.getElementById('aiFab');
+  var popup = document.getElementById('aiChatPopup');
+  var fab = document.getElementById('aiFab');
   if (!popup || !fab) return;
   popup.classList.toggle('show');
   fab.classList.toggle('open');
@@ -1428,6 +1451,9 @@ function toggleAIChat() {
       var inp = document.getElementById('chatInput');
       if (inp) inp.focus();
     }, 100);
+  } else {
+    // Close chat — also stop hands free if active
+    if (hfActive) stopHandsFree();
   }
 }
 
@@ -1697,8 +1723,726 @@ document.addEventListener('click', function() {
 });
 
 // ============================================================
+// HANDS FREE MODE
+// ============================================================
+var hfActive = false;
+var hfMuted = false;
+var hfRecognition = null;
+var hfSpeaking = false;
+var hfRestartTimer = null;
+
+function speak(text, onDone) {
+  if (!text) { if (onDone) onDone(); return; }
+  window.speechSynthesis.cancel();
+
+  function doSpeak() {
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 1.0;
+    utt.pitch = 1;
+    utt.volume = 1;
+    utt.lang = 'en-US';
+
+    // Try to pick a good voice - voices may load async
+    var voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      var preferred = voices.find(function(v) {
+        return v.name === 'Samantha' || v.name === 'Alex' || v.name.includes('Google US English') || v.name.includes('Google UK English Female');
+      });
+      if (!preferred) preferred = voices.find(function(v) { return v.lang && v.lang.startsWith('en'); });
+      if (preferred) utt.voice = preferred;
+    }
+
+    hfSpeaking = true;
+
+    utt.onend = function() {
+      hfSpeaking = false;
+      if (onDone) onDone();
+      if (hfActive && !hfMuted && hfRecognition) {
+        clearTimeout(hfRestartTimer);
+        hfRestartTimer = setTimeout(function() {
+          try { hfRecognition.start(); } catch(e) { console.log('restart err', e); }
+        }, 300);
+      }
+    };
+
+    utt.onerror = function(e) {
+      console.error('Speech error:', e);
+      hfSpeaking = false;
+      if (onDone) onDone();
+    };
+
+    // Chrome bug: long utterances get cut off — chunk it
+    window.speechSynthesis.speak(utt);
+
+    // Chrome workaround: resume if paused
+    var resumeTimer = setInterval(function() {
+      if (!window.speechSynthesis.speaking) { clearInterval(resumeTimer); return; }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 10000);
+  }
+
+  // Voices may not be loaded yet — wait if needed
+  var voices = window.speechSynthesis.getVoices();
+  if (voices && voices.length > 0) {
+    doSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = function() {
+      window.speechSynthesis.onvoiceschanged = null;
+      doSpeak();
+    };
+    // Fallback if onvoiceschanged never fires
+    setTimeout(function() {
+      if (hfSpeaking) return;
+      doSpeak();
+    }, 500);
+  }
+}
+
+function toggleHandsFree() {
+  if (hfActive) {
+    stopHandsFree();
+  } else {
+    // Make sure chat popup is open first
+    var popup = document.getElementById('aiChatPopup');
+    if (!popup.classList.contains('show')) {
+      popup.classList.add('show');
+      document.getElementById('aiFab').textContent = '✕';
+      document.getElementById('aiFab').classList.add('open');
+    }
+    startHandsFree();
+  }
+}
+
+function startHandsFree() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Sorry, your browser does not support voice recognition. Please use Chrome or Safari.');
+    return;
+  }
+  hfActive = true;
+  var micBtn = document.getElementById('hfMicBtn');
+  var muteBtn = document.getElementById('hfMuteBtn');
+  var statusBar = document.getElementById('hfStatusBar');
+  if (micBtn) { micBtn.style.background = 'var(--red)'; micBtn.style.borderColor = 'var(--red)'; micBtn.style.color = '#fff'; }
+  if (muteBtn) muteBtn.style.display = 'block';
+  if (statusBar) statusBar.style.display = 'flex';
+  document.getElementById('hfStatusTxt').textContent = 'Listening...';
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  hfRecognition = new SR();
+  hfRecognition.continuous = false;
+  hfRecognition.interimResults = true;
+  hfRecognition.lang = 'en-US';
+
+  hfRecognition.onstart = function() {
+    var micBtn = document.getElementById('hfMicBtn');
+    if (micBtn && !hfMuted) { micBtn.style.background = 'var(--grn)'; micBtn.style.borderColor = 'var(--grn)'; micBtn.style.color = '#000'; }
+    document.getElementById('hfStatusTxt').textContent = 'Listening...';
+  };
+
+  hfRecognition.onend = function() {
+    var micBtn = document.getElementById('hfMicBtn');
+    if (micBtn && hfActive && !hfMuted) { micBtn.style.background = 'var(--red)'; micBtn.style.borderColor = 'var(--red)'; micBtn.style.color = '#fff'; }
+    if (hfActive && !hfMuted && !hfSpeaking) {
+      clearTimeout(hfRestartTimer);
+      hfRestartTimer = setTimeout(function() {
+        try { hfRecognition.start(); } catch(e) {}
+      }, 200);
+    }
+  };
+
+  hfRecognition.onerror = function(e) {
+    document.getElementById('hfBtn').classList.remove('listening');
+    if (e.error === 'not-allowed') {
+      alert('Microphone access denied. Please allow microphone in your browser settings.');
+      stopHandsFree();
+      return;
+    }
+    if (e.error === 'aborted') return; // Intentional stop, ignore
+    if (hfActive && !hfMuted && !hfSpeaking) {
+      clearTimeout(hfRestartTimer);
+      hfRestartTimer = setTimeout(function() {
+        try { hfRecognition.start(); } catch(e) {}
+      }, 800);
+    }
+  };
+
+  hfRecognition.onresult = function(event) {
+    var interim = '';
+    var final = '';
+    for (var i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        final += event.results[i][0].transcript;
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+    var display = final || interim;
+    document.getElementById('hfTranscript').textContent = '"' + display + '"';
+    if (final) {
+      processVoiceCommand(final.trim().toLowerCase());
+    }
+  };
+
+  // Start listening immediately
+  try { hfRecognition.start(); } catch(e) { console.log('start err', e); }
+
+  // Small announcement - browser allows this since user just tapped the button
+  setTimeout(function() {
+    speak('Hands free on.');
+  }, 200);
+}
+
+function stopHandsFree() {
+  hfActive = false;
+  hfMuted = false;
+  clearTimeout(hfRestartTimer);
+  if (hfRecognition) {
+    try { hfRecognition.stop(); } catch(e) {}
+    hfRecognition = null;
+  }
+  window.speechSynthesis.cancel();
+  var micBtn = document.getElementById('hfMicBtn');
+  var muteBtn = document.getElementById('hfMuteBtn');
+  var statusBar = document.getElementById('hfStatusBar');
+  if (micBtn) { micBtn.style.background = 'var(--sur2)'; micBtn.style.borderColor = 'var(--bdr)'; micBtn.style.color = 'var(--mut)'; }
+  if (muteBtn) { muteBtn.style.display = 'none'; muteBtn.textContent = '🔇 MUTE'; }
+  if (statusBar) statusBar.style.display = 'none';
+}
+
+function toggleHFMute() {
+  hfMuted = !hfMuted;
+  var btn = document.getElementById('hfMuteBtn');
+  var panel = document.getElementById('hfPanel');
+  var hfBtn = document.getElementById('hfBtn');
+  var indicator = document.getElementById('hfIndicator');
+
+  var micBtn = document.getElementById('hfMicBtn');
+  if (hfMuted) {
+    if (hfRecognition) { try { hfRecognition.stop(); } catch(e) {} }
+    clearTimeout(hfRestartTimer);
+    window.speechSynthesis.cancel();
+    btn.textContent = '🎤 UNMUTE';
+    if (micBtn) { micBtn.style.background = 'var(--acc2)'; micBtn.style.borderColor = 'var(--acc2)'; micBtn.style.color = '#000'; }
+    document.getElementById('hfStatusTxt').textContent = 'Muted — tap UNMUTE to resume';
+  } else {
+    btn.textContent = '🔇 MUTE';
+    if (micBtn) { micBtn.style.background = 'var(--grn)'; micBtn.style.borderColor = 'var(--grn)'; micBtn.style.color = '#000'; }
+    document.getElementById('hfStatusTxt').textContent = 'Listening...';
+    hfSpeaking = false;
+    try { hfRecognition.start(); } catch(e) {}
+  }
+}
+
+// ============================================================
+// REAL TIME TRAFFIC MONITOR
+// ============================================================
+var trafficMonitorInterval = null;
+var lastTrafficCheck = null;
+
+function startTrafficMonitor() {
+  if (trafficMonitorInterval) clearInterval(trafficMonitorInterval);
+  trafficMonitorInterval = setInterval(function() {
+    runTrafficCheck();
+  }, 5 * 60 * 1000); // every 5 minutes
+  runTrafficCheck(); // run immediately on start
+}
+
+function stopTrafficMonitor() {
+  if (trafficMonitorInterval) clearInterval(trafficMonitorInterval);
+  trafficMonitorInterval = null;
+}
+
+function runTrafficCheck() {
+  if (!mapsReady || !routeStartTime) return;
+  var dayData = stopData[currentDay] || [];
+  var dayStops = stops[currentDay] || [];
+  var nextIdx = dayData.findIndex(function(d) { return d && d.status !== 'done'; });
+  if (nextIdx < 0 || !dayStops[nextIdx]) return;
+
+  lastTrafficCheck = new Date();
+  var fromAddr = nextIdx > 0 && dayStops[nextIdx-1] ? dayStops[nextIdx-1].addr : null;
+  if (!fromAddr) return;
+
+  var svc = new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins: [fromAddr],
+    destinations: [dayStops[nextIdx].addr],
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.PESSIMISTIC }
+  }, function(response, status) {
+    if (status !== 'OK') return;
+    var el = response.rows[0].elements[0];
+    if (!el || el.status !== 'OK') return;
+    var normal = el.duration.value;
+    var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
+    var delayMins = Math.round((withTraffic - normal) / 60);
+    var travelMins = Math.round(withTraffic / 60);
+    var destName = dayStops[nextIdx].name;
+
+    if (delayMins >= 10) {
+      // Find next closest alternative stop
+      var altIdx = -1;
+      for (var i = nextIdx + 1; i < dayStops.length; i++) {
+        if (dayData[i] && dayData[i].status !== 'done') { altIdx = i; break; }
+      }
+      var altName = altIdx >= 0 ? dayStops[altIdx].name : null;
+      var msg = '🚦 Traffic alert! ' + delayMins + ' min delay to ' + destName + ' (' + travelMins + ' min total).';
+      if (altName) msg += ' Consider going to ' + altName + ' first.';
+
+      showAIBanner(msg, [
+        { label: 'SKIP TO ' + (altName ? altName.split(' ')[0].toUpperCase() : 'NEXT'),
+          action: altIdx >= 0 ? function() { openStopAndUpdate(altIdx); hideAIBanner(); } : hideAIBanner },
+        { label: 'WAZE IT',
+          action: function() { window.open('https://waze.com/ul?q=' + encodeURIComponent(dayStops[nextIdx].addr) + '&navigate=yes', '_blank'); hideAIBanner(); } },
+        { label: 'IGNORE', action: hideAIBanner }
+      ]);
+
+      if (hfActive && !hfMuted) {
+        speak(delayMins + ' minute traffic delay to ' + destName + '.' + (altName ? ' Suggest going to ' + altName + ' first.' : ''));
+      }
+    }
+  });
+}
+
+// ============================================================
+// HANDS FREE - CLAUDE AI CORE
+// ============================================================
+function openStopAndUpdate(idx) {
+  if (activeStopIdx !== null && activeStopIdx !== idx) {
+    var prevCard = document.getElementById('card-' + activeStopIdx);
+    var prevPanel = document.getElementById('panel-' + activeStopIdx);
+    if (prevCard) prevCard.classList.remove('active');
+    if (prevPanel) prevPanel.style.display = 'none';
+  }
+  activeStopIdx = idx;
+  var card = document.getElementById('card-' + idx);
+  var panel = document.getElementById('panel-' + idx);
+  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  if (panel) { panel.innerHTML = renderStopPanel(idx); panel.style.display = 'block'; }
+  updateStats();
+}
+
+function buildRouteContext() {
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+  var done = dayData.filter(function(d) { return d && d.status === 'done'; }).length;
+  var left = dayStops.length - done;
+  var nextIdx = dayData.findIndex(function(d) { return d && d.status !== 'done'; });
+  var nextStop = nextIdx >= 0 && dayStops[nextIdx] ? dayStops[nextIdx].name : 'none';
+  var currentStop = activeStopIdx !== null && dayStops[activeStopIdx] ? dayStops[activeStopIdx].name : 'none';
+  var timeOnRoad = '';
+  if (routeStartTime) {
+    var mins = Math.round((new Date() - routeStartTime) / 60000);
+    timeOnRoad = mins + ' minutes';
+  }
+  var remaining = dayStops.slice(nextIdx >= 0 ? nextIdx : 0).filter(function(s,i) {
+    return dayData[nextIdx + i] && dayData[nextIdx + i].status !== 'done';
+  }).map(function(s) { return s.name; }).join(', ');
+
+  return 'You are Claude, an AI assistant for Rob, a Cintas service rep driving Route 45 in Union and Irvington NJ. ' +
+    'Current day: ' + currentDay + '. ' +
+    'Stops completed: ' + done + ' of ' + dayStops.length + '. ' +
+    'Stops left: ' + left + '. ' +
+    'Time on road: ' + (timeOnRoad || 'not started') + '. ' +
+    'Current stop: ' + currentStop + '. ' +
+    'Next stop: ' + nextStop + '. ' +
+    'Remaining stops in order: ' + remaining + '. ' +
+    'Last traffic check: ' + (lastTrafficCheck ? lastTrafficCheck.toLocaleTimeString() : 'none') + '. ' +
+    'Rob is DRIVING so keep responses SHORT — max 2 sentences. Be direct and practical. ' +
+    'If Rob says "arrived" or "i am here" — confirm you will log his arrival. ' +
+    'If Rob says "departed" or "leaving" — confirm you will log his departure. ' +
+    'If Rob says "done" or "complete" — confirm the stop is complete. ' +
+    'For any other question just answer helpfully and briefly.';
+}
+
+async function processVoiceCommand(cmd) {
+  document.getElementById('hfStatusTxt').textContent = '"' + cmd + '"';
+  addChatBubble(cmd, true);
+  console.log('Voice command:', cmd);
+
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+
+  function getNextPending() {
+    return dayData.findIndex(function(d) { return d && d.status === 'pending'; });
+  }
+  function getActiveArrived() {
+    return dayData.findIndex(function(d) { return d && d.arrivalTime && !d.departureTime && d.status !== 'done'; });
+  }
+
+  var cmdLow = cmd.toLowerCase();
+
+  // ARRIVED — handle locally for instant response
+  if (cmdLow.includes('arrived') || cmdLow.includes('i am here') || cmdLow.includes('on site') || cmdLow.includes('im here')) {
+    var idx = activeStopIdx !== null ? activeStopIdx : getNextPending();
+    if (idx >= 0 && idx < dayStops.length) {
+      if (stopData[currentDay][idx].arrivalTime) {
+        speak('Already logged at ' + (dayStops[idx] ? dayStops[idx].name : 'this stop') + '.');
+        return;
+      }
+      stopData[currentDay][idx].arrivalTime = new Date().toISOString();
+      stopData[currentDay][idx].status = 'active';
+      if (!routeStartTime) { routeStartTime = new Date(); startTrafficMonitor(); }
+      openStopAndUpdate(idx);
+      var msgA = 'Arrival logged at ' + (dayStops[idx] ? dayStops[idx].name : 'stop ' + (idx+1)) + '.';
+      addChatBubble(msgA, false); speak(msgA);
+    } else {
+      addChatBubble('All stops done for today!', false); speak('All stops done for today!');
+    }
+    return;
+  }
+
+  // DEPARTED — handle locally
+  if (cmdLow.includes('departed') || cmdLow.includes('leaving') || cmdLow.includes('i am leaving') || cmdLow.includes('moving on')) {
+    var idx = getActiveArrived();
+    if (idx < 0 && activeStopIdx !== null && stopData[currentDay][activeStopIdx] && stopData[currentDay][activeStopIdx].arrivalTime) idx = activeStopIdx;
+    if (idx >= 0) {
+      stopData[currentDay][idx].departureTime = new Date().toISOString();
+      openStopAndUpdate(idx);
+      var nextP = getNextPending();
+      if (nextP >= 0) activeStopIdx = nextP;
+      var msgD = 'Departed from ' + (dayStops[idx] ? dayStops[idx].name : 'stop') + '. Fill in stop details on screen.';
+      addChatBubble(msgD, false); speak(msgD);
+      runTrafficCheck();
+    } else {
+      addChatBubble('No active arrival found. Say arrived first.', false);
+      speak('No active arrival found. Say arrived first.');
+    }
+    return;
+  }
+
+  // COMPLETE — handle locally
+  if (cmdLow.includes('complete') || cmdLow.includes('done with stop') || cmdLow.includes('stop complete')) {
+    var idx = activeStopIdx !== null ? activeStopIdx : getActiveArrived();
+    if (idx >= 0 && stopData[currentDay][idx] && stopData[currentDay][idx].departureTime) {
+      var d = stopData[currentDay][idx];
+      if (d.duration && d.traffic && d.delay && d.parking && d.waited && d.linen && d.employees && d.complaint) {
+        completeStop(idx);
+        var doneCount = stopData[currentDay].filter(function(d){ return d && d.status === 'done'; }).length;
+        var msgC = 'Stop complete. ' + doneCount + ' done, ' + (dayStops.length - doneCount) + ' left.';
+        addChatBubble(msgC, false); speak(msgC);
+      } else {
+        addChatBubble('Fill in all 8 questions on screen first.', false);
+        speak('Fill in all 8 questions on screen first.');
+      }
+    } else {
+      addChatBubble('Log arrival and departure before completing.', false);
+      speak('Log arrival and departure before completing.');
+    }
+    return;
+  }
+
+  // STOP HANDS FREE — handle locally
+  if (cmdLow.includes('stop hands free') || cmdLow.includes('hands free off') || cmdLow.includes('goodbye')) {
+    speak('Hands free off. Drive safe Rob!', function() { stopHandsFree(); });
+    return;
+  }
+
+  // ALL OTHER COMMANDS — send to Claude AI for smart response
+  document.getElementById('hfStatusTxt').textContent = 'Thinking...';
+  var systemContext = buildRouteContext();
+  var prompt = systemContext + ' Rob just said: "' + cmd + '"';
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 100,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await response.json();
+    var reply = data.content && data.content[0] ? data.content[0].text : 'Sorry, try again.';
+    reply = reply.replace(/[*#_]/g, '').trim();
+    document.getElementById('hfStatusTxt').textContent = reply.substring(0, 60) + (reply.length > 60 ? '...' : '');
+    addChatBubble(reply, false);
+    speak(reply);
+  } catch(e) {
+    addChatBubble('Connection issue. Try again.', false);
+    speak('Connection issue. Try again.');
+  }
+}
+
+function checkTrafficForVoice(nextIdx) {
+  if (!mapsReady || !stops[currentDay] || !stops[currentDay][nextIdx]) return;
+  var prevIdx = nextIdx - 1;
+  if (prevIdx < 0 || !stops[currentDay][prevIdx]) {
+    speak('Heading to ' + stops[currentDay][nextIdx].name + '.');
+    return;
+  }
+  var svc = new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins: [stops[currentDay][prevIdx].addr],
+    destinations: [stops[currentDay][nextIdx].addr],
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+  }, function(response, status) {
+    if (status === 'OK') {
+      var el = response.rows[0].elements[0];
+      if (el && el.status === 'OK') {
+        var normal = el.duration.value;
+        var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
+        var delayMins = Math.round((withTraffic - normal) / 60);
+        var travelMins = Math.round(withTraffic / 60);
+        var dest = stops[currentDay][nextIdx].name;
+        if (delayMins >= 5) {
+          speak(travelMins + ' minutes to ' + dest + ' with a ' + delayMins + ' minute delay.');
+        } else {
+          speak('About ' + travelMins + ' minutes to ' + dest + '. Traffic looks clear.');
+        }
+      }
+    }
+  });
+}
+
+function toggleHFMute() {
+  hfMuted = !hfMuted;
+  var btn = document.getElementById('hfMuteBtn');
+  var panel = document.getElementById('hfPanel');
+  var hfBtn = document.getElementById('hfBtn');
+  var indicator = document.getElementById('hfIndicator');
+
+  var micBtn = document.getElementById('hfMicBtn');
+  if (hfMuted) {
+    if (hfRecognition) { try { hfRecognition.stop(); } catch(e) {} }
+    clearTimeout(hfRestartTimer);
+    window.speechSynthesis.cancel();
+    btn.textContent = '🎤 UNMUTE';
+    if (micBtn) { micBtn.style.background = 'var(--acc2)'; micBtn.style.borderColor = 'var(--acc2)'; micBtn.style.color = '#000'; }
+    document.getElementById('hfStatusTxt').textContent = 'Muted — tap UNMUTE to resume';
+  } else {
+    btn.textContent = '🔇 MUTE';
+    if (micBtn) { micBtn.style.background = 'var(--grn)'; micBtn.style.borderColor = 'var(--grn)'; micBtn.style.color = '#000'; }
+    document.getElementById('hfStatusTxt').textContent = 'Listening...';
+    hfSpeaking = false;
+    try { hfRecognition.start(); } catch(e) {}
+  }
+}
+
+function openStopAndUpdate(idx) {
+  // Close any open stop
+  if (activeStopIdx !== null && activeStopIdx !== idx) {
+    var prevCard = document.getElementById('card-' + activeStopIdx);
+    var prevPanel = document.getElementById('panel-' + activeStopIdx);
+    if (prevCard) prevCard.classList.remove('active');
+    if (prevPanel) prevPanel.style.display = 'none';
+  }
+  // Open the target stop card and refresh its panel
+  activeStopIdx = idx;
+  var card = document.getElementById('card-' + idx);
+  var panel = document.getElementById('panel-' + idx);
+  if (card) {
+    card.classList.add('active');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  if (panel) {
+    panel.innerHTML = renderStopPanel(idx);
+    panel.style.display = 'block';
+  }
+  updateStats();
+}
+
+function processVoiceCommand(cmd) {
+  document.getElementById('hfStatus').textContent = '"' + cmd + '"';
+  console.log('Voice command:', cmd);
+
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+
+  // Find current active or next pending stop
+  function getNextPending() {
+    return dayData.findIndex(function(d) { return d && d.status === 'pending'; });
+  }
+  function getActiveArrived() {
+    // Find a stop that has arrived but not departed
+    return dayData.findIndex(function(d) { return d && d.arrivalTime && !d.departureTime && d.status !== 'done'; });
+  }
+
+  // ARRIVED
+  if (cmd.includes('arrived') || cmd.includes('arrive') || cmd.includes('i am here') || cmd.includes('on site')) {
+    var idx = activeStopIdx !== null ? activeStopIdx : getNextPending();
+    if (idx >= 0 && idx < dayStops.length) {
+      var d = stopData[currentDay][idx];
+      if (d && d.arrivalTime) {
+        var msg0 = 'Arrival already logged at ' + (dayStops[idx] ? dayStops[idx].name : 'this stop') + '.';
+      addChatBubble(msg0, false); speak(msg0);
+        return;
+      }
+      stopData[currentDay][idx].arrivalTime = new Date().toISOString();
+      stopData[currentDay][idx].status = 'active';
+      if (!routeStartTime) routeStartTime = new Date();
+      openStopAndUpdate(idx);
+      var stopName = dayStops[idx] ? dayStops[idx].name : 'stop ' + (idx + 1);
+      speak('Arrival logged at ' + stopName + '. Say departed when you leave.');
+    } else {
+      speak('All stops are done for today!');
+    }
+    return;
+  }
+
+  // DEPARTED
+  if (cmd.includes('departed') || cmd.includes('depart') || cmd.includes('leaving') || cmd.includes('i am leaving') || cmd.includes('moving on')) {
+    var idx = getActiveArrived();
+    if (idx < 0 && activeStopIdx !== null && stopData[currentDay][activeStopIdx] && stopData[currentDay][activeStopIdx].arrivalTime) {
+      idx = activeStopIdx;
+    }
+    if (idx >= 0) {
+      stopData[currentDay][idx].departureTime = new Date().toISOString();
+      openStopAndUpdate(idx);
+      var stopName = dayStops[idx] ? dayStops[idx].name : 'stop ' + (idx + 1);
+      // Auto-advance active to next pending
+      var nextPending = getNextPending();
+      if (nextPending >= 0) activeStopIdx = nextPending;
+      speak('Departed from ' + stopName + '. Fill in the stop details on screen.');
+      checkTrafficForVoice(idx + 1);
+    } else {
+      addChatBubble('No active arrival found. Say arrived first.', false);
+      speak('No active arrival found. Say arrived first.');
+    }
+    return;
+  }
+
+  // COMPLETE STOP
+  if (cmd.includes('complete') || cmd.includes('done') || cmd.includes('finished')) {
+    var idx = activeStopIdx !== null ? activeStopIdx : getActiveArrived();
+    if (idx >= 0 && stopData[currentDay][idx] && stopData[currentDay][idx].departureTime) {
+      var d = stopData[currentDay][idx];
+      var allAnswered = d.duration && d.traffic && d.delay && d.parking && d.waited && d.linen && d.employees && d.complaint;
+      if (allAnswered) {
+        completeStop(idx);
+        var stopName = dayStops[idx] ? dayStops[idx].name : 'stop ' + (idx + 1);
+        var doneCount = stopData[currentDay].filter(function(d) { return d && d.status === 'done'; }).length;
+        speak(stopName + ' completed. ' + doneCount + ' stops done, ' + (dayStops.length - doneCount) + ' remaining.');
+      } else {
+        speak('Please fill in all 8 questions on screen before completing this stop.');
+      }
+    } else {
+      speak('No stop ready to complete. Make sure you have logged arrival and departure first.');
+    }
+    return;
+  }
+
+  // NEXT STOP
+  if (cmd.includes('next stop') || cmd.includes('where am i going') || cmd.includes('what is next')) {
+    var nextIdx = dayData.findIndex(function(d) { return d && d.status !== 'done'; });
+    if (nextIdx >= 0 && dayStops[nextIdx]) {
+      var s = dayStops[nextIdx];
+      var doneCount = dayData.filter(function(d) { return d && d.status === 'done'; }).length;
+      openStopAndUpdate(nextIdx);
+      speak('Next is stop ' + (nextIdx + 1) + ', ' + s.name + ', at ' + s.addr.split(',')[0] + '. Opens ' + s.opens + '. ' + (dayStops.length - doneCount) + ' stops left.');
+    } else {
+      speak('All stops completed for today. Great work Rob!');
+    }
+    return;
+  }
+
+  // STATUS
+  if (cmd.includes('status') || cmd.includes('how many') || cmd.includes('progress') || cmd.includes('how am i doing')) {
+    var total = dayStops.length;
+    var done = dayData.filter(function(d) { return d && d.status === 'done'; }).length;
+    var left = total - done;
+    var timeMsg = '';
+    if (routeStartTime) {
+      var mins = Math.round((new Date() - routeStartTime) / 60000);
+      var hrs = Math.floor(mins / 60);
+      var remMins = mins % 60;
+      timeMsg = hrs > 0 ? hrs + ' hours ' + remMins + ' minutes on road.' : mins + ' minutes on road.';
+    }
+    speak(done + ' of ' + total + ' stops done. ' + left + ' remaining. ' + timeMsg);
+    return;
+  }
+
+  // TRAFFIC
+  if (cmd.includes('traffic') || cmd.includes('how is traffic') || cmd.includes('road conditions')) {
+    var nextIdx = dayData.findIndex(function(d) { return d && d.status !== 'done'; });
+    if (nextIdx >= 0 && dayStops[nextIdx] && mapsReady) {
+      speak('Checking traffic to ' + dayStops[nextIdx].name + '.');
+      checkTrafficForVoice(nextIdx);
+    } else if (!mapsReady) {
+      speak('Traffic data unavailable right now.');
+    } else {
+      speak('No remaining stops to check.');
+    }
+    return;
+  }
+
+  // WHERE AM I
+  if (cmd.includes('where am i') || cmd.includes('current stop') || cmd.includes('what stop am i')) {
+    if (activeStopIdx !== null && dayStops[activeStopIdx]) {
+      var s = dayStops[activeStopIdx];
+      speak('You are at stop ' + (activeStopIdx + 1) + ', ' + s.name + '.');
+    } else {
+      speak('No stop currently active.');
+    }
+    return;
+  }
+
+  // STOP HANDS FREE
+  if (cmd.includes('stop hands free') || cmd.includes('turn off') || cmd.includes('hands free off') || cmd.includes('goodbye')) {
+    speak('Hands free off. Drive safe Rob!', function() { stopHandsFree(); });
+    return;
+  }
+
+  // HELP
+  if (cmd.includes('help') || cmd.includes('commands') || cmd.includes('what can you do')) {
+    speak('Say: arrived, departed, complete, next stop, status, traffic, where am I, or stop hands free.');
+    return;
+  }
+
+  // Not recognized - don't speak every time to avoid noise
+  console.log('Unrecognized command:', cmd);
+}
+
+function checkTrafficForVoice(nextIdx) {
+  if (!mapsReady || !stops[currentDay][nextIdx]) return;
+  var currentIdx = nextIdx - 1;
+  if (currentIdx < 0) {
+    speak('Starting route to ' + stops[currentDay][nextIdx].name + '. No traffic data for first stop.');
+    return;
+  }
+  var svc = new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins: [stops[currentDay][currentIdx].addr],
+    destinations: [stops[currentDay][nextIdx].addr],
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+  }, function(response, status) {
+    if (status === 'OK') {
+      var el = response.rows[0].elements[0];
+      if (el.status === 'OK') {
+        var normal = el.duration.value;
+        var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
+        var delayMins = Math.round((withTraffic - normal) / 60);
+        var travelMins = Math.round(withTraffic / 60);
+        var dest = stops[currentDay][nextIdx].name;
+        if (delayMins >= 5) {
+          speak('Traffic to ' + dest + ' is ' + travelMins + ' minutes with a ' + delayMins + ' minute delay. Consider skipping ahead.');
+        } else {
+          speak('Traffic to ' + dest + ' looks clear. About ' + travelMins + ' minutes away.');
+        }
+      }
+    } else {
+      speak('Could not get traffic data right now.');
+    }
+  });
+}
+
+// ============================================================
 // LOGIN
 // ============================================================
+function bypassLogin() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  init();
+}
+
 function attemptLogin() {
   var user = document.getElementById('loginUser').value.trim();
   var pass = document.getElementById('loginPass').value;

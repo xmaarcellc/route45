@@ -944,9 +944,27 @@ function addStop() {
   renderManageList();
   if (currentManageDay === currentDay) renderRoute();
 
-  // Refresh map if open
-  var mapTab = document.getElementById('mapTab');
-  if (mapTab && mapTab.style.display !== 'none' && mapView) renderMapMarkers();
+  // Always update map markers (they persist even if map tab is closed)
+  if (mapView) {
+    renderMapMarkers();
+  }
+  // If no coords from search, geocode the address
+  if (!selectedPlaceCoords && addr && mapsReady) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: addr }, function(results, status) {
+      if (status === 'OK' && results[0]) {
+        var loc = results[0].geometry.location;
+        var lastIdx = stops[currentManageDay].length - 1;
+        if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
+          stops[currentManageDay][lastIdx].lat = loc.lat();
+          stops[currentManageDay][lastIdx].lng = loc.lng();
+          saveStops();
+          if (mapView) renderMapMarkers();
+          console.log('Geocoded', name, 'to', loc.lat(), loc.lng());
+        }
+      }
+    });
+  }
 
   // Reset form
   ['searchInput','newName','newAddr','newOpens','newNote'].forEach(function(id) {
@@ -968,9 +986,27 @@ function removeStop(day, idx) {
   saveStops();
   renderManageList();
   if (day === currentDay) { activeStopIdx = null; renderRoute(); }
-  // Refresh map if open
-  var mapTab = document.getElementById('mapTab');
-  if (mapTab && mapTab.style.display !== 'none' && mapView) renderMapMarkers();
+  // Always update map markers (they persist even if map tab is closed)
+  if (mapView) {
+    renderMapMarkers();
+  }
+  // If no coords from search, geocode the address
+  if (!selectedPlaceCoords && addr && mapsReady) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: addr }, function(results, status) {
+      if (status === 'OK' && results[0]) {
+        var loc = results[0].geometry.location;
+        var lastIdx = stops[currentManageDay].length - 1;
+        if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
+          stops[currentManageDay][lastIdx].lat = loc.lat();
+          stops[currentManageDay][lastIdx].lng = loc.lng();
+          saveStops();
+          if (mapView) renderMapMarkers();
+          console.log('Geocoded', name, 'to', loc.lat(), loc.lng());
+        }
+      }
+    });
+  }
 }
 
 function editStop(day, idx) {

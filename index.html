@@ -8,18 +8,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-  --bg: #0a0a0a;
-  --sur: #141414;
-  --sur2: #1e1e1e;
-  --bdr: #2a2a2a;
+  --bg: #000000;
+  --sur: #0f0f0f;
+  --sur2: #181818;
+  --bdr: #2a1a0a;
   --acc: #ff6b2b;
-  --acc2: #ffd166;
+  --acc2: #ff8c00;
   --grn: #06d6a0;
   --red: #ef476f;
-  --blu: #118ab2;
-  --pur: #7b2fff;
+  --blu: #ff6b2b;
+  --pur: #ff6b2b;
   --txt: #f0f0f0;
-  --mut: #888;
+  --mut: #886655;
   --fd: 'Bebas Neue', sans-serif;
   --fm: 'DM Mono', monospace;
   --fb: 'DM Sans', sans-serif;
@@ -38,10 +38,10 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .day-badge { background: var(--acc); color: #000; font-family: var(--fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* TABS */
-.tabs { display: flex; background: var(--sur); border-bottom: 1px solid var(--bdr); }
+.tabs { display: flex; background: var(--sur); border-bottom: 1px solid var(--bdr); position: sticky; top: 53px; z-index: 99; }
 .tab { flex: 1; padding: 12px; text-align: center; font-family: var(--fm); font-size: 11px; color: var(--mut); cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
 .tab.active { color: var(--acc); border-bottom-color: var(--acc); }
-.badge { display: inline-block; background: var(--pur); color: #fff; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+.badge { display: inline-block; background: var(--acc); color: #000; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
 
 /* DAY SELECTOR */
 .day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: var(--sur); border-bottom: 1px solid var(--bdr); scrollbar-width: none; }
@@ -56,18 +56,18 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
 /* AI BANNER */
-.ai-banner { margin: 12px 16px 0; background: linear-gradient(135deg, #1a0a2e, #0d1b2a); border: 1px solid var(--pur); border-radius: 8px; padding: 12px; display: none; }
+.ai-banner { margin: 12px 16px 0; background: linear-gradient(135deg, #1a0800, #0f0800); border: 1px solid var(--acc); border-radius: 8px; padding: 12px; display: none; }
 .ai-banner.show { display: block; }
 .ai-banner-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pur); animation: pulse 1.5s infinite; }
+.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);} }
-.ai-lbl { font-family: var(--fm); font-size: 10px; color: var(--pur); text-transform: uppercase; letter-spacing: 1px; }
+.ai-lbl { font-family: var(--fm); font-size: 10px; color: var(--acc); text-transform: uppercase; letter-spacing: 1px; }
 .ai-txt { font-size: 13px; color: var(--txt); line-height: 1.5; }
 .ai-loading { font-family: var(--fm); font-size: 11px; color: var(--mut); animation: blink 1s infinite; }
 @keyframes blink { 0%,100%{opacity:1;}50%{opacity:.3;} }
 .ai-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.ai-act-btn { flex: 1; min-width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--pur); background: transparent; color: var(--pur); font-family: var(--fm); font-size: 11px; cursor: pointer; }
-.ai-act-btn.pri { background: var(--pur); color: #fff; }
+.ai-act-btn { flex: 1; min-width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--acc); background: transparent; color: var(--acc); font-family: var(--fm); font-size: 11px; cursor: pointer; }
+.ai-act-btn.pri { background: var(--acc); color: #000; }
 
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -140,14 +140,14 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .eod-section { padding: 16px; margin-top: 8px; }
 .eod-btn { width: 100%; padding: 14px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 8px; }
 .btn-complete-day { background: var(--grn); color: #000; }
-.btn-ai-analyze { background: var(--pur); color: #fff; }
+.btn-ai-analyze { background: var(--acc); color: #000; }
 .btn-view-log { background: var(--blu); color: #fff; }
 .btn-copy-log { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); font-family: var(--fm); font-size: 12px; }
 
 /* MANAGE TAB */
 .opt-bar { padding: 12px 16px; background: var(--sur); border-bottom: 1px solid var(--bdr); display: flex; gap: 8px; align-items: center; }
 .start-time { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 14px; padding: 10px 12px; border-radius: 6px; outline: none; flex: 1; }
-.opt-btn { background: var(--pur); color: #fff; border: none; border-radius: 6px; padding: 10px 16px; font-family: var(--fd); font-size: 18px; letter-spacing: 1px; cursor: pointer; }
+.opt-btn { background: var(--acc); color: #000; border: none; border-radius: 6px; padding: 10px 16px; font-family: var(--fd); font-size: 18px; letter-spacing: 1px; cursor: pointer; }
 .add-panel { padding: 16px; }
 .add-title { font-family: var(--fd); font-size: 24px; color: var(--acc); letter-spacing: 2px; margin-bottom: 16px; }
 .form-group { margin-bottom: 12px; }
@@ -194,33 +194,43 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .modal-close { width: 100%; background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 6px; padding: 12px; font-family: var(--fm); font-size: 12px; cursor: pointer; margin-top: 8px; }
 
 /* FLOATING AI BUTTON */
-.ai-fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--pur); color: #fff; border: none; font-size: 24px; cursor: pointer; z-index: 150; box-shadow: 0 4px 20px rgba(123,47,255,.5); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+.ai-fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--acc); color: #000; border: none; font-size: 24px; cursor: pointer; z-index: 150; box-shadow: 0 4px 20px rgba(255,107,43,.5); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
 .ai-fab:active { transform: scale(0.93); }
-.ai-fab.open { background: var(--sur2); font-size: 18px; }
+.ai-fab.open { background: var(--sur2); border: 1px solid var(--acc); color: var(--acc); font-size: 18px; }
 
 /* AI CHAT POPUP */
-.ai-chat-popup { position: fixed; bottom: 90px; right: 16px; left: 16px; max-width: 460px; margin: 0 auto; background: var(--sur); border: 1px solid var(--pur); border-radius: 16px; z-index: 140; display: none; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,.6); overflow: hidden; max-height: 70vh; }
+.ai-chat-popup { position: fixed; bottom: 90px; right: 16px; left: 16px; max-width: 460px; margin: 0 auto; background: var(--sur); border: 1px solid var(--acc); border-radius: 16px; z-index: 140; display: none; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,.6); overflow: hidden; max-height: 70vh; }
 .ai-chat-popup.show { display: flex; }
-.ai-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(135deg, #1a0a2e, #0d1b2a); border-bottom: 1px solid var(--pur); }
-.ai-chat-title { display: flex; align-items: center; gap: 8px; font-family: var(--fm); font-size: 12px; color: var(--pur); text-transform: uppercase; letter-spacing: 1px; }
+.ai-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 1px solid var(--acc); }
+.ai-chat-title { display: flex; align-items: center; gap: 8px; font-family: var(--fm); font-size: 12px; color: var(--acc); text-transform: uppercase; letter-spacing: 1px; }
 .ai-chat-close { background: none; border: none; color: var(--mut); font-size: 16px; cursor: pointer; padding: 0 4px; }
 .ai-chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 .ai-chat-bubble { max-width: 85%; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
-.ai-bubble { background: linear-gradient(135deg, #1a0a2e, #0d1b2a); border: 1px solid var(--pur); color: var(--txt); align-self: flex-start; border-bottom-left-radius: 4px; }
-.user-bubble { background: var(--pur); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.ai-bubble { background: linear-gradient(135deg, #1a0800, #0f0500); border: 1px solid var(--acc); color: var(--txt); align-self: flex-start; border-bottom-left-radius: 4px; }
+.user-bubble { background: var(--acc); color: #000; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
 .ai-chat-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--bdr); align-items: center; }
 .ai-chat-input { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fb); font-size: 13px; padding: 10px 12px; border-radius: 20px; outline: none; }
-.ai-chat-input:focus { border-color: var(--pur); }
-.ai-chat-send { background: var(--pur); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.ai-chat-input:focus { border-color: var(--acc); }
+.ai-chat-send { background: var(--acc); color: #000; color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
 .empty-state { text-align: center; padding: 40px; font-family: var(--fm); color: var(--mut); font-size: 13px; line-height: 2; }
 .freq-tag { display: inline-block; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
 .freq-weekly { background: var(--grn); color: #000; }
 .freq-biweekly { background: var(--acc2); color: #000; }
-.freq-monthly { background: var(--pur); color: #fff; }
+.freq-monthly { background: var(--acc); color: #000; }
 .freq-skip { opacity: 0.3; }
 .note-tag { display: inline-block; background: var(--acc); color: #000; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
 .manage-num { font-family: var(--fd); font-size: 20px; color: var(--mut); min-width: 28px; }
+.notes-section { margin-top: 10px; border-top: 1px solid var(--bdr); padding-top: 10px; }
+.notes-lbl { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+.note-item { background: var(--sur); border: 1px solid var(--bdr); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+.note-txt { flex: 1; font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.4; }
+.note-del { background: none; border: none; color: var(--red); font-size: 14px; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
+.note-input-row { display: flex; gap: 6px; margin-top: 6px; }
+.note-input { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 12px; padding: 8px 10px; border-radius: 6px; outline: none; }
+.note-input:focus { border-color: var(--acc); }
+.note-add-btn { background: var(--acc); border: none; color: #000; font-family: var(--fm); font-size: 11px; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+.stop-dist { font-family: var(--fm); font-size: 10px; color: var(--acc); margin-top: 2px; }
 .dots-btn { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(--bdr); }
 .freq-menu { display: none; position: absolute; right: 16px; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
@@ -228,7 +238,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .freq-menu-item { padding: 12px 16px; font-family: var(--fm); font-size: 12px; color: var(--txt); cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--bdr); }
 .freq-menu-item:last-child { border-bottom: none; }
 .freq-menu-item:active { background: var(--bdr); }
-.freq-menu-item.active-freq { color: var(--acc); }
+.freq-menu-item.active-freq { color: var(--acc); font-weight: 600; }
 .freq-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .manage-card { position: relative; }
 .last-service { font-family: var(--fm); font-size: 10px; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
@@ -292,6 +302,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 <div class="tabs">
   <div class="tab active" id="tab-route" onclick="switchTab('route')">ROUTE</div>
   <div class="tab" id="tab-manage" onclick="switchTab('manage')">STOPS</div>
+  <div class="tab" id="tab-map" onclick="switchTab('map')">🗺️ MAP</div>
   <div class="tab" id="tab-history" onclick="switchTab('history')">HISTORY <span class="badge" id="historyBadge">0</span></div>
 </div>
 
@@ -308,6 +319,9 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
     <div class="stat"><div class="stat-val" id="statLeft">0</div><div class="stat-lbl">Left</div></div>
     <div class="stat"><div class="stat-val" id="statTime">0m</div><div class="stat-lbl">On Road</div></div>
     <div class="stat"><div class="stat-val" id="statLast">--</div><div class="stat-lbl">Last Stop</div></div>
+  </div>
+  <div style="padding:8px 16px 0;">
+    <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:11px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
   <div class="ai-banner" id="aiBanner">
     <div class="ai-banner-hdr"><div class="ai-dot"></div><div class="ai-lbl">🤖 Claude AI</div></div>
@@ -366,6 +380,26 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
     Current Stops — <span id="manageDayLabel">MON</span>
   </div>
   <div class="manage-list" id="manageList"></div>
+</div>
+
+<!-- ===== MAP TAB ===== -->
+<div id="mapTab" style="display:none;position:relative;">
+  <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
+  <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
+  </div>
+  <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
+    <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
+    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">TUE</button>
+    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">WED</button>
+    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">THU</button>
+  </div>
+  <div id="mapLegend" style="position:absolute;bottom:16px;left:12px;background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-family:var(--fm);font-size:10px;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.4);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ef476f;flex-shrink:0;"></div>Pending</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ff6b2b;flex-shrink:0;"></div>Active</div>
+    <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:50%;background:#888;flex-shrink:0;"></div>Done</div>
+  </div>
 </div>
 
 <!-- ===== HISTORY TAB ===== -->
@@ -516,7 +550,7 @@ const DEFAULT_MON_STOPS = [
   { name: "Union Recreation Dept",   addr: "1120 Commerce Ave, Union, NJ",         opens: "8:30AM",        note: "Weekdays only",             lat: 40.7024, lng: -74.2793 },
   { name: "Burnet BBQ",              addr: "1363 Burnet Ave, Union, NJ",           opens: "10:00AM",       note: "",                          lat: 40.7106, lng: -74.2820 },
   { name: "Union Public Library",    addr: "1980 Morris Ave, Union, NJ",           opens: "9:00AM",        note: "",                          lat: 40.6955, lng: -74.2690 },
-  { name: "2nd Ave Value Store",     addr: "2661 Morris Ave, Union, NJ",           opens: "9:00AM",        note: "Add 1 Hardwound TP",        lat: 40.7052, lng: -74.2938 },
+  { name: "2nd Ave Value Store",     addr: "2661 Morris Ave, Union, NJ",           opens: "9:00AM",        note: "",                          lat: 40.7052, lng: -74.2938 },
   { name: "Union Pasta",             addr: "2705 Morris Ave, Union, NJ",           opens: "11:00AM",       note: "Verify open Mondays",        lat: 40.7051, lng: -74.2953 },
   { name: "Burnet BBQ Chancellor",   addr: "685 Chancellor Ave, Irvington, NJ",    opens: "10:00AM",       note: "",                          lat: 40.7151, lng: -74.2362 },
   { name: "City Market",             addr: "10 Mill Rd, Irvington, NJ",            opens: "8:00AM",        note: "",                          lat: 40.7144, lng: -74.2490 },
@@ -579,6 +613,9 @@ function init() {
 
   // STEP 2: Sync Firebase in background
   syncFromFirebase();
+
+  // STEP 3: Start location tracking for distances
+  startLocationTracking();
 }
 
 async function syncFromFirebase() {
@@ -587,9 +624,19 @@ async function syncFromFirebase() {
     if (savedStops && savedStops.MON && savedStops.MON.length > 0) {
       stops = savedStops;
       ['MON','TUE','WED','THU'].forEach(d => { if (!stops[d]) stops[d] = []; });
+      // Clean up any lingering notes we want removed
+      ['MON','TUE','WED','THU'].forEach(function(day) {
+        (stops[day] || []).forEach(function(s) {
+          if (s.name === '2nd Ave Value Store') {
+            if (s.note === 'Add 1 Hardwound TP') s.note = '';
+            if (s.note === 'Add 1 Hardwound TP,') s.note = '';
+          }
+        });
+      });
       initStopData();
       renderRoute();
       renderManageList();
+      saveStops(); // push the cleanup to Firebase
       console.log('Synced from Firebase — MON stops:', stops.MON.length);
     } else {
       saveStops();
@@ -667,12 +714,14 @@ function updateHistoryBadge() {
 // TAB SWITCHING
 // ============================================================
 function switchTab(tab) {
-  ['route','manage','history'].forEach(t => {
-    document.getElementById(t + 'Tab').style.display = t === tab ? 'block' : 'none';
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  ['route','manage','map','history'].forEach(t => {
+    var el = document.getElementById(t + 'Tab');
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+    var tabEl = document.getElementById('tab-' + t);
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
   });
   if (tab === 'history') renderHistory();
-
+  if (tab === 'map') initMapView();
 }
 
 // ============================================================
@@ -687,6 +736,11 @@ function selectDay(day) {
   activeStopIdx = null;
   initStopData();
   renderRoute();
+  // Refresh map if open
+  var mapTab = document.getElementById('mapTab');
+  if (mapTab && mapTab.style.display !== 'none') {
+    renderMapMarkers();
+  }
 }
 
 // ============================================================
@@ -980,6 +1034,7 @@ function renderRoute() {
             <div class="stop-meta">${stop.opens} · ${stop.addr.split(',')[0]}${driveTime}</div>
             ${(function(){ var svc = getServiceStatus(stop); return svc.cls !== 'svc-ok' ? '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>' : ''; })()}
             ${stop.note ? '<div class="stop-note">' + stop.note + '</div>' : ''}
+            <div class="stop-dist" id="dist-${origIdx}">📍 --</div>
           </div>
           <div class="stop-status ${statusClass}">${statusText}</div>
         </div>
@@ -988,6 +1043,8 @@ function renderRoute() {
   }).join('');
 
   updateStats();
+  // Update distances after render
+  setTimeout(updateStopDistances, 100);
   } catch(e) { console.error('renderRoute error:', e); }
 }
 
@@ -995,20 +1052,23 @@ function renderRoute() {
 // TOGGLE STOP OPEN / CLOSE
 // ============================================================
 function toggleStop(i) {
-  const card = document.getElementById('card-' + i);
-  const panel = document.getElementById('panel-' + i);
+  var card = document.getElementById('card-' + i);
+  var panel = document.getElementById('panel-' + i);
   if (!card || !panel) return;
 
+  // Done stops — don't expand, just ignore tap
+  var d = stopData[currentDay][i];
+  if (d && d.status === 'done') return;
+
   if (activeStopIdx === i) {
-    // Close it
     activeStopIdx = null;
     card.classList.remove('active');
     panel.style.display = 'none';
   } else {
     // Close previously open stop
     if (activeStopIdx !== null) {
-      const prevCard = document.getElementById('card-' + activeStopIdx);
-      const prevPanel = document.getElementById('panel-' + activeStopIdx);
+      var prevCard = document.getElementById('card-' + activeStopIdx);
+      var prevPanel = document.getElementById('panel-' + activeStopIdx);
       if (prevCard) prevCard.classList.remove('active');
       if (prevPanel) prevPanel.style.display = 'none';
     }
@@ -1016,7 +1076,7 @@ function toggleStop(i) {
     card.classList.add('active');
     panel.innerHTML = renderStopPanel(i);
     panel.style.display = 'block';
-    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    setTimeout(function() { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
   }
 }
 
@@ -1135,6 +1195,9 @@ function renderStopPanel(i) {
     html += `<button class="complete-btn ${allAnswered ? 'show' : ''}" onclick="completeStop(${i})">✅ COMPLETE STOP</button>`;
   }
 
+  // Always show notes section
+  html += renderNotesSection(currentDay, i);
+
   return html;
 }
 
@@ -1158,7 +1221,7 @@ function renderStopSummary(i) {
     <div class="sum-row"><span class="sum-key">Linen Pickup</span><span class="sum-val">${d.linen==='Y'?'Yes':'No'}</span></div>
     <div class="sum-row"><span class="sum-key">Employees</span><span class="sum-val">${d.employees==='Y'?'Yes (+2min)':'No'}</span></div>
     <div class="sum-row"><span class="sum-key">Complaint</span><span class="sum-val">${d.complaint==='Y'?'⚠️ YES':'None'}</span></div>
-  </div>`;
+  </div>` + renderNotesSection(currentDay, i);
 }
 
 // ============================================================
@@ -1240,36 +1303,41 @@ function completeStop(i) {
   stopData[currentDay][i].status = 'done';
   stopData[currentDay][i].adjustedDuration = calcAdjustedDuration(currentDay, i);
 
-  // Update this card visually
-  const card = document.getElementById('card-' + i);
-  const panel = document.getElementById('panel-' + i);
+  // Collapse the card — just show green check, no details
+  var card = document.getElementById('card-' + i);
+  var panel = document.getElementById('panel-' + i);
   if (card) {
     card.classList.remove('active');
     card.classList.add('done');
-    const numEl = card.querySelector('.stop-num');
+    // Update the check mark in stop header
+    var statusEl = card.querySelector('.stop-status');
+    if (statusEl) { statusEl.className = 'stop-status s-done'; statusEl.textContent = '✅'; }
+    var numEl = card.querySelector('.stop-num');
     if (numEl) numEl.style.color = 'var(--grn)';
-    const statusEl = card.querySelector('.stop-status');
-    if (statusEl) { statusEl.className = 'stop-status s-done'; statusEl.textContent = 'done'; }
+    // Clear dist
+    var distEl = document.getElementById('dist-' + i);
+    if (distEl) distEl.textContent = '';
   }
+  // Collapse panel — don't show contents
   if (panel) {
-    panel.innerHTML = renderStopSummary(i);
-    panel.style.display = 'block';
+    panel.innerHTML = '';
+    panel.style.display = 'none';
   }
 
   updateStats();
 
   // Auto open next stop
-  const nextIdx = i + 1 < (stops[currentDay] ? stops[currentDay].length : 0) ? i + 1 : null;
+  var nextIdx = i + 1 < (stops[currentDay] ? stops[currentDay].length : 0) ? i + 1 : null;
   if (nextIdx !== null) {
     activeStopIdx = nextIdx;
-    const nextCard = document.getElementById('card-' + nextIdx);
-    const nextPanel = document.getElementById('panel-' + nextIdx);
+    var nextCard = document.getElementById('card-' + nextIdx);
+    var nextPanel = document.getElementById('panel-' + nextIdx);
     if (nextCard) nextCard.classList.add('active');
     if (nextPanel) {
       nextPanel.innerHTML = renderStopPanel(nextIdx);
       nextPanel.style.display = 'block';
     }
-    setTimeout(() => nextCard && nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    setTimeout(function() { if (nextCard) nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
   } else {
     activeStopIdx = null;
   }
@@ -1304,7 +1372,7 @@ function renderManageList() {
     <div class="manage-card" id="mc-${i}">
       <div class="manage-num" style="font-family:var(--fd);font-size:20px;color:var(--mut);">${String(i+1).padStart(2,'0')}</div>
       <div class="manage-info">
-        <div class="manage-name">${s.name} <span class="freq-tag freq-${freq}">${freq}</span></div>
+        <div class="manage-name">${s.name} <span class="freq-tag freq-${freq}">${freq}</span>${s.notes && s.notes.length > 0 ? '<span class="freq-tag" style="background:var(--acc2);color:#000;">📝 ' + s.notes.length + '</span>' : ''}</div>
         <div class="manage-meta">${s.opens} · ${s.addr.split(',')[0]}${s.note ? ' · ' + s.note : ''}</div>
         ${(function(){ var svc = getServiceStatus(s); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; })()}
       </div>
@@ -1710,6 +1778,514 @@ document.addEventListener('click', function() {
     openFreqMenu = null;
   }
 });
+
+// ============================================================
+// MAP VIEW
+// ============================================================
+var mapView = null;
+var mapMarkers = [];
+var userMarker = null;
+var userWatchId = null;
+var mapInitialized = false;
+var autoFollow = false;
+
+function initMapView() {
+  if (!mapsReady) {
+    document.getElementById('mapContainer').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--mut);font-family:var(--fm);font-size:13px;">Maps loading...</div>';
+    setTimeout(initMapView, 1000);
+    return;
+  }
+
+  if (!mapInitialized) {
+    // Dark map style
+    var darkStyle = [
+      {elementType:'geometry',stylers:[{color:'#1a1a2e'}]},
+      {elementType:'labels.text.fill',stylers:[{color:'#a0a0b0'}]},
+      {elementType:'labels.text.stroke',stylers:[{color:'#1a1a2e'}]},
+      {featureType:'road',elementType:'geometry',stylers:[{color:'#2a2a4a'}]},
+      {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#3a3a5a'}]},
+      {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#4a4a7a'}]},
+      {featureType:'water',elementType:'geometry',stylers:[{color:'#0d1b2a'}]},
+      {featureType:'poi',elementType:'geometry',stylers:[{color:'#1e1e3a'}]},
+      {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2a4a'}]}
+    ];
+
+    mapView = new google.maps.Map(document.getElementById('mapContainer'), {
+      center: { lat: 40.70, lng: -74.26 },
+      zoom: 13,
+      styles: darkStyle,
+      disableDefaultUI: true,
+      zoomControl: true,
+      gestureHandling: 'greedy'
+    });
+    mapInitialized = true;
+
+    // Disable auto-follow when user manually drags the map
+    mapView.addListener('dragstart', function() {
+      if (autoFollow) {
+        autoFollow = false;
+        var btn = document.getElementById('followBtn');
+        if (btn) {
+          btn.textContent = '📍 FOLLOW ME';
+          btn.style.background = 'var(--sur)';
+          btn.style.border = '1px solid var(--bdr)';
+          btn.style.color = 'var(--txt)';
+          btn.style.fontWeight = 'normal';
+        }
+      }
+    });
+  }
+
+  renderMapMarkers();
+  startGPSTracking();
+  // Sync day buttons with current day
+  selectMapDay(currentDay);
+}
+
+function renderMapMarkers() {
+  if (!mapView) return;
+
+  // Clear existing markers
+  mapMarkers.forEach(function(m) { m.setMap(null); });
+  mapMarkers = [];
+
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+  var bounds = new google.maps.LatLngBounds();
+  var hasCoords = false;
+
+  dayStops.forEach(function(stop, i) {
+    if (!stop.lat || !stop.lng) return;
+    var d = dayData[i] || blankStopData();
+    var isDone = d.status === 'done';
+    var isActive = activeStopIdx === i;
+
+    // Pin color
+    var color = isDone ? '#888888' : isActive ? '#ff6b2b' : '#ef476f';
+    var scale = isActive ? 12 : 10;
+    var zIndex = isActive ? 10 : isDone ? 1 : 5;
+
+    var marker = new google.maps.Marker({
+      position: { lat: stop.lat, lng: stop.lng },
+      map: mapView,
+      title: stop.name,
+      zIndex: zIndex,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: scale,
+        fillColor: color,
+        fillOpacity: isDone ? 0.5 : 1,
+        strokeColor: isDone ? '#555' : '#fff',
+        strokeWeight: isDone ? 1 : 2
+      },
+      label: {
+        text: String(i + 1),
+        color: '#fff',
+        fontSize: '10px',
+        fontWeight: 'bold',
+        fontFamily: 'DM Mono, monospace'
+      }
+    });
+
+    // Info window on tap
+    var infoContent = '<div style="background:#1e1e1e;color:#f0f0f0;padding:10px;border-radius:6px;font-family:DM Sans,sans-serif;min-width:160px;">'
+      + '<div style="font-weight:600;font-size:13px;margin-bottom:4px;">' + stop.name + '</div>'
+      + '<div style="font-size:11px;color:#888;margin-bottom:6px;">' + stop.addr.split(',')[0] + '</div>'
+      + '<div style="font-size:11px;color:' + (isDone ? '#06d6a0' : '#ff6b2b') + ';">' + (isDone ? '✅ Done' : isActive ? '🔴 Active' : '⏳ Stop ' + (i+1)) + '</div>'
+      + (stop.opens ? '<div style="font-size:10px;color:#888;margin-top:4px;">Opens: ' + stop.opens + '</div>' : '')
+      + '</div>';
+
+    var infoWin = new google.maps.InfoWindow({ content: infoContent });
+    marker.addListener('click', function() {
+      infoWin.open(mapView, marker);
+      // Switch to route tab and open this stop
+      switchTab('route');
+      toggleStop(i);
+    });
+
+    mapMarkers.push(marker);
+    bounds.extend({ lat: stop.lat, lng: stop.lng });
+    hasCoords = true;
+  });
+
+  if (hasCoords) {
+    mapView.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+  }
+}
+
+function startGPSTracking() {
+  if (!navigator.geolocation) return;
+  if (userWatchId) navigator.geolocation.clearWatch(userWatchId);
+
+  userWatchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var latlng = { lat: lat, lng: lng };
+      var heading = pos.coords.heading || 0;
+
+      var icon = {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+        scale: 7,
+        fillColor: '#7b2fff',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+        rotation: heading
+      };
+
+      if (!userMarker) {
+        userMarker = new google.maps.Marker({
+          position: latlng,
+          map: mapView,
+          title: 'You',
+          zIndex: 20,
+          icon: icon
+        });
+
+        // Accuracy circle
+        window.accuracyCircle = new google.maps.Circle({
+          map: mapView,
+          center: latlng,
+          radius: pos.coords.accuracy || 20,
+          fillColor: '#7b2fff',
+          fillOpacity: 0.08,
+          strokeColor: '#7b2fff',
+          strokeOpacity: 0.3,
+          strokeWeight: 1
+        });
+      } else {
+        userMarker.setPosition(latlng);
+        userMarker.setIcon(icon);
+        if (window.accuracyCircle) {
+          window.accuracyCircle.setCenter(latlng);
+          window.accuracyCircle.setRadius(pos.coords.accuracy || 20);
+        }
+      }
+
+      // Auto follow - keep map centered on you
+      if (autoFollow && mapView) {
+        mapView.panTo(latlng);
+      }
+    },
+    function(err) {
+      console.log('GPS error:', err.message);
+      if (err.code === 1) {
+        // Permission denied
+        var btn = document.getElementById('followBtn');
+        if (btn) { btn.textContent = '🚫 GPS BLOCKED'; btn.style.color = 'var(--red)'; }
+      }
+    },
+    { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+  );
+}
+
+function selectMapDay(day) {
+  currentDay = day;
+  document.getElementById('currentDayBadge').textContent = day;
+  // Update route day buttons
+  document.querySelectorAll('#routeDaySel .day-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === day);
+  });
+  // Update map day buttons
+  ['MON','TUE','WED','THU'].forEach(function(d) {
+    var btn = document.getElementById('mapday-' + d);
+    if (!btn) return;
+    if (d === day) {
+      btn.style.background = 'var(--acc)';
+      btn.style.border = 'none';
+      btn.style.color = '#000';
+      btn.style.fontWeight = '500';
+    } else {
+      btn.style.background = 'var(--sur)';
+      btn.style.border = '1px solid var(--bdr)';
+      btn.style.color = 'var(--mut)';
+      btn.style.fontWeight = 'normal';
+    }
+  });
+  activeStopIdx = null;
+  initStopData();
+  renderMapMarkers();
+}
+
+function toggleAutoFollow() {
+  autoFollow = !autoFollow;
+  var btn = document.getElementById('followBtn');
+  if (!btn) return;
+
+  if (autoFollow) {
+    btn.textContent = '🔵 FOLLOWING';
+    btn.style.background = 'var(--pur)';
+    btn.style.border = 'none';
+    btn.style.color = '#fff';
+    btn.style.fontWeight = '500';
+    // Center immediately
+    if (userMarker) {
+      mapView.panTo(userMarker.getPosition());
+      mapView.setZoom(15);
+    } else {
+      // Try to get location now
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        mapView.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        mapView.setZoom(15);
+      });
+    }
+  } else {
+    btn.textContent = '📍 FOLLOW ME';
+    btn.style.background = 'var(--sur)';
+    btn.style.border = '1px solid var(--bdr)';
+    btn.style.color = 'var(--txt)';
+    btn.style.fontWeight = 'normal';
+  }
+}
+
+function centerOnMe() {
+  if (!navigator.geolocation || !mapView) return;
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    mapView.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    mapView.setZoom(15);
+  }, function() {
+    alert('Could not get your location. Please allow location access.');
+  });
+}
+
+function fitAllStops() {
+  if (!mapView) return;
+  var bounds = new google.maps.LatLngBounds();
+  var hasCoords = false;
+  (stops[currentDay] || []).forEach(function(s) {
+    if (s.lat && s.lng) { bounds.extend({ lat: s.lat, lng: s.lng }); hasCoords = true; }
+  });
+  if (hasCoords) mapView.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+}
+
+// Refresh map markers when a stop is completed
+var origCompleteStop = completeStop;
+completeStop = function(i) {
+  origCompleteStop(i);
+  // Update map if it's open
+  var mapTab = document.getElementById('mapTab');
+  if (mapTab && mapTab.style.display !== 'none') renderMapMarkers();
+};
+
+// ============================================================
+// STOP NOTES
+// ============================================================
+function getNotes(day, idx) {
+  var stop = stops[day] ? stops[day][idx] : null;
+  if (!stop) return [];
+  if (!stop.notes) stop.notes = [];
+  return stop.notes;
+}
+
+function addNote(day, idx, inputEl) {
+  if (!inputEl) return;
+  var txt = inputEl.value.trim();
+  if (!txt) return;
+  if (!stops[day][idx].notes) stops[day][idx].notes = [];
+  stops[day][idx].notes.push({ text: txt, ts: new Date().toISOString() });
+  inputEl.value = '';
+  saveStops();
+  var panel = document.getElementById('panel-' + idx);
+  if (panel && panel.style.display !== 'none') {
+    panel.innerHTML = renderStopPanel(idx);
+  }
+  var manageTab = document.getElementById('manageTab');
+  if (manageTab && manageTab.style.display !== 'none') renderManageList();
+}
+
+function deleteNote(day, idx, noteIdx) {
+  if (!stops[day][idx].notes) return;
+  stops[day][idx].notes.splice(noteIdx, 1);
+  saveStops();
+  var panel = document.getElementById('panel-' + idx);
+  if (panel && panel.style.display !== 'none') {
+    panel.innerHTML = renderStopPanel(idx);
+  }
+  var manageTab = document.getElementById('manageTab');
+  if (manageTab && manageTab.style.display !== 'none') renderManageList();
+}
+
+function renderNotesSection(day, idx) {
+  var notes = getNotes(day, idx);
+  var html = '<div class="notes-section">';
+  html += '<div class="notes-lbl"><span>📝 Notes</span><span style="color:var(--mut);">' + notes.length + ' note' + (notes.length !== 1 ? 's' : '') + '</span></div>';
+  if (notes.length > 0) {
+    notes.forEach(function(n, ni) {
+      var ts = n.ts ? new Date(n.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+      html += '<div class="note-item">'
+        + '<div class="note-txt">' + n.text + (ts ? '<div style="font-size:9px;color:var(--mut);margin-top:3px;">' + ts + '</div>' : '') + '</div>'
+        + '<button class="note-del" data-day="' + day + '" data-idx="' + idx + '" data-ni="' + ni + '" onclick="deleteNoteBtn(this)">✕</button>'
+        + '</div>';
+    });
+  }
+  html += '<div class="note-input-row">'
+    + '<input class="note-input" id="noteInput-' + idx + '" data-day="' + day + '" data-idx="' + idx + '" placeholder="Add a note..." onkeydown="if(event.keyCode===13)addNoteInput(this)">'
+    + '<button class="note-add-btn" data-day="' + day + '" data-idx="' + idx + '" onclick="addNoteBtn(this)">+ ADD</button>'
+    + '</div>';
+  html += '</div>';
+  return html;
+}
+
+function addNoteBtn(btn) {
+  var day = btn.getAttribute('data-day');
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var input = document.getElementById('noteInput-' + idx);
+  if (input) addNote(day, idx, input);
+}
+
+function addNoteInput(input) {
+  var day = input.getAttribute('data-day');
+  var idx = parseInt(input.getAttribute('data-idx'));
+  addNote(day, idx, input);
+}
+
+function deleteNoteBtn(btn) {
+  var day = btn.getAttribute('data-day');
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var ni = parseInt(btn.getAttribute('data-ni'));
+  deleteNote(day, idx, ni);
+}
+
+// ============================================================
+// LOCATION-AWARE OPTIMIZE + DISTANCE
+// ============================================================
+var userLat = null;
+var userLng = null;
+
+// Keep user location updated
+function startLocationTracking() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(function(pos) {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    // Update distances on route tab if visible
+    var routeTab = document.getElementById('routeTab');
+    if (routeTab && routeTab.style.display !== 'none') {
+      updateStopDistances();
+    }
+    // Also update map marker
+    if (userMarker) userMarker.setPosition({ lat: userLat, lng: userLng });
+  }, null, { enableHighAccuracy: true, maximumAge: 10000 });
+}
+
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  var R = 3958.8; // Earth radius in miles
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function updateStopDistances() {
+  if (userLat === null) return;
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+  dayStops.forEach(function(stop, i) {
+    var el = document.getElementById('dist-' + i);
+    if (!el) return;
+    if (dayData[i] && dayData[i].status === 'done') {
+      el.textContent = '';
+      return;
+    }
+    if (stop.lat && stop.lng) {
+      var miles = distanceMiles(userLat, userLng, stop.lat, stop.lng);
+      el.textContent = '📍 ' + miles.toFixed(1) + ' mi away';
+    } else {
+      el.textContent = '📍 No coords';
+    }
+  });
+}
+
+function optimizeRouteFromLocation() {
+  if (userLat === null) {
+    // Try to get location first
+    if (!navigator.geolocation) { alert('Location not available on this device.'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      doOptimizeFromLocation();
+    }, function() {
+      // Fallback to time-based optimize
+      optimizeRoute();
+    }, { enableHighAccuracy: true, timeout: 5000 });
+    return;
+  }
+  doOptimizeFromLocation();
+}
+
+function doOptimizeFromLocation() {
+  var day = currentDay;
+  var dayStops = stops[day] || [];
+  if (!dayStops.length) { alert('No stops to optimize!'); return; }
+
+  // Only optimize pending stops (skip done ones)
+  var dayData = stopData[day] || [];
+  var pending = [];
+  var done = [];
+
+  dayStops.forEach(function(s, i) {
+    if (dayData[i] && dayData[i].status === 'done') {
+      done.push({ stop: s, origIdx: i, data: dayData[i] });
+    } else {
+      pending.push({ stop: s, origIdx: i });
+    }
+  });
+
+  if (!pending.length) { alert('All stops already done!'); return; }
+
+  // Score each pending stop: primary = open time, secondary = distance from me
+  var now = new Date();
+  var nowMins = now.getHours() * 60 + now.getMinutes();
+
+  pending.forEach(function(item) {
+    var s = item.stop;
+    var openMins = parseOpenTime(s.opens); // 0 = 24hrs/unknown
+    var dist = (s.lat && s.lng && userLat !== null)
+      ? distanceMiles(userLat, userLng, s.lat, s.lng)
+      : 99;
+
+    // If already open or 24hrs — eligible now
+    item.alreadyOpen = openMins === 0 || openMins <= nowMins;
+    item.openMins = openMins;
+    item.dist = dist;
+  });
+
+  // Sort: already open first (by distance), then by open time (soonest first), then by distance
+  pending.sort(function(a, b) {
+    if (a.alreadyOpen && !b.alreadyOpen) return -1;
+    if (!a.alreadyOpen && b.alreadyOpen) return 1;
+    if (a.alreadyOpen && b.alreadyOpen) return a.dist - b.dist; // both open — closest first
+    // Both not yet open
+    if (a.openMins !== b.openMins) return a.openMins - b.openMins; // opens soonest first
+    return a.dist - b.dist; // same open time — closest first
+  });
+
+  // Rebuild stops array: done stops in original positions, pending in new order
+  var newStops = done.map(function(d) { return d.stop; })
+    .concat(pending.map(function(p) { return p.stop; }));
+  var newData = done.map(function(d) { return d.data; })
+    .concat(pending.map(function() { return blankStopData(); }));
+
+  // Preserve done stop data
+  done.forEach(function(d, i) { newData[i] = d.data; });
+
+  stops[day] = newStops;
+  stopData[day] = newData;
+  activeStopIdx = done.length > 0 ? done.length : 0; // set to first pending
+  saveStops();
+  renderRoute();
+  updateStopDistances();
+
+  var openCount = pending.filter(function(p) { return p.alreadyOpen; }).length;
+  showAIBanner(
+    '⚡ Optimized! ' + openCount + ' stops open now sorted by distance. ' +
+    (pending.length - openCount) + ' upcoming stops sorted by open time.',
+    [{ label: 'GOT IT', action: hideAIBanner }]
+  );
+}
 
 // ============================================================
 // LOGIN

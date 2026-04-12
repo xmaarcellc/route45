@@ -1887,15 +1887,19 @@ function initMapView() {
   if (!mapInitialized) {
     // Dark map style
     var darkStyle = [
-      {elementType:'geometry',stylers:[{color:'#1a1a2e'}]},
-      {elementType:'labels.text.fill',stylers:[{color:'#a0a0b0'}]},
-      {elementType:'labels.text.stroke',stylers:[{color:'#1a1a2e'}]},
-      {featureType:'road',elementType:'geometry',stylers:[{color:'#2a2a4a'}]},
-      {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#3a3a5a'}]},
-      {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#4a4a7a'}]},
-      {featureType:'water',elementType:'geometry',stylers:[{color:'#0d1b2a'}]},
-      {featureType:'poi',elementType:'geometry',stylers:[{color:'#1e1e3a'}]},
-      {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2a4a'}]}
+      {elementType:'geometry',stylers:[{color:'#0f0f0f'}]},
+      {elementType:'labels.text.fill',stylers:[{color:'#aaaaaa'}]},
+      {elementType:'labels.text.stroke',stylers:[{color:'#0f0f0f'}]},
+      {featureType:'road',elementType:'geometry',stylers:[{color:'#333333'}]},
+      {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212121'}]},
+      {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#444444'}]},
+      {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#555555'}]},
+      {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#1f1f1f'}]},
+      {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#cccccc'}]},
+      {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1628'}]},
+      {featureType:'poi',elementType:'geometry',stylers:[{color:'#1a1a1a'}]},
+      {featureType:'poi',stylers:[{visibility:'off'}]},
+      {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2a2a'}]}
     ];
 
     mapView = new google.maps.Map(document.getElementById('mapContainer'), {
@@ -2228,6 +2232,8 @@ function startInAppNav() {
   // Clear any existing route
   if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
   if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
+  if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
   if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
 
   // Get full directions with steps
@@ -2304,13 +2310,31 @@ async function fetchDirections(idx) {
       // Decode and draw using Google Maps
       var path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
       if (navPolyline) navPolyline.setMap(null);
+      // Clear old lines
+      if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
+      if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+
+      // Black outline underneath
+      window.navPolylineOutline = new google.maps.Polyline({
+        path: path,
+        strokeColor: '#000000',
+        strokeWeight: 14,
+        strokeOpacity: 0.8,
+        zIndex: 999,
+        clickable: false,
+        map: mapView
+      });
+      // Bright orange on top
       navPolyline = new google.maps.Polyline({
         path: path,
         strokeColor: '#ff6b2b',
-        strokeWeight: 6,
-        strokeOpacity: 0.9,
+        strokeWeight: 9,
+        strokeOpacity: 1.0,
+        zIndex: 1000,
+        clickable: false,
         map: mapView
       });
+      console.log('Route drawn with', path.length, 'points');
     }
 
     // Turn-by-turn from steps
@@ -2461,6 +2485,7 @@ function stopNavigation() {
 
   if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
   if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
 
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');

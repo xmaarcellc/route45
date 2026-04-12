@@ -527,7 +527,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <!-- Load Google Maps -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4&libraries=places&callback=onMapsReady" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4&libraries=places,geometry,directions&callback=onMapsReady" async defer></script>
 
 <script>
 // ============================================================
@@ -2225,13 +2225,10 @@ function startInAppNav() {
   var followBtn = document.getElementById('followBtn');
   if (followBtn) { followBtn.textContent = '🔵 FOLLOWING'; followBtn.style.background = 'var(--acc)'; followBtn.style.color = '#000'; }
 
-  // Init DirectionsRenderer with orange route line
-  if (navDirectionsRenderer) navDirectionsRenderer.setMap(null);
-  navDirectionsRenderer = new google.maps.DirectionsRenderer({
-    map: mapView,
-    suppressMarkers: true,
-    polylineOptions: { strokeColor: '#ff6b2b', strokeWeight: 6, strokeOpacity: 0.9 }
-  });
+  // Clear any existing route
+  if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
 
   // Get full directions with steps
   fetchDirections(navStopIdx);
@@ -2244,33 +2241,51 @@ function startInAppNav() {
   }, 15000);
 }
 
-function fetchDirections(idx) {
+async function fetchDirections(idx) {
   var stop = stops[currentDay][idx];
   if (!stop || !stop.lat || !stop.lng || !userLat) return;
 
-  var ds = new google.maps.DirectionsService();
-  ds.route({
-    origin: { lat: userLat, lng: userLng },
-    destination: { lat: stop.lat, lng: stop.lng },
-    travelMode: google.maps.TravelMode.DRIVING,
-    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
-  }, function(result, status) {
-    if (status !== 'OK') {
-      console.error('Directions error:', status);
+  try {
+    // Use Routes API (newer, more accurate)
+    var body = {
+      origin: { location: { latLng: { latitude: userLat, longitude: userLng } } },
+      destination: { location: { latLng: { latitude: stop.lat, longitude: stop.lng } } },
+      travelMode: 'DRIVE',
+      routingPreference: 'TRAFFIC_AWARE',
+      computeAlternativeRoutes: false,
+      languageCode: 'en-US',
+      units: 'IMPERIAL'
+    };
+
+    var res = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': 'AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4',
+        'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline,routes.legs.steps,routes.travelAdvisory'
+      },
+      body: JSON.stringify(body)
+    });
+
+    var data = await res.json();
+
+    if (!data.routes || !data.routes.length) {
+      console.error('Routes API error:', data);
+      document.getElementById('navDist').textContent = 'ERR';
+      document.getElementById('navTime').textContent = JSON.stringify(data).substring(0,30);
+      // Fallback to old Directions API
+      fetchDirectionsFallback(idx);
       return;
     }
 
-    // Render route on map
-    if (navDirectionsRenderer) navDirectionsRenderer.setDirections(result);
-
-    var leg = result.routes[0].legs[0];
+    var route = data.routes[0];
 
     // Distance
-    var distMi = (leg.distance.value * 0.000621371).toFixed(1);
+    var distMi = (route.distanceMeters * 0.000621371).toFixed(1);
     document.getElementById('navDist').textContent = distMi;
 
-    // Duration with traffic
-    var durationSec = leg.duration_in_traffic ? leg.duration_in_traffic.value : leg.duration.value;
+    // Duration (in seconds, strip the 's' suffix)
+    var durationSec = parseInt(route.duration.replace('s',''));
     var mins = Math.round(durationSec / 60);
     document.getElementById('navTime').textContent = mins;
 
@@ -2279,23 +2294,112 @@ function fetchDirections(idx) {
       .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     document.getElementById('navETA').textContent = eta;
 
-    // Traffic delay
-    var normalSec = leg.duration.value;
-    var delay = Math.round((durationSec - normalSec) / 60);
-    var trafficTxt = delay >= 2 ? '+' + delay + 'm' : 'Clear';
-    document.getElementById('navTraffic').textContent = trafficTxt;
-    document.getElementById('navTraffic').style.color = delay >= 2 ? 'var(--red)' : 'var(--grn)';
+    // Traffic from travelAdvisory
+    var trafficDelay = route.travelAdvisory && route.travelAdvisory.trafficRestriction ? 'Delay' : 'Clear';
+    document.getElementById('navTraffic').textContent = trafficDelay;
+    document.getElementById('navTraffic').style.color = trafficDelay === 'Clear' ? 'var(--grn)' : 'var(--red)';
 
-    // Turn-by-turn — find the current step based on user position
-    navSteps = leg.steps || [];
-    updateTurnInstruction();
+    // Draw route from encoded polyline
+    if (route.polyline && route.polyline.encodedPolyline && navDirectionsRenderer) {
+      // Decode and draw using Google Maps
+      var path = google.maps.geometry.encoding.decodePath(route.polyline.encodedPolyline);
+      if (navPolyline) navPolyline.setMap(null);
+      navPolyline = new google.maps.Polyline({
+        path: path,
+        strokeColor: '#ff6b2b',
+        strokeWeight: 6,
+        strokeOpacity: 0.9,
+        map: mapView
+      });
+    }
+
+    // Turn-by-turn from steps
+    if (route.legs && route.legs[0] && route.legs[0].steps) {
+      navSteps = route.legs[0].steps;
+      updateTurnInstructionRoutes();
+    }
 
     // Arrived check
     if (parseFloat(distMi) < 0.05) {
       document.getElementById('navDest').textContent = '📍 Arrived at ' + stop.name + '!';
       document.getElementById('navTurn').style.display = 'none';
     }
+
+  } catch(e) {
+    console.error('Routes API fetch error:', e);
+    fetchDirectionsFallback(idx);
+  }
+}
+
+function fetchDirectionsFallback(idx) {
+  // Fallback to older Directions API SDK
+  var stop = stops[currentDay][idx];
+  if (!stop || !mapsReady) return;
+  var ds = new google.maps.DirectionsService();
+  ds.route({
+    origin: new google.maps.LatLng(userLat, userLng),
+    destination: new google.maps.LatLng(stop.lat, stop.lng),
+    travelMode: google.maps.TravelMode.DRIVING
+  }, function(result, status) {
+    if (status !== 'OK') { console.error('Fallback directions error:', status); return; }
+    if (navDirectionsRenderer) navDirectionsRenderer.setDirections(result);
+    var leg = result.routes[0].legs[0];
+    var distMi = (leg.distance.value * 0.000621371).toFixed(1);
+    var durationSec = leg.duration.value;
+    var mins = Math.round(durationSec / 60);
+    var eta = new Date(Date.now() + durationSec * 1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+    document.getElementById('navDist').textContent = distMi;
+    document.getElementById('navTime').textContent = mins;
+    document.getElementById('navETA').textContent = eta;
+    document.getElementById('navTraffic').textContent = 'OK';
+    navSteps = leg.steps || [];
+    updateTurnInstruction();
   });
+}
+
+function updateTurnInstructionRoutes() {
+  if (!navSteps.length || !userLat) return;
+  var turnEl = document.getElementById('navTurn');
+  var turnIcon = document.getElementById('navTurnIcon');
+  var turnTxt = document.getElementById('navTurnTxt');
+  var turnDist = document.getElementById('navTurnDist');
+
+  // Routes API steps have navigationInstruction
+  var closestStep = null;
+  var closestDist = Infinity;
+
+  navSteps.forEach(function(step) {
+    if (!step.startLocation) return;
+    var slat = step.startLocation.latLng ? step.startLocation.latLng.latitude : step.startLocation.lat;
+    var slng = step.startLocation.latLng ? step.startLocation.latLng.longitude : step.startLocation.lng;
+    var d = distanceMiles(userLat, userLng, slat, slng);
+    if (d < closestDist) { closestDist = d; closestStep = step; }
+  });
+
+  if (!closestStep || !closestStep.navigationInstruction) return;
+
+  var instr = closestStep.navigationInstruction.instructions || '';
+  var maneuver = (closestStep.navigationInstruction.maneuver || '').toLowerCase();
+
+  var icon = '⬆️';
+  if (maneuver.includes('turn_right') || maneuver.includes('turn-right')) icon = '➡️';
+  else if (maneuver.includes('turn_left') || maneuver.includes('turn-left')) icon = '⬅️';
+  else if (maneuver.includes('ramp_right') || maneuver.includes('merge')) icon = '↗️';
+  else if (maneuver.includes('ramp_left')) icon = '↖️';
+  else if (maneuver.includes('uturn') || maneuver.includes('u_turn')) icon = '↩️';
+  else if (maneuver.includes('roundabout') || maneuver.includes('rotary')) icon = '🔄';
+  else if (maneuver.includes('keep_right') || maneuver.includes('fork_right')) icon = '↱';
+  else if (maneuver.includes('keep_left') || maneuver.includes('fork_left')) icon = '↰';
+
+  var stepDistMi = (closestStep.distanceMeters || 0) * 0.000621371;
+  var distLabel = stepDistMi < 0.1
+    ? Math.round(stepDistMi * 5280) + ' ft'
+    : stepDistMi.toFixed(1) + ' mi';
+
+  turnIcon.textContent = icon;
+  turnTxt.textContent = instr;
+  turnDist.textContent = distLabel;
+  turnEl.style.display = 'flex';
 }
 
 function updateTurnInstruction() {
@@ -2356,6 +2460,7 @@ function stopNavigation() {
   document.getElementById('recenterBtn').style.display = 'none';
 
   if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
 
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');

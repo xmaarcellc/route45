@@ -2005,7 +2005,23 @@ function renderMapMarkers() {
   var hasCoords = false;
 
   dayStops.forEach(function(stop, i) {
-    if (!stop.lat || !stop.lng) return;
+    // If no coords, try to geocode on the fly
+    if (!stop.lat || !stop.lng) {
+      if (stop.addr && mapsReady) {
+        var geocoder = new google.maps.Geocoder();
+        var capturedI = i;
+        var capturedStop = stop;
+        geocoder.geocode({ address: stop.addr }, function(results, status) {
+          if (status === 'OK' && results[0]) {
+            capturedStop.lat = results[0].geometry.location.lat();
+            capturedStop.lng = results[0].geometry.location.lng();
+            saveStops();
+            renderMapMarkers(); // re-render now that we have coords
+          }
+        });
+      }
+      return;
+    }
     var d = dayData[i] || blankStopData();
     var isDone = d.status === 'done';
     var isActive = activeStopIdx === i;

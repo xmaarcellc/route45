@@ -266,6 +266,11 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
 .nav-stat-val { font-family: var(--fd); font-size: 26px; color: var(--txt); line-height: 1; }
 .nav-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
 .nav-route-line { stroke: #ff6b2b; stroke-width: 4; stroke-opacity: 0.8; }
+.nav-turn { background: var(--sur); border: 1px solid var(--acc); border-radius: 8px; padding: 10px 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+.nav-turn-icon { font-size: 22px; flex-shrink: 0; }
+.nav-turn-txt { font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.4; flex: 1; }
+.nav-turn-dist { font-family: var(--fd); font-size: 16px; color: var(--acc); flex-shrink: 0; }
+.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(--sur); border: 1px solid var(--acc); border-radius: 50%; color: var(--acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .dots-btn { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(--bdr); }
 .freq-menu { display: none; position: absolute; right: 16px; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
@@ -436,17 +441,25 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
     <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:50%;background:#888;flex-shrink:0;"></div>Done</div>
   </div>
 
+  <!-- RECENTER BUTTON -->
+  <button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
+
   <!-- NAVIGATION HUD (shown during navigation) -->
   <div class="nav-hud" id="navHud">
     <div class="nav-hud-top">
       <div class="nav-hud-dest" id="navDest">Navigating...</div>
-      <button class="nav-stop-btn" onclick="stopNavigation()">■ STOP NAV</button>
+      <button class="nav-stop-btn" onclick="stopNavigation()">■ STOP</button>
     </div>
     <div class="nav-hud-stats">
       <div class="nav-stat"><div class="nav-stat-val" id="navDist">--</div><div class="nav-stat-lbl">Miles</div></div>
-      <div class="nav-stat"><div class="nav-stat-val" id="navTime">--</div><div class="nav-stat-lbl">Minutes</div></div>
+      <div class="nav-stat"><div class="nav-stat-val" id="navTime">--</div><div class="nav-stat-lbl">Mins</div></div>
       <div class="nav-stat"><div class="nav-stat-val" id="navETA">--</div><div class="nav-stat-lbl">ETA</div></div>
-      <div class="nav-stat"><div class="nav-stat-val" id="navTraffic" style="font-size:18px;">--</div><div class="nav-stat-lbl">Traffic</div></div>
+      <div class="nav-stat"><div class="nav-stat-val" id="navTraffic" style="font-size:16px;">--</div><div class="nav-stat-lbl">Traffic</div></div>
+    </div>
+    <div class="nav-turn" id="navTurn" style="display:none;">
+      <div class="nav-turn-icon" id="navTurnIcon">➡️</div>
+      <div class="nav-turn-txt" id="navTurnTxt">Loading directions...</div>
+      <div class="nav-turn-dist" id="navTurnDist"></div>
     </div>
   </div>
 
@@ -2038,6 +2051,8 @@ function startGPSTracking() {
       if (autoFollow && mapView) {
         mapView.panTo(latlng);
       }
+      // Update turn instruction in real time while navigating
+      if (isNavigating) updateTurnInstruction();
     },
     function(err) {
       console.log('GPS error:', err.message);
@@ -2124,6 +2139,9 @@ function centerOnMe() {
 var popupStopIdx = null;
 var navInterval = null;
 var navPolyline = null;
+var navDirectionsRenderer = null;
+var navSteps = [];
+var navStopIdx = null;
 var isNavigating = false;
 
 function showMapStopPopup(i) {
@@ -2180,121 +2198,168 @@ function openGMapsToPopup() {
   window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(stop.addr) + '&travelmode=driving', '_blank');
 }
 
+function recenterOnMe() {
+  if (!mapView || !userLat) return;
+  mapView.panTo({ lat: userLat, lng: userLng });
+  mapView.setZoom(16);
+}
+
 function startInAppNav() {
   if (popupStopIdx === null) return;
   var stop = stops[currentDay][popupStopIdx];
-  if (!stop.lat || !stop.lng) { alert('No coordinates for this stop.'); return; }
+  if (!stop.lat || !stop.lng) { alert('No coordinates for this stop. Add them via edit.'); return; }
+  if (!userLat) { alert('Waiting for GPS location...'); return; }
 
+  navStopIdx = popupStopIdx;
   isNavigating = true;
   autoFollow = true;
   closeMapPopup();
 
-  // Show HUD
+  // Show HUD and recenter btn
   document.getElementById('navHud').classList.add('show');
   document.getElementById('navDest').textContent = stop.name;
+  document.getElementById('recenterBtn').style.display = 'flex';
+  document.getElementById('navTurn').style.display = 'none';
 
   // Update follow button
   var followBtn = document.getElementById('followBtn');
-  if (followBtn) {
-    followBtn.textContent = '🔵 FOLLOWING';
-    followBtn.style.background = 'var(--acc)';
-    followBtn.style.color = '#000';
-  }
+  if (followBtn) { followBtn.textContent = '🔵 FOLLOWING'; followBtn.style.background = 'var(--acc)'; followBtn.style.color = '#000'; }
 
-  // Draw route line on map
-  drawRouteToStop(popupStopIdx);
+  // Init DirectionsRenderer with orange route line
+  if (navDirectionsRenderer) navDirectionsRenderer.setMap(null);
+  navDirectionsRenderer = new google.maps.DirectionsRenderer({
+    map: mapView,
+    suppressMarkers: true,
+    polylineOptions: { strokeColor: '#ff6b2b', strokeWeight: 6, strokeOpacity: 0.9 }
+  });
 
-  // Start live updates every 15 seconds
-  updateNavStats(popupStopIdx);
+  // Get full directions with steps
+  fetchDirections(navStopIdx);
+
+  // Update stats + turn every 15s
   navInterval = setInterval(function() {
-    if (isNavigating) updateNavStats(popupStopIdx);
+    if (isNavigating && navStopIdx !== null) {
+      fetchDirections(navStopIdx);
+    }
   }, 15000);
+}
+
+function fetchDirections(idx) {
+  var stop = stops[currentDay][idx];
+  if (!stop || !stop.lat || !stop.lng || !userLat) return;
+
+  var ds = new google.maps.DirectionsService();
+  ds.route({
+    origin: { lat: userLat, lng: userLng },
+    destination: { lat: stop.lat, lng: stop.lng },
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+  }, function(result, status) {
+    if (status !== 'OK') {
+      console.error('Directions error:', status);
+      return;
+    }
+
+    // Render route on map
+    if (navDirectionsRenderer) navDirectionsRenderer.setDirections(result);
+
+    var leg = result.routes[0].legs[0];
+
+    // Distance
+    var distMi = (leg.distance.value * 0.000621371).toFixed(1);
+    document.getElementById('navDist').textContent = distMi;
+
+    // Duration with traffic
+    var durationSec = leg.duration_in_traffic ? leg.duration_in_traffic.value : leg.duration.value;
+    var mins = Math.round(durationSec / 60);
+    document.getElementById('navTime').textContent = mins;
+
+    // ETA
+    var eta = new Date(Date.now() + durationSec * 1000)
+      .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    document.getElementById('navETA').textContent = eta;
+
+    // Traffic delay
+    var normalSec = leg.duration.value;
+    var delay = Math.round((durationSec - normalSec) / 60);
+    var trafficTxt = delay >= 2 ? '+' + delay + 'm' : 'Clear';
+    document.getElementById('navTraffic').textContent = trafficTxt;
+    document.getElementById('navTraffic').style.color = delay >= 2 ? 'var(--red)' : 'var(--grn)';
+
+    // Turn-by-turn — find the current step based on user position
+    navSteps = leg.steps || [];
+    updateTurnInstruction();
+
+    // Arrived check
+    if (parseFloat(distMi) < 0.05) {
+      document.getElementById('navDest').textContent = '📍 Arrived at ' + stop.name + '!';
+      document.getElementById('navTurn').style.display = 'none';
+    }
+  });
+}
+
+function updateTurnInstruction() {
+  if (!navSteps.length || !userLat) return;
+  var turnEl = document.getElementById('navTurn');
+  var turnIcon = document.getElementById('navTurnIcon');
+  var turnTxt = document.getElementById('navTurnTxt');
+  var turnDist = document.getElementById('navTurnDist');
+
+  // Find the closest upcoming step
+  var closestStep = null;
+  var closestDist = Infinity;
+  navSteps.forEach(function(step) {
+    if (!step.start_location) return;
+    var d = distanceMiles(userLat, userLng, step.start_location.lat(), step.start_location.lng());
+    if (d < closestDist) { closestDist = d; closestStep = step; }
+  });
+
+  if (!closestStep) return;
+
+  // Strip HTML tags from instructions
+  var instr = closestStep.instructions.replace(/<[^>]*>/g, ' ').replace(/\s+/g,' ').trim();
+
+  // Pick icon based on maneuver
+  var maneuver = closestStep.maneuver || '';
+  var icon = '⬆️';
+  if (maneuver.includes('turn-right')) icon = '➡️';
+  else if (maneuver.includes('turn-left')) icon = '⬅️';
+  else if (maneuver.includes('ramp-right') || maneuver.includes('merge-right')) icon = '↗️';
+  else if (maneuver.includes('ramp-left') || maneuver.includes('merge-left')) icon = '↖️';
+  else if (maneuver.includes('uturn')) icon = '↩️';
+  else if (maneuver.includes('roundabout')) icon = '🔄';
+  else if (maneuver.includes('keep-right')) icon = '↱';
+  else if (maneuver.includes('keep-left')) icon = '↰';
+  else if (maneuver.includes('ferry')) icon = '⛴️';
+
+  // Distance to this step
+  var stepDistMi = (closestStep.distance.value * 0.000621371);
+  var distLabel = stepDistMi < 0.1
+    ? Math.round(stepDistMi * 5280) + ' ft'
+    : stepDistMi.toFixed(1) + ' mi';
+
+  turnIcon.textContent = icon;
+  turnTxt.textContent = instr;
+  turnDist.textContent = distLabel;
+  turnEl.style.display = 'flex';
 }
 
 function stopNavigation() {
   isNavigating = false;
+  navStopIdx = null;
+  navSteps = [];
   clearInterval(navInterval);
   navInterval = null;
 
-  // Hide HUD
   document.getElementById('navHud').classList.remove('show');
+  document.getElementById('navTurn').style.display = 'none';
+  document.getElementById('recenterBtn').style.display = 'none';
 
-  // Clear route line
-  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
 
-  // Reset follow button
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');
-  if (followBtn) {
-    followBtn.textContent = '📍 FOLLOW ME';
-    followBtn.style.background = 'var(--sur)';
-    followBtn.style.color = 'var(--txt)';
-  }
-}
-
-function drawRouteToStop(idx) {
-  var stop = stops[currentDay][idx];
-  if (!stop.lat || !stop.lng || !mapsReady) return;
-  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
-  if (!userLat) return;
-
-  var directionsService = new google.maps.DirectionsService();
-  directionsService.route({
-    origin: { lat: userLat, lng: userLng },
-    destination: { lat: stop.lat, lng: stop.lng },
-    travelMode: google.maps.TravelMode.DRIVING
-  }, function(result, status) {
-    if (status === 'OK') {
-      navPolyline = new google.maps.Polyline({
-        path: result.routes[0].overview_path,
-        geodesic: true,
-        strokeColor: '#ff6b2b',
-        strokeOpacity: 0.9,
-        strokeWeight: 5,
-        map: mapView
-      });
-    }
-  });
-}
-
-function updateNavStats(idx) {
-  var stop = stops[currentDay][idx];
-  if (!stop || !stop.lat || !stop.lng || !mapsReady || !userLat) return;
-
-  var svc = new google.maps.DistanceMatrixService();
-  svc.getDistanceMatrix({
-    origins: [{ lat: userLat, lng: userLng }],
-    destinations: [{ lat: stop.lat, lng: stop.lng }],
-    travelMode: google.maps.TravelMode.DRIVING,
-    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
-  }, function(response, status) {
-    if (status !== 'OK') return;
-    var el = response.rows[0].elements[0];
-    if (!el || el.status !== 'OK') return;
-
-    var distM = el.distance.value; // meters
-    var distMi = (distM * 0.000621371).toFixed(1);
-    var normal = el.duration.value;
-    var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
-    var mins = Math.round(withTraffic / 60);
-    var delay = Math.round((withTraffic - normal) / 60);
-    var eta = new Date(Date.now() + withTraffic * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    var trafficTxt = delay >= 5 ? '+' + delay + 'm' : 'Clear';
-
-    document.getElementById('navDist').textContent = distMi;
-    document.getElementById('navTime').textContent = mins;
-    document.getElementById('navETA').textContent = eta;
-    document.getElementById('navTraffic').textContent = trafficTxt;
-    document.getElementById('navTraffic').style.color = delay >= 5 ? 'var(--red)' : 'var(--grn)';
-
-    // Redraw route line as we move
-    if (isNavigating) drawRouteToStop(idx);
-
-    // Check if arrived (within 0.05 miles)
-    if (parseFloat(distMi) < 0.05) {
-      document.getElementById('navDest').textContent = '📍 Arrived at ' + stop.name + '!';
-    }
-  });
+  if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
 }
 
 function fitAllStops() {

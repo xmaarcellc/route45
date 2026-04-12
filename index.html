@@ -728,6 +728,16 @@ async function syncFromFirebase() {
       updateHistoryBadge();
       renderHistory();
     }
+
+    // Log last serviced dates for all stops
+    var svcLog = [];
+    ['MON','TUE','WED','THU'].forEach(function(day) {
+      (stops[day] || []).forEach(function(s) {
+        if (s.lastServiced) svcLog.push(s.name + ': ' + new Date(s.lastServiced).toLocaleDateString());
+      });
+    });
+    if (svcLog.length) console.log('Last serviced records:', svcLog.join(' | '));
+
   } catch(e) {
     console.log('Firebase sync failed, using defaults:', e);
   }
@@ -934,6 +944,10 @@ function addStop() {
   renderManageList();
   if (currentManageDay === currentDay) renderRoute();
 
+  // Refresh map if open
+  var mapTab = document.getElementById('mapTab');
+  if (mapTab && mapTab.style.display !== 'none' && mapView) renderMapMarkers();
+
   // Reset form
   ['searchInput','newName','newAddr','newOpens','newNote'].forEach(function(id) {
     var el = document.getElementById(id);
@@ -954,6 +968,9 @@ function removeStop(day, idx) {
   saveStops();
   renderManageList();
   if (day === currentDay) { activeStopIdx = null; renderRoute(); }
+  // Refresh map if open
+  var mapTab = document.getElementById('mapTab');
+  if (mapTab && mapTab.style.display !== 'none' && mapView) renderMapMarkers();
 }
 
 function editStop(day, idx) {
@@ -1391,6 +1408,14 @@ function completeStop(i) {
   stopData[currentDay][i].status = 'done';
   stopData[currentDay][i].adjustedDuration = calcAdjustedDuration(currentDay, i);
 
+  // Record last serviced date on the stop itself and save to Firebase
+  var today = new Date().toISOString();
+  if (stops[currentDay][i]) {
+    stops[currentDay][i].lastServiced = today;
+    // Save just this stop's lastServiced immediately
+    fbSave('stops/' + currentDay + '/' + i + '/lastServiced', today);
+  }
+
   // Collapse the card — just show green check, no details
   var card = document.getElementById('card-' + i);
   var panel = document.getElementById('panel-' + i);
@@ -1670,6 +1695,14 @@ async function completeDay() {
   fbSave('history/' + Date.now(), record);
   updateHistoryBadge();
   renderHistory();
+
+  // Save lastServiced for all done stops to Firebase
+  done.forEach(function(d, i) {
+    if (stops[currentDay][i] && d.status === 'done') {
+      stops[currentDay][i].lastServiced = record.savedAt;
+    }
+  });
+  saveStops(); // push lastServiced to Firebase
 
   // Reset day
   stopData[currentDay] = (stops[currentDay] ? stops[currentDay].map : [].map)(() => blankStopData());
@@ -2169,7 +2202,8 @@ function showMapStopPopup(i) {
   meta.innerHTML = '<span class="map-popup-tag ' + statusCls + '">' + statusTxt + '</span>'
     + '<span class="map-popup-tag">' + (stop.opens || 'TBD') + '</span>'
     + (stop.frequency && stop.frequency !== 'weekly' ? '<span class="map-popup-tag">' + stop.frequency + '</span>' : '')
-    + '<span class="map-popup-tag ' + (svc.cls === 'svc-late' ? 'overdue' : '') + '">' + svc.label + '</span>';
+    + '<span class="map-popup-tag ' + (svc.cls === 'svc-late' ? 'overdue' : '') + '">' + svc.label + '</span>'
+    + (stop.lastServiced ? '<span class="map-popup-tag">🕐 ' + new Date(stop.lastServiced).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</span>' : '');
 
   // Distance
   if (userLat && stop.lat && stop.lng) {

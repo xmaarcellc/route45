@@ -2056,7 +2056,10 @@ function startGPSTracking() {
         mapView.panTo(latlng);
       }
       // Update turn instruction in real time while navigating
-      if (isNavigating) updateTurnInstruction();
+      if (isNavigating) {
+        updateTurnInstruction();
+        checkOffRoute(lat, lng);
+      }
     },
     function(err) {
       console.log('GPS error:', err.message);
@@ -2147,6 +2150,9 @@ var navDirectionsRenderer = null;
 var navSteps = [];
 var navStopIdx = null;
 var isNavigating = false;
+var navRoutePath = [];       // array of LatLng points on current route
+var navRerouteTimer = null;  // debounce reroute
+var navLastReroute = 0;      // timestamp of last reroute
 
 function showMapStopPopup(i) {
   var stop = stops[currentDay][i];
@@ -2299,6 +2305,9 @@ function fetchDirectionsFallback(idx) {
     var path = result.routes[0].overview_path;
     console.log('Drawing polyline with', path.length, 'points on map:', !!mapView);
 
+    // Store path for off-route detection
+    navRoutePath = path;
+
     // Clear old lines
     if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
     if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
@@ -2419,12 +2428,52 @@ function updateTurnInstruction() {
   turnEl.style.display = 'flex';
 }
 
+function checkOffRoute(lat, lng) {
+  if (!isNavigating || !navRoutePath || navRoutePath.length < 2) return;
+  var now = Date.now();
+  // Don't check more than once every 3 seconds
+  if (now - navLastReroute < 3000) return;
+
+  // Find closest point on route to current position
+  var minDist = Infinity;
+  navRoutePath.forEach(function(point) {
+    var ptLat = typeof point.lat === 'function' ? point.lat() : point.lat;
+    var ptLng = typeof point.lng === 'function' ? point.lng() : point.lng;
+    var d = distanceMiles(lat, lng, ptLat, ptLng);
+    if (d < minDist) minDist = d;
+  });
+
+  // If more than 0.15 miles from route — off route!
+  if (minDist > 0.15) {
+    navLastReroute = now;
+    console.log('Off route! Distance from path:', minDist.toFixed(2), 'mi — rerouting...');
+
+    // Show rerouting in HUD
+    var turnTxt = document.getElementById('navTurnTxt');
+    var turnIcon = document.getElementById('navTurnIcon');
+    if (turnTxt) turnTxt.textContent = 'Rerouting...';
+    if (turnIcon) turnIcon.textContent = '🔄';
+
+    // Debounce — wait 1s then reroute
+    clearTimeout(navRerouteTimer);
+    navRerouteTimer = setTimeout(function() {
+      if (isNavigating && navStopIdx !== null) {
+        console.log('Rerouting now...');
+        fetchDirections(navStopIdx);
+      }
+    }, 1000);
+  }
+}
+
 function stopNavigation() {
   isNavigating = false;
   navStopIdx = null;
   navSteps = [];
+  navRoutePath = [];
   clearInterval(navInterval);
   navInterval = null;
+  clearTimeout(navRerouteTimer);
+  navRerouteTimer = null;
 
   document.getElementById('navHud').classList.remove('show');
   document.getElementById('navTurn').style.display = 'none';

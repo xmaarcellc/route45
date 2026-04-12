@@ -427,6 +427,7 @@ body { background: var(--bg); color: var(--txt); font-family: var(--fb); min-hei
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
     <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
+    <button id="btn3D" onclick="toggle3D()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️ 3D</button>
     <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
@@ -1886,28 +1887,13 @@ function initMapView() {
 
   if (!mapInitialized) {
     // Dark map style
-    var darkStyle = [
-      {elementType:'geometry',stylers:[{color:'#0f0f0f'}]},
-      {elementType:'labels.text.fill',stylers:[{color:'#aaaaaa'}]},
-      {elementType:'labels.text.stroke',stylers:[{color:'#0f0f0f'}]},
-      {featureType:'road',elementType:'geometry',stylers:[{color:'#333333'}]},
-      {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212121'}]},
-      {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#444444'}]},
-      {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#555555'}]},
-      {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#1f1f1f'}]},
-      {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#cccccc'}]},
-      {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1628'}]},
-      {featureType:'poi',elementType:'geometry',stylers:[{color:'#1a1a1a'}]},
-      {featureType:'poi',stylers:[{visibility:'off'}]},
-      {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2a2a'}]}
-    ];
-
     mapView = new google.maps.Map(document.getElementById('mapContainer'), {
       center: { lat: 40.70, lng: -74.26 },
       zoom: 13,
-      styles: darkStyle,
+      styles: getDarkStyle(),
       disableDefaultUI: true,
       zoomControl: true,
+      tilt: 0,
       gestureHandling: 'greedy'
     });
     mapInitialized = true;
@@ -2021,6 +2007,11 @@ function startGPSTracking() {
         strokeWeight: 2,
         rotation: heading
       };
+
+      // In 3D mode during navigation - face direction of travel
+      if (is3D && isNavigating && pos.coords.heading && mapView) {
+        mapView.setHeading(pos.coords.heading);
+      }
 
       if (!userMarker) {
         userMarker = new google.maps.Marker({
@@ -2486,6 +2477,97 @@ function stopNavigation() {
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');
   if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
+  // Reset map heading in 3D mode
+  if (is3D && mapView) { mapView.setHeading(0); start3DRotation(); }
+}
+
+var is3D = false;
+
+function toggle3D() {
+  if (!mapView) return;
+  is3D = !is3D;
+  var btn = document.getElementById('btn3D');
+
+  if (is3D) {
+    // Switch to satellite hybrid with building tilt
+    mapView.setMapTypeId(google.maps.MapTypeId.HYBRID);
+    mapView.setTilt(45);
+    mapView.setHeading(0);
+    mapView.setZoom(18);
+
+    // Center on user or first stop
+    if (userLat) {
+      mapView.setCenter({ lat: userLat, lng: userLng });
+    } else {
+      var firstStop = (stops[currentDay] || []).find(function(s) { return s.lat && s.lng; });
+      if (firstStop) mapView.setCenter({ lat: firstStop.lat, lng: firstStop.lng });
+    }
+
+    if (btn) {
+      btn.textContent = '🗺️ 2D';
+      btn.style.background = 'var(--acc)';
+      btn.style.color = '#000';
+      btn.style.border = 'none';
+    }
+
+    // Auto-rotate while in 3D mode
+    start3DRotation();
+
+  } else {
+    // Back to dark flat map
+    mapView.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+    mapView.setTilt(0);
+    mapView.setHeading(0);
+    stop3DRotation();
+    // Reapply dark style
+    mapView.setOptions({ styles: getDarkStyle() });
+    if (btn) {
+      btn.textContent = '🏙️ 3D';
+      btn.style.background = 'var(--sur)';
+      btn.style.color = 'var(--txt)';
+      btn.style.border = '1px solid var(--bdr)';
+    }
+    fitAllStops();
+  }
+}
+
+var rotationInterval = null;
+
+function start3DRotation() {
+  stop3DRotation();
+  // Slowly rotate the map for immersive effect
+  rotationInterval = setInterval(function() {
+    if (!is3D || !mapView) { stop3DRotation(); return; }
+    // If navigating - face direction of travel
+    if (isNavigating && userLat) {
+      // heading handled by GPS
+    } else {
+      var heading = mapView.getHeading() || 0;
+      mapView.setHeading((heading + 0.3) % 360);
+    }
+  }, 50);
+}
+
+function stop3DRotation() {
+  if (rotationInterval) { clearInterval(rotationInterval); rotationInterval = null; }
+}
+
+function getDarkStyle() {
+  return [
+    {elementType:'geometry',stylers:[{color:'#0f0f0f'}]},
+    {elementType:'labels.text.fill',stylers:[{color:'#aaaaaa'}]},
+    {elementType:'labels.text.stroke',stylers:[{color:'#0f0f0f'}]},
+    {featureType:'road',elementType:'geometry',stylers:[{color:'#333333'}]},
+    {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212121'}]},
+    {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#444444'}]},
+    {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#555555'}]},
+    {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#1f1f1f'}]},
+    {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#cccccc'}]},
+    {featureType:'water',elementType:'geometry',stylers:[{color:'#0a1628'}]},
+    {featureType:'poi',elementType:'geometry',stylers:[{color:'#1a1a1a'}]},
+    {featureType:'poi',stylers:[{visibility:'off'}]},
+    {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2a2a'}]}
+  ];
 }
 
 function fitAllStops() {

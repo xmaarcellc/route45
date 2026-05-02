@@ -437,6 +437,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">THU</button>
   </div>
   <div id="mapLegend" style="position:absolute;bottom:16px;left:12px;background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-family:var(--fm);font-size:10px;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.4);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;background:#0033a0;border:1px solid #fff;flex-shrink:0;"></div>Base (Cintas)</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ef476f;flex-shrink:0;"></div>Pending</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ff6b2b;flex-shrink:0;"></div>Active</div>
     <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:50%;background:#888;flex-shrink:0;"></div>Done</div>
@@ -2011,12 +2012,49 @@ function initMapView() {
   selectMapDay(currentDay);
 }
 
+var baseMarker = null;
+var BASE_LOCATION = { lat: 40.6976, lng: -74.2598, name: 'Cintas Union (Base)', addr: '410 Clermont Ave, Union, NJ 07083' };
+
 function renderMapMarkers() {
   if (!mapView) return;
 
   // Clear existing markers
   mapMarkers.forEach(function(m) { m.setMap(null); });
   mapMarkers = [];
+
+  // Add Cintas base location pin (always shown)
+  if (baseMarker) baseMarker.setMap(null);
+  baseMarker = new google.maps.Marker({
+    position: { lat: BASE_LOCATION.lat, lng: BASE_LOCATION.lng },
+    map: mapView,
+    title: BASE_LOCATION.name,
+    zIndex: 15,
+    icon: {
+      path: 'M -10,-10 L 10,-10 L 10,10 L -10,10 Z', // square shape
+      scale: 1.5,
+      fillColor: '#0033a0', // Cintas blue
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 3
+    },
+    label: {
+      text: 'C',
+      color: '#fff',
+      fontSize: '14px',
+      fontWeight: 'bold',
+      fontFamily: 'Bebas Neue, sans-serif'
+    }
+  });
+  baseMarker.addListener('click', function() {
+    var infoWin = new google.maps.InfoWindow({
+      content: '<div style="background:#1e1e1e;color:#f0f0f0;padding:10px;border-radius:6px;font-family:DM Sans,sans-serif;min-width:160px;">'
+        + '<div style="font-weight:600;font-size:13px;margin-bottom:4px;color:#0066ff;">🏢 ' + BASE_LOCATION.name + '</div>'
+        + '<div style="font-size:11px;color:#888;margin-bottom:6px;">' + BASE_LOCATION.addr + '</div>'
+        + '<div style="font-size:10px;color:#06d6a0;">Starting point for all routes</div>'
+        + '</div>'
+    });
+    infoWin.open(mapView, baseMarker);
+  });
 
   var dayStops = stops[currentDay] || [];
   var dayData = stopData[currentDay] || [];

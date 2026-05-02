@@ -55,20 +55,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .stat-val { font-family: var(--fd); font-size: 22px; color: var(--acc); line-height: 1; }
 .stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
-/* AI BANNER */
-.ai-banner { margin: 12px 16px 0; background: linear-gradient(135deg, #1a0800, #0f0800); border: 1px solid var(--acc); border-radius: 8px; padding: 12px; display: none; }
-.ai-banner.show { display: block; }
-.ai-banner-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);} }
-.ai-lbl { font-family: var(--fm); font-size: 10px; color: var(--acc); text-transform: uppercase; letter-spacing: 1px; }
-.ai-txt { font-size: 13px; color: var(--txt); line-height: 1.5; }
-.ai-loading { font-family: var(--fm); font-size: 11px; color: var(--mut); animation: blink 1s infinite; }
-@keyframes blink { 0%,100%{opacity:1;}50%{opacity:.3;} }
-.ai-acts { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.ai-act-btn { flex: 1; min-width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--acc); background: transparent; color: var(--acc); font-family: var(--fm); font-size: 11px; cursor: pointer; }
-.ai-act-btn.pri { background: var(--acc); color: #000; }
-
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
 .stop-card { background: #141414; border: 1px solid #2a1a0a; border-radius: 8px; overflow: hidden; }
@@ -175,16 +161,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .manage-btn.edit { border-color: var(--blu); color: var(--blu); }
 .manage-btn.del { border-color: var(--red); color: var(--red); }
 
-/* HISTORY TAB */
-.history-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
-.history-card { background: var(--sur); border: 1px solid var(--bdr); border-radius: 8px; padding: 14px; }
-.history-date { font-family: var(--fd); font-size: 20px; color: var(--acc); letter-spacing: 1px; }
-.history-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-.history-stat { background: var(--sur2); border-radius: 6px; padding: 8px; text-align: center; }
-.history-stat-val { font-family: var(--fd); font-size: 18px; color: var(--acc2); }
-.history-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; }
-.history-sub { margin-top: 8px; font-family: var(--fm); font-size: 11px; color: var(--mut); }
-
 /* MODAL */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; padding: 20px; overflow-y: auto; }
 .modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
@@ -192,33 +168,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .modal-title { font-family: var(--fd); font-size: 24px; color: var(--acc); letter-spacing: 2px; margin-bottom: 16px; }
 .modal-body { font-family: var(--fm); font-size: 11px; color: var(--txt); background: var(--bg); border: 1px solid var(--bdr); border-radius: 6px; padding: 12px; white-space: pre-wrap; line-height: 1.8; max-height: 60vh; overflow-y: auto; margin-bottom: 12px; }
 .modal-close { width: 100%; background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 6px; padding: 12px; font-family: var(--fm); font-size: 12px; cursor: pointer; margin-top: 8px; }
-
-/* FLOATING AI BUTTON */
-.ai-fab-wrap { position: fixed; bottom: 24px; right: 20px; z-index: 150; }
-.ai-fab { width: 56px; height: 56px; border-radius: 50%; background: var(--acc); color: #000; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,43,.5); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; position: relative; }
-.ai-fab:active { transform: scale(0.93); }
-.ai-fab.open { background: var(--sur2); border: 1px solid var(--acc); color: var(--acc); font-size: 18px; }
-.ai-notif { position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-family: var(--fm); font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #000; animation: notif-pop 0.3s ease; }
-.ai-notif.show { display: flex; }
-@keyframes notif-pop { 0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);} }
-.ai-minimize { background: none; border: none; color: var(--mut); font-size: 14px; cursor: pointer; padding: 0 4px; opacity: 0.7; }
-.ai-minimize:hover { opacity: 1; }
-.ai-chat-popup.minimized { display: none !important; }
-
-/* AI CHAT POPUP */
-.ai-chat-popup { position: fixed; bottom: 90px; right: 16px; left: 16px; max-width: 460px; margin: 0 auto; background: var(--sur); border: 1px solid var(--acc); border-radius: 16px; z-index: 140; display: none; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,.6); overflow: hidden; max-height: 70vh; }
-.ai-chat-popup.show { display: flex; }
-.ai-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 1px solid var(--acc); }
-.ai-chat-title { display: flex; align-items: center; gap: 8px; font-family: var(--fm); font-size: 12px; color: var(--acc); text-transform: uppercase; letter-spacing: 1px; }
-.ai-chat-close { background: none; border: none; color: var(--mut); font-size: 16px; cursor: pointer; padding: 0 4px; }
-.ai-chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.ai-chat-bubble { max-width: 85%; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
-.ai-bubble { background: linear-gradient(135deg, #1a0800, #0f0500); border: 1px solid var(--acc); color: var(--txt); align-self: flex-start; border-bottom-left-radius: 4px; }
-.user-bubble { background: var(--acc); color: #000; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-.ai-chat-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--bdr); align-items: center; }
-.ai-chat-input { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fb); font-size: 13px; padding: 10px 12px; border-radius: 20px; outline: none; }
-.ai-chat-input:focus { border-color: var(--acc); }
-.ai-chat-send { background: var(--acc); color: #000; color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
 .empty-state { text-align: center; padding: 40px; font-family: var(--fm); color: var(--mut); font-size: 13px; line-height: 2; }
 .freq-tag { display: inline-block; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
@@ -343,7 +292,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   <div class="tab active" id="tab-route" onclick="switchTab('route')">ROUTE</div>
   <div class="tab" id="tab-manage" onclick="switchTab('manage')">STOPS</div>
   <div class="tab" id="tab-map" onclick="switchTab('map')">🗺️ MAP</div>
-  <div class="tab" id="tab-history" onclick="switchTab('history')">HISTORY <span class="badge" id="historyBadge">0</span></div>
 </div>
 
 <!-- ===== ROUTE TAB ===== -->
@@ -363,15 +311,10 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   <div style="padding:8px 16px 0;">
     <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:11px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
-  <div class="ai-banner" id="aiBanner">
-    <div class="ai-banner-hdr"><div class="ai-dot"></div><div class="ai-lbl">🤖 Claude AI</div></div>
-    <div class="ai-txt" id="aiTxt"></div>
-    <div class="ai-acts" id="aiActs"></div>
-  </div>
+
   <div class="stop-list" id="stopList"></div>
   <div class="eod-section">
     <button class="eod-btn btn-complete-day" onclick="completeDay()">✅ COMPLETE DAY & SAVE</button>
-    <button class="eod-btn btn-ai-analyze" onclick="analyzeDay()">🤖 AI ANALYZE MY DAY</button>
     <button class="eod-btn btn-view-log" onclick="showLog()">📋 VIEW DAY LOG</button>
     <button class="eod-btn btn-copy-log" onclick="copyLog()">COPY LOG TO CLIPBOARD</button>
   </div>
@@ -479,11 +422,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   </div>
 </div>
 
-<!-- ===== HISTORY TAB ===== -->
-<div id="historyTab" style="display:none;">
-  <div class="history-list" id="historyList">
-    <div class="empty-state">No completed days yet.<br>Finish a route and tap<br>COMPLETE DAY to save it.</div>
-  </div>
+
 </div>
 
 <!-- MODAL -->
@@ -496,31 +435,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   </div>
 </div>
 
-<!-- FLOATING AI BUTTON -->
-<div class="ai-fab-wrap">
-  <button class="ai-fab" onclick="toggleAIChat()" id="aiFab">🤖</button>
-  <div class="ai-notif" id="aiNotif">1</div>
-</div>
 
-<!-- AI CHAT POPUP -->
-<div class="ai-chat-popup" id="aiChatPopup">
-  <div class="ai-chat-header">
-    <div class="ai-chat-title"><div class="ai-dot" id="aiDot"></div> Claude AI</div>
-    <div style="display:flex;align-items:center;gap:8px;">
-
-      <button class="ai-chat-close" onclick="toggleAIChat()">✕</button>
-    </div>
-  </div>
-
-  <div class="ai-chat-messages" id="aiChatMessages">
-    <div class="ai-chat-bubble ai-bubble">Hey Rob! Ask me anything about your route — traffic, next stop, rerouting, sales tips, anything.</div>
-  </div>
-  <div class="ai-chat-input-row">
-
-    <input class="ai-chat-input" id="chatInput" placeholder="Ask Claude about your route..." onkeydown="if(event.key==='Enter') sendChat()">
-    <button class="ai-chat-send" onclick="sendChat()">▲</button>
-  </div>
-</div>
 <!-- PART 2: Firebase + Google Maps + Data + State -->
 
 <!-- Load Firebase COMPAT (not modular - works in plain HTML) -->
@@ -528,8 +443,22 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+<!-- Stub for onMapsReady so Maps callback doesn't fail -->
+<script>
+window.mapsReady = false;
+window.onMapsReady = function() {
+  // Real implementation gets defined later in the main script
+  // This stub just stores that maps loaded so the real init can run
+  window._mapsLoaded = true;
+  // If real onMapsReady has been defined by main script, call it
+  if (typeof window._realOnMapsReady === 'function') {
+    window._realOnMapsReady();
+  }
+};
+</script>
+
 <!-- Load Google Maps -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4&libraries=places,geometry&callback=onMapsReady" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4&libraries=places,geometry&loading=async&callback=onMapsReady"></script>
 
 <script>
 // ============================================================
@@ -587,19 +516,37 @@ function showManualEntry() {
   document.getElementById('searchInput').value = '';
 }
 
-function onMapsReady() {
+function _doMapsInit() {
   try {
     mapsReady = true;
+    window.mapsReady = true;
     var mapDiv = document.createElement('div');
     mapDiv.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;';
     document.body.appendChild(mapDiv);
     var map = new google.maps.Map(mapDiv, { center: { lat: 40.70, lng: -74.26 }, zoom: 12 });
     placesService = new google.maps.places.PlacesService(map);
     console.log('Google Maps + PlacesService ready');
+    // If user is already on map tab, init it
+    var mapTab = document.getElementById('mapTab');
+    if (mapTab && mapTab.style.display !== 'none' && typeof initMapView === 'function') {
+      initMapView();
+    }
   } catch(e) {
     console.error('Maps init error:', e);
     mapsReady = false;
   }
+}
+
+// Register real handler — works whether stub already fired or not
+window._realOnMapsReady = _doMapsInit;
+if (window._mapsLoaded) {
+  // Maps already loaded before this script ran
+  _doMapsInit();
+}
+
+function onMapsReady() {
+  // In case Maps calls this directly (shouldn't, since stub is registered)
+  _doMapsInit();
 }
 
 // ============================================================
@@ -705,7 +652,6 @@ function init() {
   initStopData();
   renderRoute();
   renderManageList();
-  renderHistory();
 
   // STEP 2: Sync Firebase in background
   syncFromFirebase();
@@ -745,9 +691,7 @@ async function syncFromFirebase() {
     const savedHistory = await fbLoad('history');
     if (savedHistory) {
       routeHistory = Array.isArray(savedHistory) ? savedHistory : Object.values(savedHistory);
-      updateHistoryBadge();
-      renderHistory();
-    }
+            }
 
     // Log last serviced dates for all stops
     var svcLog = [];
@@ -815,22 +759,18 @@ function calcAdjustedDuration(day, idx) {
   return adj;
 }
 
-function updateHistoryBadge() {
-  const el = document.getElementById('historyBadge');
-  if (el) el.textContent = routeHistory.length;
-}
+
 
 // ============================================================
 // TAB SWITCHING
 // ============================================================
 function switchTab(tab) {
-  ['route','manage','map','history'].forEach(t => {
+  ['route','manage','map'].forEach(t => {
     var el = document.getElementById(t + 'Tab');
     if (el) el.style.display = t === tab ? 'block' : 'none';
     var tabEl = document.getElementById('tab-' + t);
     if (tabEl) tabEl.classList.toggle('active', t === tab);
   });
-  if (tab === 'history') renderHistory();
   if (tab === 'map') initMapView();
 }
 
@@ -1072,13 +1012,12 @@ function optimizeRoute() {
   saveStops();
   renderManageList();
 
-  showAIBanner(
-    `✅ Route optimized! ${early.length} early stops first, then ${regular.length} stops by open time and geography.`,
-    [
-      { label: 'VIEW ROUTE', action: () => { switchTab('route'); selectDay(day); hideAIBanner(); } },
-      { label: '↩ UNDO', action: undoOptimize }
-    ]
-  );
+  if (confirm('Route optimized! ' + early.length + ' early stops first, then ' + regular.length + ' stops by open time and geography.\n\nTap OK to view route. Cancel to undo.')) {
+    switchTab('route');
+    selectDay(day);
+  } else {
+    undoOptimize();
+  }
 }
 
 function nearestNeighbor(arr) {
@@ -1124,10 +1063,7 @@ function checkTraffic(currentIdx) {
         const withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normal;
         const delayMins = Math.round((withTraffic - normal) / 60);
         if (delayMins >= 10) {
-          showAIBanner(
-            `🚦 ${delayMins} min traffic delay detected on the way to ${stops[currentDay][nextIdx].name}. Want me to suggest an alternate stop?`,
-            [{ label: 'SUGGEST', action: () => suggestAlternate(nextIdx, delayMins) }, { label: 'KEEP ROUTE', action: hideAIBanner }]
-          );
+          alert(`🚦 ${delayMins} min traffic delay detected on the way to ${stops[currentDay][nextIdx].name}. Want me to suggest an alternate stop?`);
         }
       }
     }
@@ -1148,12 +1084,7 @@ function checkDeviation(arrivedIdx) {
     const pastIdx = h.visitOrder.indexOf(stopName);
     if (pastIdx !== -1 && pastIdx !== arrivedIdx) deviationCount++;
   });
-  if (deviationCount >= 2) {
-    showAIBanner(
-      `📊 Learning Engine: The last ${deviationCount} ${currentDay} routes, you visited ${stopName} at a different position in the route. Want Claude to suggest a reorder?`,
-      [{ label: 'SUGGEST', action: () => suggestReorder(arrivedIdx, stopName) }, { label: 'NOTED', action: hideAIBanner }]
-    );
-  }
+  // Deviation logged but no AI suggestion
 }
 // ============================================================
 // RENDER ROUTE TAB
@@ -1566,161 +1497,6 @@ function renderManageList() {
 }
 
 // ============================================================
-// AI BANNER
-// ============================================================
-function showAIBanner(text, actions = []) {
-  document.getElementById('aiTxt').innerHTML = text;
-  document.getElementById('aiActs').innerHTML = actions.map((a, i) =>
-    `<button class="ai-act-btn ${i === 0 ? 'pri' : ''}" onclick="(${a.action.toString()})()">${a.label}</button>`
-  ).join('');
-  document.getElementById('aiBanner').classList.add('show');
-}
-
-function hideAIBanner() {
-  document.getElementById('aiBanner').classList.remove('show');
-}
-
-// ============================================================
-// CLAUDE AI CALL
-// ============================================================
-const WORKER_URL = 'https://rough-heart-ccf3.rprmarcellin.workers.dev';
-
-async function callClaude(prompt, maxTokens = 400) {
-  try {
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: maxTokens,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await response.json();
-    // Show real error details for debugging
-    if (data.error) {
-      var errMsg = typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : data.error;
-      console.error('Claude API error:', errMsg, data);
-      return 'API Error: ' + errMsg;
-    }
-    if (!data.content || !data.content[0]) {
-      console.error('Unexpected response:', data);
-      return 'Unexpected response: ' + JSON.stringify(data).substring(0, 100);
-    }
-    return data.content[0].text;
-  } catch(e) {
-    console.error('Fetch error:', e);
-    return 'Connection error: ' + e.message;
-  }
-}
-
-// ============================================================
-// AI - SUGGEST ALTERNATE ROUTE (traffic)
-// ============================================================
-async function suggestAlternate(blockedIdx, delayMins) {
-  showAIBanner('<span class="ai-loading">Claude is analyzing your route...</span>', []);
-  const remaining = stops[currentDay].slice(blockedIdx).map(function(s,i){ return (blockedIdx+i+1)+'. '+(s?s.name:'')+'(opens '+(s?s.opens:'TBD')+')'; }).join(', ');
-  const done = (stopData[currentDay] ? stopData[currentDay].filter : [].filter)(d => d && d.status === 'done').length;
-  const prompt = 'Route optimization for Rob (Cintas rep, Union/Irvington NJ). ' + delayMins + ' min traffic delay. ' + done + ' stops done. Time: ' + new Date().toLocaleTimeString() + '. Remaining: ' + remaining + '. Suggest which stop to skip to and return to the blocked one later. 2-3 sentences.';
-  const result = await callClaude(prompt);
-  showAIBanner(result, [{ label: 'GOT IT', action: hideAIBanner }]);
-}
-
-// ============================================================
-// AI - SUGGEST REORDER (learning engine)
-// ============================================================
-async function suggestReorder(idx, stopName) {
-  showAIBanner('<span class="ai-loading">Claude is analyzing your patterns...</span>', []);
-  const prompt = 'Rob is a Cintas service rep (Union/Irvington NJ) on Route 45. He consistently visits ' + stopName + ' at a different position than stop ' + (idx+1) + '. Should he move it earlier or later? Why? 2-3 sentences.';
-  const result = await callClaude(prompt);
-  showAIBanner(result, [{ label: 'GOT IT', action: hideAIBanner }]);
-}
-
-// ============================================================
-// AI - ANALYZE DAY
-// ============================================================
-async function analyzeDay() {
-  const data = stopData[currentDay] || [];
-  const done = data.filter(d => d && d.status === 'done');
-  if (done.length === 0) { alert('No completed stops to analyze yet!'); return; }
-
-  document.getElementById('modalTitle').textContent = '🤖 AI DAY ANALYSIS';
-  document.getElementById('modalBody').innerHTML = '<span class="ai-loading">Claude is analyzing your day...</span>';
-  document.getElementById('modalOverlay').classList.add('show');
-
-  const summaries = done.map((d, i) => {
-    const s = stops[currentDay][i];
-    const adj = calcAdjustedDuration(currentDay, i);
-    const drv = i > 0 ? minutesDiff(data[i-1] ? data[i-1].departureTime : null, d.arrivalTime) : null;
-    return 'Stop ' + (i+1) + ' - ' + (s ? s.name : '') + ': Arrival ' + formatTime(d.arrivalTime) + ', Duration ' + d.duration + 'min (adj:' + adj + 'min)' + (drv ? ', Drive ' + drv + 'min' : '') + ', Traffic: ' + d.traffic + ', Delays: ' + (d.delay==='Y'?d.delayDesc||'Yes':'None') + ', Parking: ' + (d.parking==='Y'?'Easy':'Hard') + ', Waited: ' + d.waited + ', Linen: ' + d.linen + ', Employees: ' + d.employees + ', Complaint: ' + d.complaint;
-  }).join(' | ');
-
-  const prompt = 'Analyze Project Z route for Rob (Cintas, Route 45, Union/Irvington NJ). Day: ' + currentDay + '. Data: ' + summaries + '. Give: key observations, slowest stops and why, traffic patterns, 3 optimization suggestions for next ' + currentDay + ', sales opportunities from complaints/employee talks. Use bullet points.';
-
-  const result = await callClaude(prompt, 800);
-  document.getElementById('modalBody').textContent = result;
-}
-
-// ============================================================
-// AI - CHAT BAR
-// ============================================================
-function toggleAIChat() {
-  var popup = document.getElementById('aiChatPopup');
-  var fab = document.getElementById('aiFab');
-  if (!popup || !fab) return;
-  popup.classList.toggle('show');
-  fab.classList.toggle('open');
-  fab.textContent = popup.classList.contains('show') ? '✕' : '🤖';
-  if (popup.classList.contains('show')) {
-    setTimeout(function() {
-      var inp = document.getElementById('chatInput');
-      if (inp) inp.focus();
-    }, 100);
-  } else {
-    // Close chat — also stop hands free if active
-
-  }
-}
-
-function addChatBubble(text, isUser) {
-  var msgs = document.getElementById('aiChatMessages');
-  if (!msgs) return;
-  var bubble = document.createElement('div');
-  bubble.className = 'ai-chat-bubble ' + (isUser ? 'user-bubble' : 'ai-bubble');
-  bubble.textContent = text;
-  msgs.appendChild(bubble);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-async function sendChat() {
-  var input = document.getElementById('chatInput');
-  var question = input.value.trim();
-  if (!question) return;
-  input.value = '';
-  await submitToAI(question);
-}
-
-async function submitToAI(question) {
-  addChatBubble(question, true);
-
-  var msgs = document.getElementById('aiChatMessages');
-  var loadBubble = document.createElement('div');
-  loadBubble.className = 'ai-chat-bubble ai-bubble';
-  loadBubble.innerHTML = '<span class="ai-loading">thinking...</span>';
-  msgs.appendChild(loadBubble);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  var prompt = buildRouteContext() + ' Rob says: "' + question + '"';
-  var result = await callClaude(prompt, 200);
-  result = result.replace(/[*#_]/g, '').trim();
-  loadBubble.textContent = result;
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // Speak if hands free is active
-
-}
-
-// ============================================================
 // COMPLETE DAY - Save to Firebase
 // ============================================================
 async function completeDay() {
@@ -1749,8 +1525,6 @@ async function completeDay() {
 
   routeHistory.push(record);
   fbSave('history/' + Date.now(), record);
-  updateHistoryBadge();
-  renderHistory();
 
   // Save lastServiced for all done stops to Firebase
   done.forEach(function(d, i) {
@@ -1765,45 +1539,11 @@ async function completeDay() {
   routeStartTime = null;
   activeStopIdx = null;
 
-  showAIBanner(
-    `✅ ${currentDay} saved to Firebase! ${done.length} stops logged. History updated.`,
-    [
-      { label: 'VIEW HISTORY', action: () => { switchTab('history'); hideAIBanner(); } },
-      { label: 'OK', action: hideAIBanner }
-    ]
-  );
+  alert('✅ ' + currentDay + ' day completed! ' + done.length + ' stops logged.');
   renderRoute();
 }
 
-// ============================================================
-// RENDER HISTORY TAB
-// ============================================================
-function renderHistory() {
-  const list = document.getElementById('historyList');
-  if (routeHistory.length === 0) {
-    list.innerHTML = '<div class="empty-state">No completed days yet.<br>Finish a route and tap<br>COMPLETE DAY to save it.</div>';
-    return;
-  }
-  list.innerHTML = [...routeHistory].reverse().map(h => `
-    <div class="history-card">
-      <div class="history-date">${h.date} — ${h.day}</div>
-      <div class="history-stats">
-        <div class="history-stat">
-          <div class="history-stat-val">${h.stopsCompleted}/${h.totalStops}</div>
-          <div class="history-stat-lbl">Stops</div>
-        </div>
-        <div class="history-stat">
-          <div class="history-stat-val">${h.totalAdjTime}m</div>
-          <div class="history-stat-lbl">Adj Time</div>
-        </div>
-        <div class="history-stat">
-          <div class="history-stat-val">${h.complaints}</div>
-          <div class="history-stat-lbl">Complaints</div>
-        </div>
-      </div>
-      <div class="history-sub">🧺 ${h.linenPickups} linen · 🚦 ${h.heavyTraffic} heavy traffic · 💬 ${h.employeeTalks} employee talks</div>
-    </div>`).join('');
-}
+
 
 // ============================================================
 // DAY LOG
@@ -2959,14 +2699,11 @@ function doOptimizeFromLocation() {
   updateStopDistances();
 
   var openCount = pending.filter(function(p) { return p.alreadyOpen; }).length;
-  showAIBanner(
-    '⚡ Optimized! ' + openCount + ' stops open now sorted by distance. ' +
-    (pending.length - openCount) + ' upcoming stops sorted by open time.',
-    [
-      { label: 'GOT IT', action: hideAIBanner },
-      { label: '↩ UNDO', action: undoOptimize }
-    ]
-  );
+  if (confirm('⚡ Optimized! ' + openCount + ' stops open now sorted by distance. ' + (pending.length - openCount) + ' upcoming stops sorted by open time.\n\nTap OK to keep. Cancel to undo.')) {
+    // keep
+  } else {
+    undoOptimize();
+  }
 }
 
 // ============================================================
@@ -2979,10 +2716,9 @@ function undoOptimize() {
   stopData[day] = stops[day].map(function() { return blankStopData(); });
   previousStopOrder = null;
   saveStops();
-  hideAIBanner();
   renderRoute();
   renderManageList();
-  showAIBanner('↩ Route restored to previous order.', [{ label: 'OK', action: hideAIBanner }]);
+  alert('↩ Route restored to previous order.');
 }
 
 // ============================================================

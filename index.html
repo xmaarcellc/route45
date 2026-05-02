@@ -618,6 +618,21 @@ let stopData = { MON: [], TUE: [], WED: [], THU: [] };
 // ============================================================
 // DEFAULT MONDAY STOPS
 // ============================================================
+const DEFAULT_THU_STOPS = [
+  { name: "Great Oaks Legacy Charter School",   addr: "17 Crawford St, Newark, NJ 07102",         opens: "TBD",     note: "School account",                       lat: 40.7363, lng: -74.1735 },
+  { name: "Newark Legacy Charter School",       addr: "823 S 16th St, Newark, NJ 07108",          opens: "TBD",     note: "School account",                       lat: 40.7301, lng: -74.2089 },
+  { name: "Clinton Hill Early Childhood Center",addr: "30 Demarest St, Newark, NJ 07112",         opens: "TBD",     note: "Childhood center",                     lat: 40.7270, lng: -74.2031 },
+  { name: "Clinton Hill Community & Early",     addr: "420 Hawthorne Ave, Newark, NJ 07112",      opens: "TBD",     note: "Community center",                     lat: 40.7178, lng: -74.2003 },
+  { name: "Exxon On The Run",                   addr: "1 Elizabeth Ave, Newark, NJ 07108",        opens: "Open 24 hours", note: "Gas station + convenience",      lat: 40.7240, lng: -74.1799 },
+  { name: "Accses NJ",                          addr: "228 Frelinghuysen Ave, Newark, NJ 07114",  opens: "9:00AM",  note: "MVC office",                           lat: 40.7150, lng: -74.1822 },
+  { name: "Service Master Facilities",          addr: "347 Metroplex Rd, Newark, NJ 07114",       opens: "TBD",     note: "Facility services",                    lat: 40.7077, lng: -74.1893 },
+  { name: "H & M International Warehousing",    addr: "157 Conrad Rd Ste 6, Newark, NJ 07114",    opens: "TBD",     note: "Warehousing",                          lat: 40.7080, lng: -74.1841 },
+  { name: "Signature Aviation",                 addr: "15 Brewster Rd, Newark, NJ 07114",         opens: "TBD",     note: "Newark Airport - Signature Flight",    lat: 40.7028, lng: -74.1726 },
+  { name: "RPMC SVC INC",                       addr: "339 Brewster Rd Ste 201, Newark, NJ 07114",opens: "TBD",     note: "Newark Airport area",                  lat: 40.7035, lng: -74.1714 },
+  { name: "Tully House",                        addr: "28 Peerless Pl, Newark, NJ 07114",         opens: "TBD",     note: "",                                     lat: 40.7117, lng: -74.1859 },
+  { name: "The Vault Restaurant and Lounge",    addr: "221 Washington St, Newark, NJ 07102",      opens: "11:00AM", note: "Restaurant",                           lat: 40.7378, lng: -74.1715 }
+];
+
 const DEFAULT_MON_STOPS = [
   { name: "Mark Twain Diner",        addr: "1601 Morris Ave, Union, NJ",           opens: "7:00AM",        note: "",                          lat: 40.6923, lng: -74.2541 },
   { name: "Vauxhall Travel Plaza",   addr: "1 Vauxhall Rd, Union, NJ",             opens: "Open 24 hours", note: "",                          lat: 40.6987, lng: -74.2519 },
@@ -685,7 +700,7 @@ function init() {
   stops.MON = JSON.parse(JSON.stringify(DEFAULT_MON_STOPS));
   stops.TUE = [];
   stops.WED = [];
-  stops.THU = [];
+  stops.THU = JSON.parse(JSON.stringify(DEFAULT_THU_STOPS));
   initStopData();
   renderRoute();
   renderManageList();
@@ -704,6 +719,10 @@ async function syncFromFirebase() {
     if (savedStops && savedStops.MON && savedStops.MON.length > 0) {
       stops = savedStops;
       ['MON','TUE','WED','THU'].forEach(d => { if (!stops[d]) stops[d] = []; });
+      // If THU is empty in Firebase, seed it with defaults
+      if (!stops.THU || stops.THU.length === 0) {
+        stops.THU = JSON.parse(JSON.stringify(DEFAULT_THU_STOPS));
+      }
       // Clean up any lingering notes we want removed
       ['MON','TUE','WED','THU'].forEach(function(day) {
         (stops[day] || []).forEach(function(s) {

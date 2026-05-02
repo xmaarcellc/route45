@@ -908,19 +908,17 @@ function addStop() {
   if (mapView) {
     renderMapMarkers();
   }
-  // If no coords from search, geocode the address
-  if (!selectedPlaceCoords && addr && mapsReady) {
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: addr }, function(results, status) {
-      if (status === 'OK' && results[0]) {
-        var loc = results[0].geometry.location;
+  // If no coords from search, geocode using Geocoding API
+  if (!selectedPlaceCoords && addr) {
+    geocodeAddress(addr, function(coords) {
+      if (coords) {
         var lastIdx = stops[currentManageDay].length - 1;
         if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
-          stops[currentManageDay][lastIdx].lat = loc.lat();
-          stops[currentManageDay][lastIdx].lng = loc.lng();
+          stops[currentManageDay][lastIdx].lat = coords.lat;
+          stops[currentManageDay][lastIdx].lng = coords.lng;
           saveStops();
           if (mapView) renderMapMarkers();
-          console.log('Geocoded', name, 'to', loc.lat(), loc.lng());
+          console.log('Geocoded', name, 'to', coords.lat, coords.lng);
         }
       }
     });
@@ -950,19 +948,17 @@ function removeStop(day, idx) {
   if (mapView) {
     renderMapMarkers();
   }
-  // If no coords from search, geocode the address
-  if (!selectedPlaceCoords && addr && mapsReady) {
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: addr }, function(results, status) {
-      if (status === 'OK' && results[0]) {
-        var loc = results[0].geometry.location;
+  // If no coords from search, geocode using Geocoding API
+  if (!selectedPlaceCoords && addr) {
+    geocodeAddress(addr, function(coords) {
+      if (coords) {
         var lastIdx = stops[currentManageDay].length - 1;
         if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
-          stops[currentManageDay][lastIdx].lat = loc.lat();
-          stops[currentManageDay][lastIdx].lng = loc.lng();
+          stops[currentManageDay][lastIdx].lat = coords.lat;
+          stops[currentManageDay][lastIdx].lng = coords.lng;
           saveStops();
           if (mapView) renderMapMarkers();
-          console.log('Geocoded', name, 'to', loc.lat(), loc.lng());
+          console.log('Geocoded', name, 'to', coords.lat, coords.lng);
         }
       }
     });
@@ -1802,18 +1798,15 @@ function renderMapMarkers() {
   var hasCoords = false;
 
   dayStops.forEach(function(stop, i) {
-    // If no coords, try to geocode on the fly
+    // If no coords, try to geocode using Geocoding API
     if (!stop.lat || !stop.lng) {
-      if (stop.addr && mapsReady) {
-        var geocoder = new google.maps.Geocoder();
-        var capturedI = i;
-        var capturedStop = stop;
-        geocoder.geocode({ address: stop.addr }, function(results, status) {
-          if (status === 'OK' && results[0]) {
-            capturedStop.lat = results[0].geometry.location.lat();
-            capturedStop.lng = results[0].geometry.location.lng();
+      if (stop.addr) {
+        geocodeAddress(stop.addr, function(coords) {
+          if (coords) {
+            stop.lat = coords.lat;
+            stop.lng = coords.lng;
             saveStops();
-            renderMapMarkers(); // re-render now that we have coords
+            renderMapMarkers();
           }
         });
       }
@@ -1902,33 +1895,36 @@ function startGPSTracking() {
         mapView.setHeading(pos.coords.heading);
       }
 
-      if (!userMarker) {
-        userMarker = new google.maps.Marker({
-          position: latlng,
-          map: mapView,
-          title: 'You',
-          zIndex: 20,
-          icon: icon
-        });
+      function applyPos(useLat, useLng) {
+        var pos2 = { lat: useLat, lng: useLng };
+        if (!userMarker) {
+          userMarker = new google.maps.Marker({
+            position: pos2, map: mapView, title: 'You', zIndex: 20, icon: icon
+          });
+          window.accuracyCircle = new google.maps.Circle({
+            map: mapView, center: pos2, radius: pos.coords.accuracy || 20,
+            fillColor: '#7b2fff', fillOpacity: 0.08,
+            strokeColor: '#7b2fff', strokeOpacity: 0.3, strokeWeight: 1
+          });
+        } else {
+          userMarker.setPosition(pos2);
+          userMarker.setIcon(icon);
+          if (window.accuracyCircle) {
+            window.accuracyCircle.setCenter(pos2);
+            window.accuracyCircle.setRadius(pos.coords.accuracy || 20);
+          }
+        }
+        userLat = useLat;
+        userLng = useLng;
+      }
 
-        // Accuracy circle
-        window.accuracyCircle = new google.maps.Circle({
-          map: mapView,
-          center: latlng,
-          radius: pos.coords.accuracy || 20,
-          fillColor: '#7b2fff',
-          fillOpacity: 0.08,
-          strokeColor: '#7b2fff',
-          strokeOpacity: 0.3,
-          strokeWeight: 1
+      // Snap to road while navigating for cleaner display
+      if (isNavigating) {
+        snapToRoad(lat, lng, function(snapLat, snapLng) {
+          applyPos(snapLat, snapLng);
         });
       } else {
-        userMarker.setPosition(latlng);
-        userMarker.setIcon(icon);
-        if (window.accuracyCircle) {
-          window.accuracyCircle.setCenter(latlng);
-          window.accuracyCircle.setRadius(pos.coords.accuracy || 20);
-        }
+        applyPos(lat, lng);
       }
 
       // Auto follow - keep map centered on you
@@ -2309,11 +2305,13 @@ function updateTurnInstruction() {
   turnEl.style.display = 'flex';
 }
 
+var navOffRouteCount = 0; // consecutive off-route readings
+
 function checkOffRoute(lat, lng) {
   if (!isNavigating || !navRoutePath || navRoutePath.length < 2) return;
   var now = Date.now();
-  // Don't check more than once every 3 seconds
-  if (now - navLastReroute < 3000) return;
+  // Cooldown: don't trigger reroute more than once every 5 seconds
+  if (now - navLastReroute < 5000) return;
 
   // Find closest point on route to current position
   var minDist = Infinity;
@@ -2324,25 +2322,31 @@ function checkOffRoute(lat, lng) {
     if (d < minDist) minDist = d;
   });
 
-  // If more than 0.15 miles from route — off route!
-  if (minDist > 0.15) {
-    navLastReroute = now;
-    console.log('Off route! Distance from path:', minDist.toFixed(2), 'mi — rerouting...');
+  // 0.05 miles = ~264 ft — matches Google Maps threshold
+  if (minDist > 0.05) {
+    navOffRouteCount++;
+    console.log('Off route reading ' + navOffRouteCount + '/2 (' + minDist.toFixed(3) + ' mi)');
 
-    // Show rerouting in HUD
-    var turnTxt = document.getElementById('navTurnTxt');
-    var turnIcon = document.getElementById('navTurnIcon');
-    if (turnTxt) turnTxt.textContent = 'Rerouting...';
-    if (turnIcon) turnIcon.textContent = '🔄';
+    // Require 2 consecutive off-route readings before rerouting
+    if (navOffRouteCount >= 2) {
+      navLastReroute = now;
+      navOffRouteCount = 0;
+      console.log('Confirmed off route — rerouting from', lat, lng);
 
-    // Debounce — wait 1s then reroute
-    clearTimeout(navRerouteTimer);
-    navRerouteTimer = setTimeout(function() {
+      // Show rerouting in HUD
+      var turnTxt = document.getElementById('navTurnTxt');
+      var turnIcon = document.getElementById('navTurnIcon');
+      if (turnTxt) turnTxt.textContent = 'Rerouting...';
+      if (turnIcon) turnIcon.textContent = '🔄';
+
+      // Reroute immediately
       if (isNavigating && navStopIdx !== null) {
-        console.log('Rerouting now...');
         fetchDirections(navStopIdx);
       }
-    }, 1000);
+    }
+  } else {
+    // Reset counter when back on route
+    navOffRouteCount = 0;
   }
 }
 
@@ -2739,6 +2743,61 @@ function clearStopLog(i) {
     card.classList.add('active');
   }
   updateStats();
+}
+
+// ============================================================
+// GEOCODING API
+// ============================================================
+function geocodeAddress(address, callback) {
+  var url = 'https://maps.googleapis.com/maps/api/geocode/json?address='
+    + encodeURIComponent(address)
+    + '&key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4';
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'OK' && data.results && data.results[0]) {
+        var loc = data.results[0].geometry.location;
+        callback({ lat: loc.lat, lng: loc.lng });
+      } else {
+        console.log('Geocoding failed:', data.status, address);
+        callback(null);
+      }
+    })
+    .catch(function(e) {
+      console.log('Geocoding error:', e);
+      callback(null);
+    });
+}
+
+// ============================================================
+// ROADS API - Snap GPS to nearest road
+// ============================================================
+var lastSnappedPoint = null;
+var snapPending = false;
+
+function snapToRoad(lat, lng, callback) {
+  if (snapPending) { callback(lat, lng); return; }
+  snapPending = true;
+
+  var url = 'https://roads.googleapis.com/v1/snapToRoads?path='
+    + lat + ',' + lng
+    + '&interpolate=false&key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4';
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      snapPending = false;
+      if (data.snappedPoints && data.snappedPoints[0]) {
+        var p = data.snappedPoints[0].location;
+        callback(p.latitude, p.longitude);
+      } else {
+        callback(lat, lng); // no snap available, use raw
+      }
+    })
+    .catch(function() {
+      snapPending = false;
+      callback(lat, lng);
+    });
 }
 
 // ============================================================

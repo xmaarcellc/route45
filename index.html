@@ -1374,23 +1374,19 @@ function renderStopPanel(i) {
 // RENDER STOP SUMMARY (after complete)
 // ============================================================
 function renderStopSummary(i) {
-  const d = stopData[currentDay][i];
-  const adj = calcAdjustedDuration(currentDay, i);
-  const driveTime = i > 0 ? minutesDiff(stopData[currentDay][i-1] ? stopData[currentDay][i-1].departureTime : null, d.arrivalTime) : null;
-
-  return `<div class="stop-summary">
-    <div class="sum-row"><span class="sum-key">Arrival</span><span class="sum-val">${formatTime(d.arrivalTime)}</span></div>
-    <div class="sum-row"><span class="sum-key">Departure</span><span class="sum-val">${formatTime(d.departureTime)}</span></div>
-    ${driveTime !== null ? '<div class="sum-row"><span class="sum-key">Drive Time</span><span class="sum-val">' + driveTime + ' min</span></div>' : ''}
-    <div class="sum-row"><span class="sum-key">Stop Duration</span><span class="sum-val">${d.duration}min → adj: ${adj}min</span></div>
-    <div class="sum-row"><span class="sum-key">Traffic</span><span class="sum-val">${d.traffic==='L'?'Light':d.traffic==='M'?'Moderate':'Heavy'}</span></div>
-    <div class="sum-row"><span class="sum-key">Delays</span><span class="sum-val">${d.delay==='Y'?d.delayDesc||'Yes':'None'}</span></div>
-    <div class="sum-row"><span class="sum-key">Parking</span><span class="sum-val">${d.parking==='Y'?'Easy (+3min)':'Hard (+6min)'}</span></div>
-    <div class="sum-row"><span class="sum-key">Waited</span><span class="sum-val">${d.waited==='Y'?'Yes':'No'}</span></div>
-    <div class="sum-row"><span class="sum-key">Linen Pickup</span><span class="sum-val">${d.linen==='Y'?'Yes':'No'}</span></div>
-    <div class="sum-row"><span class="sum-key">Employees</span><span class="sum-val">${d.employees==='Y'?'Yes (+2min)':'No'}</span></div>
-    <div class="sum-row"><span class="sum-key">Complaint</span><span class="sum-val">${d.complaint==='Y'?'⚠️ YES':'None'}</span></div>
-  </div>` + renderNotesSection(currentDay, i);
+  var d = stopData[currentDay][i];
+  if (!d) return '';
+  var arrived = d.arrivalTime ? formatTime(d.arrivalTime) : '--:--';
+  var departed = d.departureTime ? formatTime(d.departureTime) : '--:--';
+  var dur = d.duration || 0;
+  return '<div style="padding:14px;background:var(--sur2);border-radius:6px;margin-top:8px;">' +
+    '<div style="display:flex;gap:16px;margin-bottom:10px;font-family:DM Mono,monospace;font-size:12px;color:var(--mut);">' +
+      '<div>📍 Arrived: <strong style="color:var(--txt);">' + arrived + '</strong></div>' +
+      '<div>🚗 Left: <strong style="color:var(--txt);">' + departed + '</strong></div>' +
+    '</div>' +
+    '<div style="font-family:DM Mono,monospace;font-size:11px;color:var(--mut);">⏱ Stop time: <strong style="color:var(--acc);">' + dur + ' min</strong></div>' +
+    '<button onclick="if(confirm(\'Reopen this stop?\')) reopenStop(' + i + ')" style="margin-top:10px;background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">↩ REOPEN STOP</button>' +
+    '</div>';
 }
 
 // ============================================================
@@ -1428,6 +1424,23 @@ function logDeparture(i) {
   refreshPanel(i);
   updateStats();
   checkTraffic(i);
+}
+
+function logDepartureAndComplete(i) {
+  // Log departure time and immediately complete the stop
+  stopData[currentDay][i].departureTime = new Date().toISOString();
+
+  // Calculate stop duration from arrival to departure (in minutes)
+  if (stopData[currentDay][i].arrivalTime) {
+    var arrived = new Date(stopData[currentDay][i].arrivalTime);
+    var departed = new Date(stopData[currentDay][i].departureTime);
+    var diffMin = Math.round((departed - arrived) / 60000);
+    stopData[currentDay][i].duration = diffMin;
+  }
+
+  updateStats();
+  // Auto-complete the stop
+  completeStop(i);
 }
 
 function setDuration(i, val) {

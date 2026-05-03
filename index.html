@@ -1505,46 +1505,50 @@ function renderManageList() {
 // ============================================================
 async function completeDay() {
   const data = stopData[currentDay] || [];
-  const done = data.filter(d => d && d.status === 'done');
-  if (done.length === 0) { alert('No completed stops to save!'); return; }
-  if (!confirm(`Save ${currentDay} route to history? This will reset today's data.`)) return;
+  const dayStops = stops[currentDay] || [];
+  const doneIndices = [];
+  data.forEach(function(d, i) {
+    if (d && d.status === 'done') doneIndices.push(i);
+  });
+
+  if (doneIndices.length === 0) { alert('No completed stops to save!'); return; }
+  if (!confirm('Save ' + currentDay + ' route? This will reset all timestamps and mark all completed stops as serviced today.')) return;
 
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const totalAdj = done.reduce((sum, d) => sum + (d.adjustedDuration || 0), 0);
-  const visitOrder = done.map(function(d, i) { var st = stops[currentDay][i]; return st ? st.name : ''; }).filter(Boolean);
+  const totalAdj = doneIndices.reduce(function(sum, i) { return sum + (data[i].duration || 0); }, 0);
+  const visitOrder = doneIndices.map(function(i) { return dayStops[i] ? dayStops[i].name : ''; }).filter(Boolean);
 
   const record = {
-    date,
+    date: date,
     day: currentDay,
-    stopsCompleted: done.length,
-    totalStops: (stops[currentDay] ? stops[currentDay].length : 0),
-    totalAdjTime: totalAdj,
-    heavyTraffic: done.filter(d => d.traffic === 'H').length,
-    complaints: done.filter(d => d.complaint === 'Y').length,
-    linenPickups: done.filter(d => d.linen === 'Y').length,
-    employeeTalks: done.filter(d => d.employees === 'Y').length,
-    visitOrder,
+    stopsCompleted: doneIndices.length,
+    totalStops: dayStops.length,
+    totalStopTime: totalAdj,
+    visitOrder: visitOrder,
     savedAt: new Date().toISOString()
   };
 
-  routeHistory.push(record);
+  // Save record to Firebase silently for backup
   fbSave('history/' + Date.now(), record);
 
-  // Save lastServiced for all done stops to Firebase
-  done.forEach(function(d, i) {
-    if (stops[currentDay][i] && d.status === 'done') {
-      stops[currentDay][i].lastServiced = record.savedAt;
+  // Update lastServiced on each completed stop
+  doneIndices.forEach(function(i) {
+    if (dayStops[i]) {
+      dayStops[i].lastServiced = record.savedAt;
     }
   });
-  saveStops(); // push lastServiced to Firebase
 
-  // Reset day
-  stopData[currentDay] = (stops[currentDay] ? stops[currentDay].map : [].map)(() => blankStopData());
+  // Reset all stopData for the day
+  stopData[currentDay] = dayStops.map(function() { return blankStopData(); });
   routeStartTime = null;
   activeStopIdx = null;
 
-  alert('✅ ' + currentDay + ' day completed! ' + done.length + ' stops logged.');
+  // Persist resets to Firebase
+  saveStops();
+  fbSave('stopData/' + currentDay, stopData[currentDay]);
+
   renderRoute();
+  alert('✅ ' + currentDay + ' day completed!\n\n' + doneIndices.length + ' stops logged and reset for next week.');
 }
 
 

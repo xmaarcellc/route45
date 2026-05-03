@@ -848,39 +848,61 @@ function selectSearchResult(placeId, name, addr) {
   document.getElementById('newName').value = name;
   document.getElementById('newAddr').value = addr;
   document.getElementById('newOpens').value = '';
-  document.getElementById('fetchingTag').style.display = 'inline';
-  document.getElementById('nameAutoFill').style.display = 'inline';
-  document.getElementById('addrAutoFill').style.display = 'inline';
+  var fetchTag = document.getElementById('fetchingTag');
+  if (fetchTag) fetchTag.style.display = 'inline';
+  var nameTag = document.getElementById('nameAutoFill');
+  var addrTag = document.getElementById('addrAutoFill');
+  if (nameTag) nameTag.style.display = 'inline';
+  if (addrTag) addrTag.style.display = 'inline';
   selectedPlaceCoords = null;
 
-  if (!placesService) {
-    document.getElementById('fetchingTag').style.display = 'none';
+  if (!placeId) {
+    if (fetchTag) fetchTag.style.display = 'none';
     return;
   }
-  if (!placesService) { document.getElementById('fetchingTag').style.display = 'none'; return; }
-  placesService.getDetails(
-    { placeId: placeId, fields: ['opening_hours', 'geometry', 'formatted_address'] },
-    (place, status) => {
-      document.getElementById('fetchingTag').style.display = 'none';
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        selectedPlaceCoords = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-        if (place.formatted_address) document.getElementById('newAddr').value = place.formatted_address;
-        if (place.opening_hours && place.opening_hours.weekday_text) {
-          const monText = place.opening_hours.weekday_text.find(h => h.startsWith('Monday'));
-          if (monText) {
-            if (monText.includes('Open 24')) {
-              document.getElementById('newOpens').value = 'Open 24 hours';
-            } else if (monText.toLowerCase().includes('closed')) {
-              document.getElementById('newOpens').value = 'Closed Mondays';
-            } else {
-              const match = monText.match(/(\d+:\d+\s?[AP]M)/i);
-              if (match) document.getElementById('newOpens').value = match[1];
-            }
-          }
+
+  // Use Places API (New) for place details
+  var url = 'https://places.googleapis.com/v1/places/' + placeId;
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'X-Goog-Api-Key': 'AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4',
+      'X-Goog-FieldMask': 'location,formattedAddress,regularOpeningHours,currentOpeningHours'
+    }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(place) {
+    if (fetchTag) fetchTag.style.display = 'none';
+    if (place.location) {
+      selectedPlaceCoords = {
+        lat: place.location.latitude,
+        lng: place.location.longitude
+      };
+      console.log('Got coords for', name, selectedPlaceCoords);
+    }
+    if (place.formattedAddress) {
+      document.getElementById('newAddr').value = place.formattedAddress;
+    }
+    // Try to extract Monday opening time
+    var hours = place.regularOpeningHours || place.currentOpeningHours;
+    if (hours && hours.weekdayDescriptions) {
+      var monText = hours.weekdayDescriptions.find(function(h) { return h.indexOf('Monday') === 0; });
+      if (monText) {
+        if (monText.indexOf('Open 24') > -1) {
+          document.getElementById('newOpens').value = 'Open 24 hours';
+        } else if (monText.toLowerCase().indexOf('closed') > -1) {
+          document.getElementById('newOpens').value = 'Closed Mondays';
+        } else {
+          var match = monText.match(/(\d+:\d+\s?[AP]M)/i);
+          if (match) document.getElementById('newOpens').value = match[1];
         }
       }
     }
-  );
+  })
+  .catch(function(e) {
+    if (fetchTag) fetchTag.style.display = 'none';
+    console.error('Details error:', e);
+  });
 }
 
 // ============================================================
@@ -1193,7 +1215,7 @@ function renderRoute() {
 
     return `
       <div class="stop-card ${cardClass}" id="card-${origIdx}">
-       
+        ${isNext ? '<div class="next-stop-badge">▸ NEXT STOP</div>' : ''}
         <div class="stop-header" onclick="toggleStop(${origIdx})">
           <div class="stop-num">${String(displayIdx+1).padStart(2,'0')}</div>
           <div class="stop-info">

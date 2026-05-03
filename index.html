@@ -55,6 +55,29 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .stat-val { font-family: var(--fd); font-size: 22px; color: var(--acc); line-height: 1; }
 .stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
+/* FILTER PILLS */
+.filter-pill {
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  color: var(--mut);
+  font-family: var(--fm);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.filter-pill.active {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #000;
+  font-weight: 600;
+}
+.filter-pill:active {
+  transform: scale(0.95);
+}
+
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
 .stop-card { background: #141414; border: 1px solid #2a1a0a; border-radius: 8px; overflow: hidden; }
@@ -310,6 +333,24 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   <div style="padding:8px 16px 0;">
     <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:11px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
+
+  <div style="padding:10px 16px 6px;display:flex;gap:8px;align-items:center;">
+    <div style="position:relative;flex:1;">
+      <input id="routeSearchInput" type="text" placeholder="🔍 Search stop by name..." oninput="onRouteSearch(this.value)" style="width:100%;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-size:13px;padding:9px 32px 9px 12px;border-radius:6px;outline:none;">
+      <button id="routeSearchClearBtn" onclick="clearRouteSearch()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mut);font-size:14px;cursor:pointer;display:none;padding:4px 8px;">✕</button>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="filter-pill active" data-filter="all" onclick="setRouteFilter('all')">All</button>
+    <button class="filter-pill" data-filter="open-now" onclick="setRouteFilter('open-now')">🟢 Open Now</button>
+    <button class="filter-pill" data-filter="opens-soon" onclick="setRouteFilter('opens-soon')">⏳ Opens Soon</button>
+    <button class="filter-pill" data-filter="not-yet-open" onclick="setRouteFilter('not-yet-open')">🔒 Not Yet</button>
+    <button class="filter-pill" data-filter="pending" onclick="setRouteFilter('pending')">Pending</button>
+    <button class="filter-pill" data-filter="done" onclick="setRouteFilter('done')">✅ Done</button>
+  </div>
+
+  <div id="filterStatus" style="padding:0 16px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);display:none;"></div>
 
   <div class="stop-list" id="stopList"></div>
   <div class="eod-section">
@@ -786,6 +827,16 @@ function selectDay(day) {
     b.classList.toggle('active', b.textContent === day);
   });
   activeStopIdx = null;
+  // Reset search and filter when changing days
+  routeSearchQuery = '';
+  routeFilter = 'all';
+  var input = document.getElementById('routeSearchInput');
+  if (input) input.value = '';
+  var clearBtn = document.getElementById('routeSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  document.querySelectorAll('.filter-pill').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === 'all');
+  });
   initStopData();
   renderRoute();
   // Refresh map if open
@@ -1317,6 +1368,7 @@ function renderRoute() {
   }).join('');
 
   updateStats();
+  updateFilterStatus();
   // Update distances after render
   setTimeout(updateStopDistances, 100);
   } catch(e) { console.error('renderRoute error:', e); }
@@ -1770,9 +1822,61 @@ function getNextStopIdx(filtered) {
   return pending[0].origIdx;
 }
 
+var routeSearchQuery = '';
+var routeFilter = 'all'; // all, open-now, opens-soon, not-yet-open, pending, done
+
 function getFilteredStops() {
   const dayStops = stops[currentDay] || [];
-  return dayStops.map((s, i) => ({ stop: s, origIdx: i }));
+  const dayData = stopData[currentDay] || [];
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+
+  let result = dayStops.map((s, i) => ({ stop: s, origIdx: i }));
+
+  // Apply search query (by name)
+  if (routeSearchQuery) {
+    const q = routeSearchQuery.toLowerCase();
+    result = result.filter(function(item) {
+      return item.stop.name.toLowerCase().indexOf(q) !== -1
+        || (item.stop.addr && item.stop.addr.toLowerCase().indexOf(q) !== -1);
+    });
+  }
+
+  // Apply filter
+  if (routeFilter !== 'all') {
+    result = result.filter(function(item) {
+      var d = dayData[item.origIdx];
+      var status = d ? d.status : 'pending';
+
+      if (routeFilter === 'pending') return status !== 'done';
+      if (routeFilter === 'done') return status === 'done';
+
+      // Time-based filters - skip done stops
+      if (status === 'done') return false;
+      var openMins = parseOpenTime(item.stop.opens);
+
+      // 24hr places (openMins=0 from "24 hours" text) are always considered open
+      var isAlways24 = item.stop.opens && item.stop.opens.toLowerCase().indexOf('24') !== -1;
+
+      if (routeFilter === 'open-now') {
+        if (isAlways24) return true;
+        if (openMins === 0) return false; // TBD/unknown — exclude from "open now"
+        return openMins <= nowMins;
+      }
+      if (routeFilter === 'opens-soon') {
+        if (openMins === 0 || isAlways24) return false;
+        var diff = openMins - nowMins;
+        return diff > 0 && diff <= 60; // opens within next hour
+      }
+      if (routeFilter === 'not-yet-open') {
+        if (openMins === 0 || isAlways24) return false;
+        return openMins > nowMins + 60; // opens more than 1hr from now
+      }
+      return true;
+    });
+  }
+
+  return result;
 }
 
 function getFreqTag(stop) {
@@ -2862,6 +2966,55 @@ function undoOptimize() {
   renderRoute();
   renderManageList();
   alert('↩ Route restored to previous order.');
+}
+
+// ============================================================
+// ROUTE SEARCH & FILTER
+// ============================================================
+function onRouteSearch(value) {
+  routeSearchQuery = (value || '').trim();
+  var clearBtn = document.getElementById('routeSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = routeSearchQuery ? 'block' : 'none';
+  renderRoute();
+  updateFilterStatus();
+}
+
+function clearRouteSearch() {
+  var input = document.getElementById('routeSearchInput');
+  if (input) input.value = '';
+  routeSearchQuery = '';
+  var clearBtn = document.getElementById('routeSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderRoute();
+  updateFilterStatus();
+}
+
+function setRouteFilter(filter) {
+  routeFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+  });
+  renderRoute();
+  updateFilterStatus();
+}
+
+function updateFilterStatus() {
+  var statusEl = document.getElementById('filterStatus');
+  if (!statusEl) return;
+  var total = (stops[currentDay] || []).length;
+  var visible = getFilteredStops().length;
+  if (routeSearchQuery || routeFilter !== 'all') {
+    var msg = 'Showing ' + visible + ' of ' + total;
+    if (routeSearchQuery) msg += ' · matching "' + routeSearchQuery + '"';
+    if (routeFilter !== 'all') {
+      var labels = { 'open-now': 'open now', 'opens-soon': 'opens within 1hr', 'not-yet-open': 'not yet open', 'pending': 'pending', 'done': 'done' };
+      msg += ' · ' + (labels[routeFilter] || routeFilter);
+    }
+    statusEl.textContent = msg;
+    statusEl.style.display = 'block';
+  } else {
+    statusEl.style.display = 'none';
+  }
 }
 
 // ============================================================

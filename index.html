@@ -813,33 +813,95 @@ function selectManageDay(day) {
 function searchPlace(query) {
   clearTimeout(searchTimer);
   const resultsEl = document.getElementById('searchResults');
-  if (query.length < 3) { resultsEl.classList.remove('show'); return; }
+  if (query.length < 3) { resultsEl.classList.remove('show'); resultsEl.innerHTML = ''; return; }
 
-  searchTimer = setTimeout(() => {
-    if (!mapsReady || typeof google === 'undefined') {
-      // Maps not ready yet - retry in 1 second
-      setTimeout(() => searchPlace(query), 1000);
-      return;
-    }
-    const svc = new google.maps.places.AutocompleteService();
-    svc.getPlacePredictions(
-      { input: query, componentRestrictions: { country: 'us' }, location: new google.maps.LatLng(40.70, -74.26), radius: 25000 },
-      (predictions, status) => {
-        if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
-          resultsEl.classList.remove('show'); return;
+  // Show searching indicator
+  resultsEl.innerHTML = '<div class="search-item" style="text-align:center;color:var(--mut);font-size:11px;">Searching...</div>';
+  resultsEl.classList.add('show');
+
+  searchTimer = setTimeout(function() {
+    // Use Places API (New) via REST — more reliable
+    var url = 'https://places.googleapis.com/v1/places:autocomplete';
+    var body = {
+      input: query,
+      locationBias: {
+        circle: {
+          center: { latitude: 40.70, longitude: -74.26 },
+          radius: 40000.0
         }
-        resultsEl.innerHTML = predictions.slice(0, 5).map(p => {
-          const name = (p.structured_formatting.main_text || '').replace(/'/g, "\'");
-          const desc = (p.description || '').replace(/'/g, "\'");
-          return `<div class="search-item" onclick="selectSearchResult('${p.place_id}','${name}','${desc}')">
-            <div class="search-name">${p.structured_formatting.main_text}</div>
-            <div class="search-addr">${p.description}</div>
-          </div>`;
-        }).join('');
-        resultsEl.classList.add('show');
+      },
+      includedRegionCodes: ['us']
+    };
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': 'AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4'
+      },
+      body: JSON.stringify(body)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.suggestions || data.suggestions.length === 0) {
+        resultsEl.innerHTML = '<div class="search-item" style="text-align:center;color:var(--mut);font-size:11px;">No results found</div>';
+        return;
+      }
+      var html = '';
+      data.suggestions.slice(0, 6).forEach(function(s) {
+        if (!s.placePrediction) return;
+        var p = s.placePrediction;
+        var placeId = p.placeId || '';
+        var mainText = (p.structuredFormat && p.structuredFormat.mainText && p.structuredFormat.mainText.text) || p.text.text || '';
+        var secondaryText = (p.structuredFormat && p.structuredFormat.secondaryText && p.structuredFormat.secondaryText.text) || '';
+        var fullText = p.text.text || (mainText + (secondaryText ? ', ' + secondaryText : ''));
+        var nameEsc = mainText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        var fullEsc = fullText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        html += '<div class="search-item" onclick="selectSearchResult(\'' + placeId + '\',\'' + nameEsc + '\',\'' + fullEsc + '\')">'
+          + '<div class="search-name">' + mainText + '</div>'
+          + '<div class="search-addr">' + secondaryText + '</div>'
+          + '</div>';
+      });
+      resultsEl.innerHTML = html;
+    })
+    .catch(function(e) {
+      console.log('Places (New) failed, trying legacy:', e.message);
+      tryLegacySearch(query, resultsEl);
+    });
+  }, 300);
+}
+
+function tryLegacySearch(query, resultsEl) {
+  if (!mapsReady || typeof google === 'undefined' || !google.maps.places) {
+    resultsEl.innerHTML = '<div class="search-item" style="text-align:center;color:#ef476f;font-size:11px;">Maps not loaded</div>';
+    return;
+  }
+  try {
+    var svc = new google.maps.places.AutocompleteService();
+    svc.getPlacePredictions(
+      { input: query, componentRestrictions: { country: 'us' }, location: new google.maps.LatLng(40.70, -74.26), radius: 40000 },
+      function(predictions, status) {
+        if (!predictions || predictions.length === 0) {
+          resultsEl.innerHTML = '<div class="search-item" style="text-align:center;color:var(--mut);font-size:11px;">No results found</div>';
+          return;
+        }
+        var html = '';
+        predictions.slice(0, 6).forEach(function(p) {
+          var name = (p.structured_formatting && p.structured_formatting.main_text || p.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          var desc = (p.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          var secondary = (p.structured_formatting && p.structured_formatting.secondary_text) || '';
+          html += '<div class="search-item" onclick="selectSearchResult(\'' + p.place_id + '\',\'' + name + '\',\'' + desc + '\')">'
+            + '<div class="search-name">' + (p.structured_formatting ? p.structured_formatting.main_text : p.description) + '</div>'
+            + '<div class="search-addr">' + secondary + '</div>'
+            + '</div>';
+        });
+        resultsEl.innerHTML = html;
       }
     );
-  }, 350);
+  } catch(e) {
+    console.error('Legacy search failed:', e);
+    resultsEl.innerHTML = '<div class="search-item" style="text-align:center;color:#ef476f;font-size:11px;">Search unavailable</div>';
+  }
 }
 
 function selectSearchResult(placeId, name, addr) {
@@ -984,25 +1046,7 @@ function removeStop(day, idx) {
   saveStops();
   renderManageList();
   if (day === currentDay) { activeStopIdx = null; renderRoute(); }
-  // Always update map markers (they persist even if map tab is closed)
-  if (mapView) {
-    renderMapMarkers();
-  }
-  // If no coords from search, geocode using Geocoding API
-  if (!selectedPlaceCoords && addr) {
-    geocodeAddress(addr, function(coords) {
-      if (coords) {
-        var lastIdx = stops[currentManageDay].length - 1;
-        if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
-          stops[currentManageDay][lastIdx].lat = coords.lat;
-          stops[currentManageDay][lastIdx].lng = coords.lng;
-          saveStops();
-          if (mapView) renderMapMarkers();
-          console.log('Geocoded', name, 'to', coords.lat, coords.lng);
-        }
-      }
-    });
-  }
+  if (mapView) renderMapMarkers();
 }
 
 var editingStopRef = null; // {day, idx}

@@ -1979,7 +1979,12 @@ function initMapView() {
     mapInitialized = true;
 
     // Disable auto-follow when user manually drags the map
+    // BUT: during navigation, dragging just temporarily peeks — auto-recenters via panTo
     mapView.addListener('dragstart', function() {
+      if (isNavigating) {
+        // During nav, drag is just a peek — don't disable follow
+        return;
+      }
       if (autoFollow) {
         autoFollow = false;
         var btn = document.getElementById('followBtn');
@@ -2128,6 +2133,14 @@ function startGPSTracking() {
       var latlng = { lat: lat, lng: lng };
       var heading = pos.coords.heading || 0;
 
+      // Track heading and speed for routing
+      if (pos.coords.heading != null && !isNaN(pos.coords.heading)) {
+        lastGpsHeading = pos.coords.heading;
+      }
+      if (pos.coords.speed != null && !isNaN(pos.coords.speed)) {
+        lastGpsSpeed = pos.coords.speed; // m/s
+      }
+
       // Fix heading - GPS heading is clockwise from north, Maps rotation matches
       // but arrow symbol points UP by default so we don't need offset
       var correctedHeading = pos.coords.heading != null ? pos.coords.heading : 0;
@@ -2190,8 +2203,16 @@ function startGPSTracking() {
       }
 
       // Auto follow - keep map centered on you
-      if (autoFollow && mapView) {
-        mapView.panTo(latlng);
+      // While navigating, ALWAYS keep arrow centered (overrides autoFollow toggle)
+      if (mapView) {
+        if (isNavigating) {
+          // Hard-track the arrow during navigation
+          mapView.panTo(latlng);
+          // Keep zoom locked at navigation level
+          if (mapView.getZoom() < 16) mapView.setZoom(17);
+        } else if (autoFollow) {
+          mapView.panTo(latlng);
+        }
       }
       // Update turn instruction in real time while navigating
       if (isNavigating) {
@@ -2358,6 +2379,12 @@ function startInAppNav() {
   autoFollow = true;
   closeMapPopup();
 
+  // Snap map to user immediately and lock to nav zoom
+  if (mapView && userLat) {
+    mapView.panTo({ lat: userLat, lng: userLng });
+    mapView.setZoom(17);
+  }
+
   // Show HUD and recenter btn
   document.getElementById('navHud').classList.add('show');
   document.getElementById('navDest').textContent = stop.name;
@@ -2406,8 +2433,26 @@ function fetchDirectionsFallback(idx) {
 
   console.log('Directions SDK: routing to', stop.name);
   var ds = new google.maps.DirectionsService();
+
+  // Project origin forward in direction of travel so the route starts ahead of car
+  // This prevents Directions from routing us backwards via U-turn
+  var originLat = userLat;
+  var originLng = userLng;
+  if (lastGpsHeading != null && lastGpsSpeed > 1) {
+    // Project ~30 meters forward (about 1 second at 67mph or 3sec at city speed)
+    // Higher offset = bigger commitment to current direction = no U-turn
+    var projectMeters = Math.max(30, Math.min(80, lastGpsSpeed * 3));
+    var headingRad = lastGpsHeading * Math.PI / 180;
+    // 1 degree latitude = 111,000 meters; longitude varies by latitude
+    var dLat = (projectMeters * Math.cos(headingRad)) / 111000;
+    var dLng = (projectMeters * Math.sin(headingRad)) / (111000 * Math.cos(userLat * Math.PI / 180));
+    originLat = userLat + dLat;
+    originLng = userLng + dLng;
+    console.log('Projecting origin forward', projectMeters.toFixed(0), 'm at heading', lastGpsHeading.toFixed(0));
+  }
+
   ds.route({
-    origin: new google.maps.LatLng(userLat, userLng),
+    origin: new google.maps.LatLng(originLat, originLng),
     destination: new google.maps.LatLng(stop.lat, stop.lng),
     travelMode: google.maps.TravelMode.DRIVING,
     drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
@@ -2562,6 +2607,8 @@ function updateTurnInstruction() {
 }
 
 var navOffRouteCount = 0; // consecutive off-route readings
+var lastGpsHeading = null;
+var lastGpsSpeed = 0; // m/s
 
 function checkOffRoute(lat, lng) {
   if (!isNavigating || !navRoutePath || navRoutePath.length < 2) return;

@@ -1193,7 +1193,7 @@ function renderRoute() {
 
     return `
       <div class="stop-card ${cardClass}" id="card-${origIdx}">
-        ${isNext ? '<div class="next-stop-badge">▸ NEXT STOP</div>' : ''}
+       
         <div class="stop-header" onclick="toggleStop(${origIdx})">
           <div class="stop-num">${String(displayIdx+1).padStart(2,'0')}</div>
           <div class="stop-info">

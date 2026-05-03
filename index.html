@@ -2816,6 +2816,7 @@ function clearStopLog(i) {
 // GEOCODING API
 // ============================================================
 function geocodeAddress(address, callback) {
+  // Try REST Geocoding API first
   var url = 'https://maps.googleapis.com/maps/api/geocode/json?address='
     + encodeURIComponent(address)
     + '&key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4';
@@ -2824,16 +2825,43 @@ function geocodeAddress(address, callback) {
     .then(function(data) {
       if (data.status === 'OK' && data.results && data.results[0]) {
         var loc = data.results[0].geometry.location;
+        console.log('Geocoded (REST) "' + address + '" to', loc.lat, loc.lng);
         callback({ lat: loc.lat, lng: loc.lng });
       } else {
-        console.log('Geocoding failed:', data.status, address);
-        callback(null);
+        console.log('REST Geocoding failed (' + data.status + '), trying JS SDK fallback for:', address);
+        geocodeWithSDK(address, callback);
       }
     })
     .catch(function(e) {
-      console.log('Geocoding error:', e);
-      callback(null);
+      console.log('REST geocoding error, trying JS SDK fallback:', e.message);
+      geocodeWithSDK(address, callback);
     });
+}
+
+function geocodeWithSDK(address, callback) {
+  if (!mapsReady || typeof google === 'undefined' || !google.maps.Geocoder) {
+    console.log('JS SDK Geocoder not ready');
+    callback(null);
+    return;
+  }
+  try {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: address }, function(results, status) {
+      if (status === 'OK' && results[0]) {
+        var loc = results[0].geometry.location;
+        var lat = typeof loc.lat === 'function' ? loc.lat() : loc.lat;
+        var lng = typeof loc.lng === 'function' ? loc.lng() : loc.lng;
+        console.log('Geocoded (SDK) "' + address + '" to', lat, lng);
+        callback({ lat: lat, lng: lng });
+      } else {
+        console.log('SDK Geocoding also failed:', status, address);
+        callback(null);
+      }
+    });
+  } catch(e) {
+    console.error('SDK Geocoder error:', e);
+    callback(null);
+  }
 }
 
 // ============================================================

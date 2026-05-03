@@ -81,7 +81,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .nav-row { display: flex; gap: 8px; margin-bottom: 14px; }
 .nav-btn { flex: 1; padding: 12px; border-radius: 6px; border: none; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
 .nav-maps { background: #4285f4; color: #fff; }
-.nav-waze { background: #33ccff; color: #000; }
 
 /* TIMESTAMPS */
 .ts-row { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -201,7 +200,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .map-popup-btns { display: flex; gap: 8px; margin-top: 12px; }
 .map-nav-btn { flex: 1; padding: 11px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
 .map-nav-start { background: var(--acc); color: #000; }
-.map-nav-waze { background: #33ccff; color: #000; }
 .map-nav-gmaps { background: #4285f4; color: #fff; }
 
 /* NAVIGATION HUD */
@@ -301,6 +299,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button class="day-btn" onclick="selectDay('TUE')">TUE</button>
     <button class="day-btn" onclick="selectDay('WED')">WED</button>
     <button class="day-btn" onclick="selectDay('THU')">THU</button>
+    <button class="day-btn" onclick="selectDay('FRI')">FRI</button>
   </div>
   <div class="stats-bar">
     <div class="stat"><div class="stat-val" id="statDone">0</div><div class="stat-lbl">Done</div></div>
@@ -327,6 +326,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button class="day-btn" id="mday-TUE" onclick="selectManageDay('TUE')">TUE</button>
     <button class="day-btn" id="mday-WED" onclick="selectManageDay('WED')">WED</button>
     <button class="day-btn" id="mday-THU" onclick="selectManageDay('THU')">THU</button>
+    <button class="day-btn" id="mday-FRI" onclick="selectManageDay('FRI')">FRI</button>
   </div>
   <div class="opt-bar">
     <input class="start-time" type="time" id="startTimeInput" value="06:45">
@@ -334,18 +334,19 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   </div>
   <div class="add-panel">
     <div class="add-title">ADD STOP</div>
-    <div class="form-group">
-      <label class="form-label">🔍 Search (type to find)</label>
-      <input class="form-input" id="searchInput" placeholder="Search business or address..." oninput="searchPlace(this.value)" autocomplete="off">
+    <div class="form-group" style="position:relative;">
+      <label class="form-label">🔍 Search Business or Address (recommended)</label>
+      <input class="form-input" id="searchInput" placeholder="Type business name or address..." oninput="searchPlace(this.value)" autocomplete="off" style="font-size:14px;">
       <div class="search-results" id="searchResults"></div>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Selecting from dropdown auto-fills name, address & coordinates</div>
     </div>
     <div class="form-group">
-      <label class="form-label">Business Name</label>
-      <input class="form-input" id="newName" placeholder="e.g. Mark Twain Diner">
+      <label class="form-label">Business Name <span id="nameAutoFill" style="font-size:9px;color:#06d6a0;display:none;">✓ from search</span></label>
+      <input class="form-input" id="newName" placeholder="Auto-fills from search above">
     </div>
     <div class="form-group">
-      <label class="form-label">Address</label>
-      <input class="form-input" id="newAddr" placeholder="e.g. 1601 Morris Ave, Union, NJ">
+      <label class="form-label">Address <span id="addrAutoFill" style="font-size:9px;color:#06d6a0;display:none;">✓ from search</span></label>
+      <input class="form-input" id="newAddr" placeholder="Auto-fills from search above">
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -378,6 +379,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">TUE</button>
     <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">WED</button>
     <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">THU</button>
+    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">FRI</button>
   </div>
   <div id="mapLegend" style="position:absolute;bottom:16px;left:12px;background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-family:var(--fm);font-size:10px;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.4);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;background:#0033a0;border:1px solid #fff;flex-shrink:0;"></div>Base (Cintas)</div>
@@ -416,7 +418,6 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <div class="map-popup-meta" id="popupMeta"></div>
     <div class="map-popup-btns">
       <button class="map-nav-btn map-nav-start" onclick="startInAppNav()" id="popupNavBtn">▶ NAVIGATE</button>
-      <button class="map-nav-btn map-nav-waze" onclick="openWazeToPopup()">🚗 WAZE</button>
       <button class="map-nav-btn map-nav-gmaps" onclick="openGMapsToPopup()">🗺️ MAPS</button>
     </div>
   </div>
@@ -560,8 +561,8 @@ let routeHistory = [];
 
 // stops[day] = array of stop objects
 // stopData[day] = array of logged data objects per stop
-let stops = { MON: [], TUE: [], WED: [], THU: [] };
-let stopData = { MON: [], TUE: [], WED: [], THU: [] };
+let stops = { MON: [], TUE: [], WED: [], THU: [], FRI: [] };
+let stopData = { MON: [], TUE: [], WED: [], THU: [], FRI: [] };
 
 // ============================================================
 // DEFAULT MONDAY STOPS
@@ -649,6 +650,7 @@ function init() {
   stops.TUE = [];
   stops.WED = [];
   stops.THU = JSON.parse(JSON.stringify(DEFAULT_THU_STOPS));
+  stops.FRI = [];
   initStopData();
   renderRoute();
   renderManageList();
@@ -665,13 +667,13 @@ async function syncFromFirebase() {
     const savedStops = await fbLoad('stops');
     if (savedStops && savedStops.MON && savedStops.MON.length > 0) {
       stops = savedStops;
-      ['MON','TUE','WED','THU'].forEach(d => { if (!stops[d]) stops[d] = []; });
+      ['MON','TUE','WED','THU','FRI'].forEach(d => { if (!stops[d]) stops[d] = []; });
       // If THU is empty in Firebase, seed it with defaults
       if (!stops.THU || stops.THU.length === 0) {
         stops.THU = JSON.parse(JSON.stringify(DEFAULT_THU_STOPS));
       }
       // Clean up any lingering notes we want removed
-      ['MON','TUE','WED','THU'].forEach(function(day) {
+      ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
         (stops[day] || []).forEach(function(s) {
           if (s.name === '2nd Ave Value Store') {
             if (s.note === 'Add 1 Hardwound TP') s.note = '';
@@ -695,7 +697,7 @@ async function syncFromFirebase() {
 
     // Log last serviced dates for all stops
     var svcLog = [];
-    ['MON','TUE','WED','THU'].forEach(function(day) {
+    ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
       (stops[day] || []).forEach(function(s) {
         if (s.lastServiced) svcLog.push(s.name + ': ' + new Date(s.lastServiced).toLocaleDateString());
       });
@@ -708,7 +710,7 @@ async function syncFromFirebase() {
 }
 
 function initStopData() {
-  ['MON','TUE','WED','THU'].forEach(day => {
+  ['MON','TUE','WED','THU','FRI'].forEach(day => {
     const len = stops[day] ? stops[day].length : 0;
     if (!stopData[day] || stopData[day].length !== len) {
       stopData[day] = Array.from({ length: len }, () => blankStopData());
@@ -799,7 +801,7 @@ function selectDay(day) {
 function selectManageDay(day) {
   currentManageDay = day;
   document.getElementById('manageDayLabel').textContent = day;
-  ['MON','TUE','WED','THU'].forEach(d => {
+  ['MON','TUE','WED','THU','FRI'].forEach(d => {
     document.getElementById('mday-' + d).classList.toggle('active', d === day);
   });
   renderManageList();
@@ -842,11 +844,13 @@ function searchPlace(query) {
 
 function selectSearchResult(placeId, name, addr) {
   document.getElementById('searchResults').classList.remove('show');
-  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').value = name;
   document.getElementById('newName').value = name;
   document.getElementById('newAddr').value = addr;
   document.getElementById('newOpens').value = '';
   document.getElementById('fetchingTag').style.display = 'inline';
+  document.getElementById('nameAutoFill').style.display = 'inline';
+  document.getElementById('addrAutoFill').style.display = 'inline';
   selectedPlaceCoords = null;
 
   if (!placesService) {
@@ -901,6 +905,20 @@ function addStop() {
   stops[currentManageDay].push(newStop);
   stopData[currentManageDay].push(blankStopData());
   saveStops();
+
+  // Hide auto-fill checkmarks
+  var na = document.getElementById('nameAutoFill');
+  var aa = document.getElementById('addrAutoFill');
+  if (na) na.style.display = 'none';
+  if (aa) aa.style.display = 'none';
+
+  // Visual confirmation
+  var hasCoords = newStop.lat && newStop.lng;
+  if (hasCoords) {
+    console.log('✓ Added "' + name + '" with coords - pin appears on map');
+  } else {
+    console.log('Added "' + name + '" - geocoding address...');
+  }
   renderManageList();
   if (currentManageDay === currentDay) renderRoute();
 
@@ -965,16 +983,75 @@ function removeStop(day, idx) {
   }
 }
 
+var editingStopRef = null; // {day, idx}
+
 function editStop(day, idx) {
   const s = stops[day][idx];
-  const newName = prompt('Name:', s.name); if (!newName) return;
-  const newOpens = prompt('Opens at:', s.opens) || s.opens;
-  const newNote = prompt('Note:', s.note) || '';
-  const newFreq = prompt('Frequency (weekly / biweekly / monthly):', s.frequency || 'weekly') || 'weekly';
-  stops[day][idx] = { ...s, name: newName, opens: newOpens, note: newNote, frequency: newFreq };
+  editingStopRef = { day: day, idx: idx };
+
+  // Populate modal fields
+  document.getElementById('editName').value = s.name || '';
+  document.getElementById('editAddr').value = s.addr || '';
+  document.getElementById('editOpens').value = s.opens || '';
+  document.getElementById('editNote').value = s.note || '';
+  document.getElementById('editFreq').value = s.frequency || 'weekly';
+
+  // Show modal
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+  editingStopRef = null;
+}
+
+function saveEditedStop() {
+  if (!editingStopRef) return;
+  const { day, idx } = editingStopRef;
+  const s = stops[day][idx];
+
+  const newName = document.getElementById('editName').value.trim();
+  const newAddr = document.getElementById('editAddr').value.trim();
+  const newOpens = document.getElementById('editOpens').value.trim() || 'TBD';
+  const newNote = document.getElementById('editNote').value.trim();
+  const newFreq = document.getElementById('editFreq').value;
+
+  if (!newName) { alert('Name required.'); return; }
+  if (!newAddr) { alert('Address required.'); return; }
+
+  // Detect if address changed - need to re-geocode
+  const addrChanged = (newAddr !== s.addr);
+
+  stops[day][idx] = {
+    ...s,
+    name: newName,
+    addr: newAddr,
+    opens: newOpens,
+    note: newNote,
+    frequency: newFreq,
+    // Clear coords if address changed so they get re-geocoded
+    lat: addrChanged ? null : s.lat,
+    lng: addrChanged ? null : s.lng
+  };
+
   saveStops();
+  closeEditModal();
   renderManageList();
   if (day === currentDay) renderRoute();
+  if (mapView) renderMapMarkers();
+
+  // If address changed, geocode the new address now
+  if (addrChanged) {
+    geocodeAddress(newAddr, function(coords) {
+      if (coords) {
+        stops[day][idx].lat = coords.lat;
+        stops[day][idx].lng = coords.lng;
+        saveStops();
+        if (mapView) renderMapMarkers();
+        console.log('Re-geocoded "' + newName + '" to', coords.lat, coords.lng);
+      }
+    });
+  }
 }
 
 // ============================================================
@@ -1099,11 +1176,15 @@ function renderRoute() {
   }
 
   const filtered = getFilteredStops();
+  const nextStopIdx = getNextStopIdx(filtered);
+
   list.innerHTML = filtered.map(({ stop, origIdx }, displayIdx) => {
     const d = dayData[origIdx] || blankStopData();
     const isActive = activeStopIdx === origIdx;
     const isDone = d.status === 'done';
-    const cardClass = isDone ? 'done' : isActive ? 'active' : '';
+    const isNext = origIdx === nextStopIdx && !isDone && !isActive;
+    let cardClass = isDone ? 'done' : isActive ? 'active' : '';
+    if (isNext) cardClass += ' next-stop';
     const statusClass = isDone ? 's-done' : isActive ? 's-active' : 's-pending';
     const statusText = isDone ? 'done' : isActive ? 'active' : 'pending';
     const driveTime = displayIdx > 0 && dayData[filtered[displayIdx-1].origIdx] && dayData[filtered[displayIdx-1].origIdx].departureTime && d.arrivalTime
@@ -1112,6 +1193,7 @@ function renderRoute() {
 
     return `
       <div class="stop-card ${cardClass}" id="card-${origIdx}">
+        ${isNext ? '<div class="next-stop-badge">▸ NEXT STOP</div>' : ''}
         <div class="stop-header" onclick="toggleStop(${origIdx})">
           <div class="stop-num">${String(displayIdx+1).padStart(2,'0')}</div>
           <div class="stop-info">
@@ -1180,7 +1262,6 @@ function renderStopPanel(i) {
   let html = `
     <div class="nav-row">
       <button class="nav-btn nav-maps" onclick="openNav(${i},'maps')">🗺️ GOOGLE MAPS</button>
-      <button class="nav-btn nav-waze" onclick="openNav(${i},'waze')">🚗 WAZE</button>
     </div>
     <div style="text-align:right;margin-bottom:10px;">
       <button onclick="clearStopLog(${i})" style="background:none;border:none;color:var(--mut);font-family:var(--fm);font-size:10px;cursor:pointer;text-decoration:underline;text-transform:uppercase;letter-spacing:1px;">🗑 CLEAR LOG</button>
@@ -1445,11 +1526,7 @@ function completeStop(i) {
 function openNav(i, app) {
   const stop = stops[currentDay][i];
   const encoded = encodeURIComponent(stop.addr);
-  if (app === 'maps') {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`, '_blank');
-  } else {
-    window.open(`https://waze.com/ul?q=${encoded}&navigate=yes`, '_blank');
-  }
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`, '_blank');
 }
 
 // ============================================================
@@ -1620,6 +1697,35 @@ function setFreq(freq) {
     const btn = document.getElementById('freq-' + f);
     if (btn) btn.className = 'choice-btn' + (f === freq ? ' sel-y' : '');
   });
+}
+
+function getNextStopIdx(filtered) {
+  // Returns origIdx of the closest pending stop to user's current location.
+  // Falls back to first pending in route order if no GPS.
+  var pending = filtered.filter(f => {
+    var d = stopData[currentDay][f.origIdx];
+    return !d || d.status !== 'done';
+  });
+  if (pending.length === 0) return -1;
+
+  // If we have user GPS — pick the closest pending stop with coords
+  if (userLat !== null && userLng !== null) {
+    var closestIdx = -1;
+    var closestDist = Infinity;
+    pending.forEach(function(p) {
+      if (p.stop.lat && p.stop.lng) {
+        var dist = distanceMiles(userLat, userLng, p.stop.lat, p.stop.lng);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestIdx = p.origIdx;
+        }
+      }
+    });
+    if (closestIdx !== -1) return closestIdx;
+  }
+
+  // Fallback — first pending in route order
+  return pending[0].origIdx;
 }
 
 function getFilteredStops() {
@@ -1916,6 +2022,16 @@ function startGPSTracking() {
         }
         userLat = useLat;
         userLng = useLng;
+
+        // Refresh next-stop highlight when GPS moves significantly
+        if (!window._lastNextStopRefresh || Date.now() - window._lastNextStopRefresh > 30000) {
+          window._lastNextStopRefresh = Date.now();
+          var routeTab = document.getElementById('routeTab');
+          if (routeTab && routeTab.style.display !== 'none') {
+            // Re-render route to update next-stop indicator
+            renderRoute();
+          }
+        }
       }
 
       // Snap to road while navigating for cleaner display
@@ -1957,7 +2073,7 @@ function selectMapDay(day) {
     b.classList.toggle('active', b.textContent === day);
   });
   // Update map day buttons
-  ['MON','TUE','WED','THU'].forEach(function(d) {
+  ['MON','TUE','WED','THU','FRI'].forEach(function(d) {
     var btn = document.getElementById('mapday-' + d);
     if (!btn) return;
     if (d === day) {
@@ -2071,12 +2187,6 @@ function showMapStopPopup(i) {
 function closeMapPopup() {
   document.getElementById('mapStopPopup').classList.remove('show');
   popupStopIdx = null;
-}
-
-function openWazeToPopup() {
-  if (popupStopIdx === null) return;
-  var stop = stops[currentDay][popupStopIdx];
-  window.open('https://waze.com/ul?q=' + encodeURIComponent(stop.addr) + '&navigate=yes', '_blank');
 }
 
 function openGMapsToPopup() {
@@ -2863,5 +2973,51 @@ window.addEventListener('DOMContentLoaded', function() {
   console.log('App loaded - waiting for auth state...');
 });
 </script>
+<!-- ===== EDIT STOP MODAL ===== -->
+<div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--sur);border:2px solid var(--acc);border-radius:12px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--acc);">EDIT STOP</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Business Name</label>
+      <input class="form-input" id="editName">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Address</label>
+      <input class="form-input" id="editAddr">
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ If changed, map pin will update automatically</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Opens At</label>
+        <input class="form-input" id="editOpens" placeholder="e.g. 9:00AM or 24hrs">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Frequency</label>
+        <select class="form-input" id="editFreq" style="background:var(--sur2);color:var(--txt);">
+          <option value="weekly">Weekly</option>
+          <option value="biweekly">Biweekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Note</label>
+      <input class="form-input" id="editNote" placeholder="Optional">
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="closeEditModal()" style="flex:1;padding:12px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);cursor:pointer;">CANCEL</button>
+      <button onclick="saveEditedStop()" style="flex:2;padding:12px;background:var(--acc);border:none;color:#000;border-radius:6px;font-family:var(--fm);font-weight:600;cursor:pointer;">SAVE CHANGES</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

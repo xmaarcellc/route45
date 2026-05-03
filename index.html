@@ -415,6 +415,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button id="btn3D" onclick="toggle3D()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️ 3D</button>
     <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
     <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
+    <button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -2452,12 +2453,16 @@ function fetchDirectionsFallback(idx) {
     console.log('Projecting origin forward', projectMeters.toFixed(0), 'm at heading', lastGpsHeading.toFixed(0));
   }
 
-  ds.route({
+  var routeRequest = {
     origin: new google.maps.LatLng(originLat, originLng),
     destination: new google.maps.LatLng(stop.lat, stop.lng),
     travelMode: google.maps.TravelMode.DRIVING,
     drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
-  }, function(result, status) {
+  };
+  if (!tollsEnabled) {
+    routeRequest.avoidTolls = true;
+  }
+  ds.route(routeRequest, function(result, status) {
     console.log('Directions SDK result:', status, result ? result.routes[0] : null);
     if (status !== 'OK') {
       console.error('Directions error:', status);
@@ -2610,6 +2615,7 @@ function updateTurnInstruction() {
 var navOffRouteCount = 0; // consecutive off-route readings
 var lastGpsHeading = null;
 var lastGpsSpeed = 0; // m/s
+var tollsEnabled = true; // allow toll roads by default (truck has EZ-Pass)
 
 function checkOffRoute(lat, lng) {
   if (!isNavigating || !navRoutePath || navRoutePath.length < 2) return;
@@ -2772,6 +2778,43 @@ function fitAllStops() {
 }
 
 // ============================================================
+// TOLL ROAD TOGGLE
+// ============================================================
+function toggleTolls() {
+  tollsEnabled = !tollsEnabled;
+  var btn = document.getElementById('tollToggleBtn');
+  if (btn) {
+    if (tollsEnabled) {
+      btn.textContent = '💰 TOLLS: ON';
+      btn.style.background = 'var(--sur)';
+      btn.style.color = 'var(--txt)';
+      btn.style.border = '1px solid var(--bdr)';
+    } else {
+      btn.textContent = '🚫 NO TOLLS';
+      btn.style.background = 'var(--acc)';
+      btn.style.color = '#000';
+      btn.style.border = 'none';
+    }
+  }
+
+  // If currently navigating, reroute with new toll preference
+  if (isNavigating) {
+    console.log('Toll preference changed — rerouting');
+    if (navStopIdx === -1) {
+      fetchDirectionsToBase();
+    } else if (navStopIdx !== null) {
+      fetchDirections(navStopIdx);
+    }
+  } else {
+    // Show confirmation toast
+    var msg = tollsEnabled
+      ? 'Toll roads enabled — routing will use turnpikes/highways if faster.'
+      : 'Toll roads disabled — routing will avoid turnpikes/tolls.';
+    console.log(msg);
+  }
+}
+
+// ============================================================
 // NAVIGATE TO BASE
 // ============================================================
 function navigateToBase() {
@@ -2850,12 +2893,16 @@ function fetchDirectionsToBase() {
     originLng = userLng + dLng;
   }
 
-  ds.route({
+  var routeRequest = {
     origin: new google.maps.LatLng(originLat, originLng),
     destination: new google.maps.LatLng(BASE_LOCATION.lat, BASE_LOCATION.lng),
     travelMode: google.maps.TravelMode.DRIVING,
     drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
-  }, function(result, status) {
+  };
+  if (!tollsEnabled) {
+    routeRequest.avoidTolls = true;
+  }
+  ds.route(routeRequest, function(result, status) {
     if (status !== 'OK') {
       console.error('Directions to base error:', status);
       document.getElementById('navDist').textContent = 'ERR';

@@ -2524,7 +2524,7 @@ function stopNavigation() {
   var followBtn = document.getElementById('followBtn');
   if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
   // Reset map heading in 3D mode
-  if (is3D && mapView) { mapView.setHeading(0); start3DRotation(); }
+  if (is3D && mapView) { mapView.setHeading(0); }
 }
 
 var is3D = false;
@@ -2545,12 +2545,14 @@ function toggle3D() {
     }
     if (center) mapView.setCenter(center);
 
-    // Switch to satellite + tilt for 3D
+    // Switch to satellite + tilt for 3D - allow user to drag/rotate freely
     mapView.setOptions({
       mapTypeId: google.maps.MapTypeId.HYBRID,
       tilt: 45,
       zoom: 18,
-      styles: []
+      styles: [],
+      gestureHandling: 'greedy',
+      rotateControl: true
     });
 
     if (btn) {
@@ -2560,17 +2562,15 @@ function toggle3D() {
       btn.style.border = 'none';
     }
 
-    // Slow rotation for immersive effect
-    start3DRotation();
-
+    // No auto-rotation — user controls heading manually
   } else {
     // Back to dark flat map
-    stop3DRotation();
     mapView.setOptions({
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       tilt: 0,
       zoom: 13,
-      styles: getDarkStyle()
+      styles: getDarkStyle(),
+      gestureHandling: 'greedy'
     });
     mapView.setHeading(0);
     if (btn) {
@@ -2585,21 +2585,8 @@ function toggle3D() {
 
 var rotationInterval = null;
 
-function start3DRotation() {
-  stop3DRotation();
-  // Slowly rotate the map for immersive effect
-  rotationInterval = setInterval(function() {
-    if (!is3D || !mapView) { stop3DRotation(); return; }
-    // If navigating - face direction of travel
-    if (isNavigating && userLat) {
-      // heading handled by GPS
-    } else {
-      var heading = mapView.getHeading() || 0;
-      mapView.setHeading((heading + 0.3) % 360);
-    }
-  }, 50);
-}
-
+// Auto-rotation removed — user controls map heading manually in 3D mode
+function start3DRotation() { /* no-op */ }
 function stop3DRotation() {
   if (rotationInterval) { clearInterval(rotationInterval); rotationInterval = null; }
 }

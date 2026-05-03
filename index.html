@@ -1258,7 +1258,6 @@ function renderStopPanel(i) {
   // If done, show summary
   if (d.status === 'done') return renderStopSummary(i);
 
-  const addr = encodeURIComponent(stop.addr);
   let html = `
     <div class="nav-row">
       <button class="nav-btn nav-maps" onclick="openNav(${i},'maps')">🗺️ GOOGLE MAPS</button>
@@ -1280,88 +1279,7 @@ function renderStopPanel(i) {
   if (!d.arrivalTime) {
     html += `<button class="arrive-btn" onclick="logArrival(${i})">📍 ARRIVED</button>`;
   } else if (!d.departureTime) {
-    html += `<button class="depart-btn" onclick="logDeparture(${i})">🚗 DEPARTED</button>`;
-  }
-
-  if (d.departureTime) {
-    html += `<div class="q-divider"></div>`;
-
-    // Q1 Duration
-    html += `<div class="q-card">
-      <div class="q-lbl">1. Stop Duration</div>
-      <div class="dur-row">
-        <input class="dur-input" type="number" inputmode="numeric" id="dur-${i}" placeholder="0" value="${d.duration || ''}" onchange="setDuration(${i}, this.value)">
-        <span class="dur-unit">minutes</span>
-      </div>
-    </div>`;
-
-    // Q2 Traffic
-    html += `<div class="q-card">
-      <div class="q-lbl">2. Traffic</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.traffic==='L'?'sel-L':''}" onclick="setField(${i},'traffic','L')">Light</button>
-        <button class="choice-btn ${d.traffic==='M'?'sel-M':''}" onclick="setField(${i},'traffic','M')">Moderate</button>
-        <button class="choice-btn ${d.traffic==='H'?'sel-H':''}" onclick="setField(${i},'traffic','H')">Heavy</button>
-      </div>
-    </div>`;
-
-    // Q3 Delays
-    html += `<div class="q-card">
-      <div class="q-lbl">3. Any Delays?</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.delay==='Y'?'sel-y':''}" onclick="setDelay(${i},'Y')">Yes</button>
-        <button class="choice-btn ${d.delay==='N'?'sel-n':''}" onclick="setDelay(${i},'N')">No</button>
-      </div>
-      <input class="delay-input ${d.delay==='Y'?'show':''}" id="delayDesc-${i}" placeholder="Describe delay..." value="${d.delayDesc||''}" onchange="setDelayDesc(${i}, this.value)">
-    </div>`;
-
-    // Q4 Parking
-    html += `<div class="q-card">
-      <div class="q-lbl">4. Easy Parking? (+3min easy / +6min hard)</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.parking==='Y'?'sel-y':''}" onclick="setField(${i},'parking','Y')">Easy +3</button>
-        <button class="choice-btn ${d.parking==='N'?'sel-n':''}" onclick="setField(${i},'parking','N')">Hard +6</button>
-      </div>
-    </div>`;
-
-    // Q5 Waited
-    html += `<div class="q-card">
-      <div class="q-lbl">5. Had to Wait?</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.waited==='Y'?'sel-y':''}" onclick="setField(${i},'waited','Y')">Yes</button>
-        <button class="choice-btn ${d.waited==='N'?'sel-n':''}" onclick="setField(${i},'waited','N')">No</button>
-      </div>
-    </div>`;
-
-    // Q6 Linen
-    html += `<div class="q-card">
-      <div class="q-lbl">6. Picked Up Dirty Linen?</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.linen==='Y'?'sel-y':''}" onclick="setField(${i},'linen','Y')">Yes</button>
-        <button class="choice-btn ${d.linen==='N'?'sel-n':''}" onclick="setField(${i},'linen','N')">No</button>
-      </div>
-    </div>`;
-
-    // Q7 Employees
-    html += `<div class="q-card">
-      <div class="q-lbl">7. Talked to Employees? (+2min)</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.employees==='Y'?'sel-y':''}" onclick="setField(${i},'employees','Y')">Yes +2</button>
-        <button class="choice-btn ${d.employees==='N'?'sel-n':''}" onclick="setField(${i},'employees','N')">No</button>
-      </div>
-    </div>`;
-
-    // Q8 Complaint
-    html += `<div class="q-card">
-      <div class="q-lbl">8. Service Complaint?</div>
-      <div class="btn-row">
-        <button class="choice-btn ${d.complaint==='Y'?'sel-y':''}" onclick="setField(${i},'complaint','Y')">Yes</button>
-        <button class="choice-btn ${d.complaint==='N'?'sel-n':''}" onclick="setField(${i},'complaint','N')">No</button>
-      </div>
-    </div>`;
-
-    const allAnswered = d.duration && d.traffic && d.delay && d.parking && d.waited && d.linen && d.employees && d.complaint;
-    html += `<button class="complete-btn ${allAnswered ? 'show' : ''}" onclick="completeStop(${i})">✅ COMPLETE STOP</button>`;
+    html += `<button class="depart-btn" onclick="logDepartureAndComplete(${i})">🚗 DEPARTED & COMPLETE STOP</button>`;
   }
 
   // Always show notes section

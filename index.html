@@ -414,6 +414,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
     <button id="btn3D" onclick="toggle3D()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️ 3D</button>
     <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
+    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -2769,6 +2770,182 @@ function fitAllStops() {
   });
   if (hasCoords) mapView.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
 }
+
+// ============================================================
+// NAVIGATE TO BASE
+// ============================================================
+function navigateToBase() {
+  if (!userLat) {
+    alert('Waiting for GPS location... Please allow location access.');
+    return;
+  }
+
+  if (isNavigating) {
+    if (!confirm('Already navigating to ' + (stops[currentDay][navStopIdx] ? stops[currentDay][navStopIdx].name : 'a stop') + '. Switch to navigating to base?')) {
+      return;
+    }
+    stopNavigation();
+  }
+
+  // Set up navigation as if base were a stop, but use special index -1
+  navStopIdx = -1;
+  isNavigating = true;
+  autoFollow = true;
+  closeMapPopup();
+
+  // Snap map to user immediately and lock to nav zoom
+  if (mapView && userLat) {
+    mapView.panTo({ lat: userLat, lng: userLng });
+    mapView.setZoom(17);
+  }
+
+  // Show HUD
+  document.getElementById('navHud').classList.add('show');
+  document.getElementById('navDest').textContent = '🏢 ' + BASE_LOCATION.name;
+  document.getElementById('recenterBtn').style.display = 'flex';
+  document.getElementById('navTurn').style.display = 'none';
+
+  // Update follow button
+  var followBtn = document.getElementById('followBtn');
+  if (followBtn) { followBtn.textContent = '🔵 FOLLOWING'; followBtn.style.background = 'var(--acc)'; followBtn.style.color = '#000'; }
+
+  // Clear any existing route
+  if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
+  if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+  if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
+
+  // Fetch directions to base
+  if (!mapsReady) {
+    document.getElementById('navDist').textContent = '...';
+    document.getElementById('navTime').textContent = '...';
+    var waitForMaps = setInterval(function() {
+      if (mapsReady) { clearInterval(waitForMaps); fetchDirectionsToBase(); }
+    }, 500);
+  } else {
+    setTimeout(function() { fetchDirectionsToBase(); }, 300);
+  }
+
+  // Refresh stats every 15s
+  navInterval = setInterval(function() {
+    if (isNavigating && navStopIdx === -1) {
+      fetchDirectionsToBase();
+    }
+  }, 15000);
+}
+
+function fetchDirectionsToBase() {
+  if (!mapsReady) return;
+  console.log('Directions SDK: routing to BASE');
+  var ds = new google.maps.DirectionsService();
+
+  // Project origin forward (same logic as fetchDirectionsFallback)
+  var originLat = userLat;
+  var originLng = userLng;
+  if (lastGpsHeading != null && lastGpsSpeed > 1) {
+    var projectMeters = Math.max(30, Math.min(80, lastGpsSpeed * 3));
+    var headingRad = lastGpsHeading * Math.PI / 180;
+    var dLat = (projectMeters * Math.cos(headingRad)) / 111000;
+    var dLng = (projectMeters * Math.sin(headingRad)) / (111000 * Math.cos(userLat * Math.PI / 180));
+    originLat = userLat + dLat;
+    originLng = userLng + dLng;
+  }
+
+  ds.route({
+    origin: new google.maps.LatLng(originLat, originLng),
+    destination: new google.maps.LatLng(BASE_LOCATION.lat, BASE_LOCATION.lng),
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS }
+  }, function(result, status) {
+    if (status !== 'OK') {
+      console.error('Directions to base error:', status);
+      document.getElementById('navDist').textContent = 'ERR';
+      document.getElementById('navTime').textContent = status;
+      return;
+    }
+
+    var leg = result.routes[0].legs[0];
+    var durationSec = (leg.duration_in_traffic && leg.duration_in_traffic.value) ? leg.duration_in_traffic.value : leg.duration.value;
+    var normalSec = leg.duration.value;
+    var distMi = (leg.distance.value * 0.000621371).toFixed(1);
+    var mins = Math.round(durationSec / 60);
+    var delay = Math.round((durationSec - normalSec) / 60);
+    var eta = new Date(Date.now() + durationSec * 1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+
+    document.getElementById('navDist').textContent = distMi;
+    document.getElementById('navTime').textContent = mins;
+    document.getElementById('navETA').textContent = eta;
+    document.getElementById('navTraffic').textContent = delay >= 2 ? '+' + delay + 'm' : 'Clear';
+    document.getElementById('navTraffic').style.color = delay >= 2 ? 'var(--red)' : 'var(--grn)';
+
+    // Draw route polyline
+    var path = result.routes[0].overview_path;
+    navRoutePath = path;
+
+    if (window.navPolylineOutline) { window.navPolylineOutline.setMap(null); window.navPolylineOutline = null; }
+    if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
+
+    // Blue outline + line for base navigation (visually distinct from stop nav)
+    window.navPolylineOutline = new google.maps.Polyline({
+      path: path, strokeColor: '#000', strokeWeight: 14,
+      strokeOpacity: 0.7, zIndex: 999, clickable: false, map: mapView
+    });
+    navPolyline = new google.maps.Polyline({
+      path: path, strokeColor: '#0066ff', strokeWeight: 9,
+      strokeOpacity: 1.0, zIndex: 1000, clickable: false, map: mapView
+    });
+
+    // Turn-by-turn
+    navSteps = leg.steps || [];
+    updateTurnInstruction();
+
+    // Arrived at base
+    if (parseFloat(distMi) < 0.05) {
+      document.getElementById('navDest').textContent = '🏢 Arrived at base!';
+      document.getElementById('navTurn').style.display = 'none';
+    }
+  });
+}
+
+// Override checkOffRoute to handle base navigation reroutes
+var _origCheckOffRoute = checkOffRoute;
+checkOffRoute = function(lat, lng) {
+  if (!isNavigating || !navRoutePath || navRoutePath.length < 2) return;
+  var now = Date.now();
+  if (now - navLastReroute < 5000) return;
+
+  var minDist = Infinity;
+  navRoutePath.forEach(function(point) {
+    var ptLat = typeof point.lat === 'function' ? point.lat() : point.lat;
+    var ptLng = typeof point.lng === 'function' ? point.lng() : point.lng;
+    var d = distanceMiles(lat, lng, ptLat, ptLng);
+    if (d < minDist) minDist = d;
+  });
+
+  if (minDist > 0.05) {
+    navOffRouteCount++;
+    console.log('Off route reading ' + navOffRouteCount + '/2 (' + minDist.toFixed(3) + ' mi)');
+
+    if (navOffRouteCount >= 2) {
+      navLastReroute = now;
+      navOffRouteCount = 0;
+      console.log('Confirmed off route — rerouting');
+
+      var turnTxt = document.getElementById('navTurnTxt');
+      var turnIcon = document.getElementById('navTurnIcon');
+      if (turnTxt) turnTxt.textContent = 'Rerouting...';
+      if (turnIcon) turnIcon.textContent = '🔄';
+
+      // Route to base if navigating to base, else route to stop
+      if (navStopIdx === -1) {
+        fetchDirectionsToBase();
+      } else if (navStopIdx !== null) {
+        fetchDirections(navStopIdx);
+      }
+    }
+  } else {
+    navOffRouteCount = 0;
+  }
+};
 
 // Refresh map markers when a stop is completed
 var origCompleteStop = completeStop;

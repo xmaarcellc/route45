@@ -2143,9 +2143,11 @@ function startGPSTracking() {
         lastGpsSpeed = pos.coords.speed; // m/s
       }
 
-      // Fix heading - GPS heading is clockwise from north, Maps rotation matches
-      // but arrow symbol points UP by default so we don't need offset
+      // When navigating, the map itself rotates to match heading, so the arrow
+      // should point "up" (direction of travel) relative to the rotated map.
+      // When not navigating, rotate the arrow to show heading on a north-up map.
       var correctedHeading = pos.coords.heading != null ? pos.coords.heading : 0;
+      var iconRotation = isNavigating ? 0 : correctedHeading;
 
       var icon = {
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -2154,7 +2156,7 @@ function startGPSTracking() {
         fillOpacity: 1,
         strokeColor: '#fff',
         strokeWeight: 2,
-        rotation: correctedHeading
+        rotation: iconRotation
       };
 
       // In 3D mode during navigation - face direction of travel
@@ -2212,6 +2214,10 @@ function startGPSTracking() {
           mapView.panTo(latlng);
           // Keep zoom locked at navigation level
           if (mapView.getZoom() < 16) mapView.setZoom(17);
+          // Rotate map to match direction of travel (heading-up like Apple/Google Maps)
+          if (lastGpsHeading != null && !isNaN(lastGpsHeading)) {
+            mapView.setHeading(lastGpsHeading);
+          }
         } else if (autoFollow) {
           mapView.panTo(latlng);
         }
@@ -2681,8 +2687,8 @@ function stopNavigation() {
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');
   if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
-  // Reset map heading in 3D mode
-  if (is3D && mapView) { mapView.setHeading(0); }
+  // Reset map heading to north-up
+  if (mapView) { mapView.setHeading(0); }
 }
 
 var is3D = false;

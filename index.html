@@ -276,6 +276,35 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .google-btn { width: 100%; background: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 8px; padding: 14px 20px; font-family: var(--fb); font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: box-shadow 0.2s; }
 .google-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.2); }
 .google-btn:active { background: #f8f8f8; }
+
+
+/* MODE BANNER (Reorganize / Measure) */
+.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(--acc); color: #000; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
+.mode-banner.show { display: block; }
+.mode-banner.measure { background: #4285f4; color: #fff; }
+.mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.mode-banner-text { flex: 1; font-size: 14px; }
+.mode-banner-counter { font-family: var(--fd); font-size: 22px; letter-spacing: 1px; }
+.mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
+.mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+.mode-btn-cancel { background: rgba(0,0,0,0.2); color: #000; }
+.mode-banner.measure .mode-btn-cancel { background: rgba(255,255,255,0.2); color: #fff; }
+.mode-btn-done { background: #000; color: var(--acc); font-weight: bold; }
+.mode-btn-done:disabled { background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+.mode-banner.measure .mode-btn-done { background: #fff; color: #4285f4; }
+.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(--sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.7); }
+.measure-result.show { display: block; }
+.measure-result-close { position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(--mut); font-size: 18px; cursor: pointer; }
+.measure-pair { font-family: var(--fm); font-size: 12px; color: var(--txt); margin-bottom: 12px; padding-right: 24px; line-height: 1.4; }
+.measure-pair strong { color: #4285f4; }
+.measure-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.measure-mode-box { background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px; text-align: center; }
+.measure-mode-icon { font-size: 22px; line-height: 1; }
+.measure-mode-label { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+.measure-mode-dist { font-family: var(--fd); font-size: 22px; color: var(--acc); margin-top: 6px; line-height: 1; }
+.measure-mode-time { font-family: var(--fm); font-size: 11px; color: var(--txt); margin-top: 3px; }
+.measure-mode-traffic { font-family: var(--fm); font-size: 9px; margin-top: 2px; }
+  
 </style>
 </head>
 <body>
@@ -415,7 +444,9 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
     <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
     <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
-    <button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🔀 REORGANIZE</button>
+    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📏 MEASURE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -455,7 +486,7 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
   </div>
 
   <!-- STOP POPUP (shown when tapping a pin) -->
-  <div class="map-stop-popup" id="mapStopPopup">
+<div class="map-stop-popup" id="mapStopPopup">
     <button class="map-popup-close" onclick="closeMapPopup()">✕</button>
     <div class="map-popup-name" id="popupName">Stop Name</div>
     <div class="map-popup-addr" id="popupAddr">Address</div>
@@ -463,6 +494,39 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <div class="map-popup-btns">
       <button class="map-nav-btn map-nav-start" onclick="startInAppNav()" id="popupNavBtn">▶ NAVIGATE</button>
       <button class="map-nav-btn map-nav-gmaps" onclick="openGMapsToPopup()">🗺️ MAPS</button>
+    </div>
+  </div>
+
+  <!-- REORGANIZE / MEASURE MODE BANNER -->
+  <div class="mode-banner" id="modeBanner">
+    <div class="mode-banner-row">
+      <div class="mode-banner-text" id="modeBannerText">Tap stops in the order you want them</div>
+      <div class="mode-banner-counter" id="modeBannerCounter">0/0</div>
+    </div>
+    <div class="mode-banner-btns">
+      <button class="mode-btn mode-btn-cancel" onclick="cancelMode()">CANCEL</button>
+      <button class="mode-btn mode-btn-done" id="modeDoneBtn" onclick="finishMode()" disabled>DONE</button>
+    </div>
+  </div>
+
+  <!-- MEASURE RESULT POPUP -->
+  <div class="measure-result" id="measureResult">
+    <button class="measure-result-close" onclick="closeMeasureResult()">✕</button>
+    <div class="measure-pair" id="measurePairText">From <strong>A</strong> to <strong>B</strong></div>
+    <div class="measure-modes">
+      <div class="measure-mode-box">
+        <div class="measure-mode-icon">🚗</div>
+        <div class="measure-mode-label">Driving</div>
+        <div class="measure-mode-dist" id="measureDriveDist">--</div>
+        <div class="measure-mode-time" id="measureDriveTime">--</div>
+        <div class="measure-mode-traffic" id="measureDriveTraffic"></div>
+      </div>
+      <div class="measure-mode-box">
+        <div class="measure-mode-icon">🚶</div>
+        <div class="measure-mode-label">Walking</div>
+        <div class="measure-mode-dist" id="measureWalkDist">--</div>
+        <div class="measure-mode-time" id="measureWalkTime">--</div>
+      </div>
     </div>
   </div>
 </div>
@@ -3603,6 +3667,220 @@ window.addEventListener('DOMContentLoaded', function() {
   // Auth state listener handles login/init automatically
   console.log('App loaded - waiting for auth state...');
 });
+
+  // ============================================================
+// MAP MODE: REORGANIZE + MEASURE
+// ============================================================
+var mapMode = null;          // null | 'reorganize' | 'measure'
+var reorgOrder = [];          // origIdx[] in tap order
+var measureSelection = [];    // origIdx[] max 2
+
+function startReorganize() {
+  if (mapMode) cancelMode();
+  var dayStops = stops[currentDay] || [];
+  if (dayStops.length === 0) { alert('No stops on ' + currentDay + ' to reorganize.'); return; }
+  if (isNavigating) { alert('Stop navigation first before reorganizing.'); return; }
+  mapMode = 'reorganize';
+  reorgOrder = [];
+  var banner = document.getElementById('modeBanner');
+  banner.classList.remove('measure');
+  banner.classList.add('show');
+  document.getElementById('modeBannerText').textContent = 'Tap stops in order. Tap last one again to undo.';
+  document.getElementById('modeDoneBtn').style.display = 'block';
+  updateReorgCounter();
+  closeMapPopup();
+  renderModeMarkers();
+}
+
+function startMeasure() {
+  if (mapMode) cancelMode();
+  var dayStops = stops[currentDay] || [];
+  if (dayStops.length < 2) { alert('Need at least 2 stops to measure.'); return; }
+  if (isNavigating) { alert('Stop navigation first before measuring.'); return; }
+  mapMode = 'measure';
+  measureSelection = [];
+  var banner = document.getElementById('modeBanner');
+  banner.classList.remove('show');
+  banner.classList.add('measure', 'show');
+  document.getElementById('modeBannerText').textContent = 'Tap 2 stops to measure distance';
+  document.getElementById('modeBannerCounter').textContent = '0/2';
+  document.getElementById('modeDoneBtn').style.display = 'none';
+  closeMapPopup();
+  closeMeasureResult();
+  renderModeMarkers();
+}
+
+function cancelMode() {
+  mapMode = null;
+  reorgOrder = [];
+  measureSelection = [];
+  document.getElementById('modeBanner').classList.remove('show');
+  var doneBtn = document.getElementById('modeDoneBtn');
+  if (doneBtn) doneBtn.style.display = 'block';
+  closeMeasureResult();
+  renderMapMarkers();
+}
+
+function finishMode() {
+  if (mapMode === 'reorganize') {
+    saveReorganize();
+  } else {
+    cancelMode();
+  }
+}
+
+function updateReorgCounter() {
+  var total = (stops[currentDay] || []).length;
+  document.getElementById('modeBannerCounter').textContent = reorgOrder.length + '/' + total;
+  var btn = document.getElementById('modeDoneBtn');
+  btn.disabled = reorgOrder.length < total;
+  btn.textContent = reorgOrder.length < total ? 'TAP ALL ' + total : 'DONE';
+}
+
+function handleReorgTap(stopIdx) {
+  if (reorgOrder.indexOf(stopIdx) !== -1) {
+    if (reorgOrder[reorgOrder.length - 1] === stopIdx) {
+      reorgOrder.pop();
+      updateReorgCounter();
+      renderModeMarkers();
+    }
+    return;
+  }
+  reorgOrder.push(stopIdx);
+  updateReorgCounter();
+  renderModeMarkers();
+}
+
+function handleMeasureTap(stopIdx) {
+  if (measureSelection.indexOf(stopIdx) !== -1) return;
+  measureSelection.push(stopIdx);
+  document.getElementById('modeBannerCounter').textContent = measureSelection.length + '/2';
+  renderModeMarkers();
+  if (measureSelection.length === 2) runMeasurement();
+}
+
+function saveReorganize() {
+  var day = currentDay;
+  var dayStops = stops[day] || [];
+  var dayData = stopData[day] || [];
+  previousStopOrder = { day: day, stops: JSON.parse(JSON.stringify(dayStops)) };
+  var newStops = reorgOrder.map(function(i) { return dayStops[i]; });
+  var newData = reorgOrder.map(function(i) { return dayData[i] || blankStopData(); });
+  stops[day] = newStops;
+  stopData[day] = newData;
+  saveStops();
+  fbSave('stopData/' + day, stopData[day]);
+  mapMode = null;
+  reorgOrder = [];
+  document.getElementById('modeBanner').classList.remove('show');
+  renderRoute();
+  renderManageList();
+  renderMapMarkers();
+  alert('✓ Route reorganized! New order saved.');
+}
+
+function renderModeMarkers() {
+  if (!mapView) return;
+  mapMarkers.forEach(function(m) { m.setMap(null); });
+  mapMarkers = [];
+  if (baseMarker) baseMarker.setMap(mapView);
+  var dayStops = stops[currentDay] || [];
+  dayStops.forEach(function(stop, i) {
+    if (!stop.lat || !stop.lng) return;
+    var color, labelText, scale = 12;
+    if (mapMode === 'reorganize') {
+      var pos = reorgOrder.indexOf(i);
+      if (pos !== -1) { color = '#06d6a0'; labelText = String(pos + 1); scale = 14; }
+      else { color = '#666'; labelText = '?'; }
+    } else if (mapMode === 'measure') {
+      var mpos = measureSelection.indexOf(i);
+      if (mpos !== -1) { color = '#4285f4'; labelText = mpos === 0 ? 'A' : 'B'; scale = 14; }
+      else { color = '#666'; labelText = String(i + 1); }
+    }
+    var marker = new google.maps.Marker({
+      position: { lat: stop.lat, lng: stop.lng },
+      map: mapView, title: stop.name, zIndex: 10,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: scale, fillColor: color, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
+      label: { text: labelText, color: '#fff', fontSize: '11px', fontWeight: 'bold', fontFamily: 'DM Mono, monospace' }
+    });
+    (function(idx) {
+      marker.addListener('click', function() {
+        if (mapMode === 'reorganize') handleReorgTap(idx);
+        else if (mapMode === 'measure') handleMeasureTap(idx);
+      });
+    })(i);
+    mapMarkers.push(marker);
+  });
+}
+
+function runMeasurement() {
+  if (measureSelection.length !== 2) return;
+  var stopA = stops[currentDay][measureSelection[0]];
+  var stopB = stops[currentDay][measureSelection[1]];
+  document.getElementById('measurePairText').innerHTML = 'From <strong>' + stopA.name + '</strong> to <strong>' + stopB.name + '</strong>';
+  document.getElementById('measureDriveDist').textContent = '...';
+  document.getElementById('measureDriveTime').textContent = '...';
+  document.getElementById('measureDriveTraffic').textContent = '';
+  document.getElementById('measureWalkDist').textContent = '...';
+  document.getElementById('measureWalkTime').textContent = '...';
+  document.getElementById('measureResult').classList.add('show');
+  if (!mapsReady || typeof google === 'undefined') {
+    document.getElementById('measureDriveDist').textContent = 'ERR';
+    document.getElementById('measureWalkDist').textContent = 'ERR';
+    return;
+  }
+  var origin = new google.maps.LatLng(stopA.lat, stopA.lng);
+  var dest = new google.maps.LatLng(stopB.lat, stopB.lng);
+  var svc = new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins: [origin], destinations: [dest],
+    travelMode: google.maps.TravelMode.DRIVING,
+    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS },
+    unitSystem: google.maps.UnitSystem.IMPERIAL
+  }, function(response, status) {
+    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+      var el = response.rows[0].elements[0];
+      var miles = (el.distance.value * 0.000621371).toFixed(1);
+      var normalSec = el.duration.value;
+      var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normalSec;
+      var mins = Math.round(withTraffic / 60);
+      var delay = Math.round((withTraffic - normalSec) / 60);
+      document.getElementById('measureDriveDist').textContent = miles + ' mi';
+      document.getElementById('measureDriveTime').textContent = mins + ' min';
+      var trafficEl = document.getElementById('measureDriveTraffic');
+      if (delay >= 2) { trafficEl.textContent = '+' + delay + ' min traffic'; trafficEl.style.color = 'var(--red)'; }
+      else { trafficEl.textContent = 'Clear'; trafficEl.style.color = 'var(--grn)'; }
+    } else {
+      document.getElementById('measureDriveDist').textContent = 'N/A';
+      document.getElementById('measureDriveTime').textContent = '--';
+    }
+  });
+  svc.getDistanceMatrix({
+    origins: [origin], destinations: [dest],
+    travelMode: google.maps.TravelMode.WALKING,
+    unitSystem: google.maps.UnitSystem.IMPERIAL
+  }, function(response, status) {
+    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
+      var el = response.rows[0].elements[0];
+      var miles = (el.distance.value * 0.000621371).toFixed(1);
+      var mins = Math.round(el.duration.value / 60);
+      document.getElementById('measureWalkDist').textContent = miles + ' mi';
+      document.getElementById('measureWalkTime').textContent = mins + ' min';
+    } else {
+      document.getElementById('measureWalkDist').textContent = 'N/A';
+      document.getElementById('measureWalkTime').textContent = '--';
+    }
+  });
+}
+
+function closeMeasureResult() {
+  document.getElementById('measureResult').classList.remove('show');
+  if (mapMode === 'measure') {
+    measureSelection = [];
+    document.getElementById('modeBannerCounter').textContent = '0/2';
+    renderModeMarkers();
+  }
+}
 </script>
 <!-- ===== EDIT STOP MODAL ===== -->
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:16px;">

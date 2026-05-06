@@ -3685,7 +3685,7 @@ function startReorganize() {
   var banner = document.getElementById('modeBanner');
   banner.classList.remove('measure');
   banner.classList.add('show');
-  document.getElementById('modeBannerText').textContent = 'Tap stops in order. Tap last one again to undo.';
+  document.getElementById('modeBannerText').textContent = 'Tap stops in new order, then DONE. Untapped stops keep their order at the end.';
   document.getElementById('modeDoneBtn').style.display = 'block';
   updateReorgCounter();
   closeMapPopup();
@@ -3733,8 +3733,9 @@ function updateReorgCounter() {
   var total = (stops[currentDay] || []).length;
   document.getElementById('modeBannerCounter').textContent = reorgOrder.length + '/' + total;
   var btn = document.getElementById('modeDoneBtn');
-  btn.disabled = reorgOrder.length < total;
-  btn.textContent = reorgOrder.length < total ? 'TAP ALL ' + total : 'DONE';
+  // Allow saving as soon as at least 1 stop is tapped — no full-list requirement
+  btn.disabled = reorgOrder.length < 1;
+  btn.textContent = reorgOrder.length < 1 ? 'TAP STOPS' : 'DONE (' + reorgOrder.length + ')';
 }
 
 function handleReorgTap(stopIdx) {
@@ -3763,20 +3764,58 @@ function saveReorganize() {
   var day = currentDay;
   var dayStops = stops[day] || [];
   var dayData = stopData[day] || [];
+  if (reorgOrder.length === 0) { alert('Tap at least one stop first.'); return; }
+
+  // Capture counts BEFORE we mutate anything
+  var tappedCount = reorgOrder.length;
+  var totalCount = dayStops.length;
+  var untappedCount = totalCount - tappedCount;
+
+  // Snapshot for undo
   previousStopOrder = { day: day, stops: JSON.parse(JSON.stringify(dayStops)) };
-  var newStops = reorgOrder.map(function(i) { return dayStops[i]; });
-  var newData = reorgOrder.map(function(i) { return dayData[i] || blankStopData(); });
+
+  // Build new arrays: tapped stops first (in tap order), then any untapped stops in their original order
+  var tappedSet = {};
+  reorgOrder.forEach(function(i) { tappedSet[i] = true; });
+
+  var newStops = [];
+  var newData = [];
+
+  // 1. Add tapped stops in the order Rob tapped them
+  reorgOrder.forEach(function(i) {
+    newStops.push(dayStops[i]);
+    newData.push(dayData[i] || blankStopData());
+  });
+
+  // 2. Append any untapped stops, preserving their original order
+  dayStops.forEach(function(stop, i) {
+    if (!tappedSet[i]) {
+      newStops.push(stop);
+      newData.push(dayData[i] || blankStopData());
+    }
+  });
+
   stops[day] = newStops;
   stopData[day] = newData;
-  saveStops();
+
+  // Persist to Firebase — write specific day path so it overwrites cleanly
+  fbSave('stops/' + day, stops[day]);
   fbSave('stopData/' + day, stopData[day]);
+
+  // Reset mode
   mapMode = null;
   reorgOrder = [];
   document.getElementById('modeBanner').classList.remove('show');
+
   renderRoute();
   renderManageList();
   renderMapMarkers();
-  alert('✓ Route reorganized! New order saved.');
+
+  var msg = '✓ Route reorganized and saved!\n\n' + tappedCount + ' stop' + (tappedCount === 1 ? '' : 's') + ' moved to top in your tap order.';
+  if (untappedCount > 0) {
+    msg += '\n' + untappedCount + ' untouched stop' + (untappedCount === 1 ? '' : 's') + ' kept at the end.';
+  }
+  alert(msg);
 }
 
 function renderModeMarkers() {

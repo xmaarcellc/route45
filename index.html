@@ -183,6 +183,29 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .manage-btn.edit { border-color: var(--blu); color: var(--blu); }
 .manage-btn.del { border-color: var(--red); color: var(--red); }
 
+/* BULK SELECTION MODE */
+.manage-card.selectable { cursor: pointer; }
+.manage-card.selected { border-color: var(--acc); background: rgba(255,107,43,.08); box-shadow: 0 0 0 1px var(--acc); }
+.manage-checkbox { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--bdr); border-radius: 5px; background: var(--sur2); display: none; align-items: center; justify-content: center; font-size: 14px; color: transparent; transition: all 0.1s; }
+.manage-card.selectable .manage-checkbox { display: flex; }
+.manage-card.selected .manage-checkbox { background: var(--acc); border-color: var(--acc); color: #000; font-weight: bold; }
+.manage-card.selectable .manage-actions { opacity: 0.3; pointer-events: none; }
+.bulk-toolbar { padding: 10px 16px; background: var(--sur); border-bottom: 1px solid var(--bdr); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bulk-toolbar-btn { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 11px; padding: 7px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+.bulk-toolbar-btn.primary { background: var(--acc); border-color: var(--acc); color: #000; font-weight: 600; }
+.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--sur); border-top: 2px solid var(--acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(0,0,0,.6); display: none; flex-direction: column; gap: 8px; }
+.bulk-action-bar.show { display: flex; }
+.bulk-action-row { display: flex; gap: 8px; align-items: center; }
+.bulk-action-counter { font-family: var(--fd); font-size: 18px; color: var(--acc); letter-spacing: 1px; flex: 1; }
+.bulk-action-btn { padding: 10px 14px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; flex-shrink: 0; }
+.bulk-action-btn.move { background: var(--blu); color: #fff; }
+.bulk-action-btn.del { background: var(--red); color: #fff; }
+.bulk-action-btn.cancel { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); }
+.bulk-day-row { display: none; gap: 6px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--bdr); }
+.bulk-day-row.show { display: flex; }
+.bulk-day-btn { flex: 1; min-width: 60px; padding: 10px; border: 1px solid var(--bdr); background: var(--sur2); color: var(--txt); font-family: var(--fd); font-size: 14px; letter-spacing: 1px; border-radius: 6px; cursor: pointer; }
+.bulk-day-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+
 /* MODAL */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; padding: 20px; overflow-y: auto; }
 .modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
@@ -455,10 +478,33 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     </div>
     <button class="add-stop-btn" onclick="addStop()">+ ADD TO ROUTE</button>
   </div>
-  <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">
-    Current Stops — <span id="manageDayLabel">MON</span>
+  <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <span>Current Stops — <span id="manageDayLabel">MON</span></span>
+    <button id="bulkSelectToggleBtn" onclick="toggleBulkSelectMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">☑ Select</button>
+  </div>
+  <div class="bulk-toolbar" id="bulkToolbar" style="display:none;">
+    <button class="bulk-toolbar-btn" onclick="bulkSelectAll()">Select All</button>
+    <button class="bulk-toolbar-btn" onclick="bulkClearSelection()">Clear</button>
+    <span id="bulkSelectStatus" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mut);margin-left:auto;">0 selected</span>
   </div>
   <div class="manage-list" id="manageList"></div>
+
+  <!-- BULK ACTION BAR (slides up when stops selected) -->
+  <div class="bulk-action-bar" id="bulkActionBar">
+    <div class="bulk-action-row">
+      <div class="bulk-action-counter" id="bulkActionCounter">0 SELECTED</div>
+      <button class="bulk-action-btn cancel" onclick="exitBulkSelectMode()">CANCEL</button>
+      <button class="bulk-action-btn del" onclick="bulkDeleteSelected()">🗑 DELETE</button>
+      <button class="bulk-action-btn move" onclick="toggleBulkDayPicker()">→ MOVE TO</button>
+    </div>
+    <div class="bulk-day-row" id="bulkDayRow">
+      <button class="bulk-day-btn" data-day="MON" onclick="bulkMoveTo('MON')">MON</button>
+      <button class="bulk-day-btn" data-day="TUE" onclick="bulkMoveTo('TUE')">TUE</button>
+      <button class="bulk-day-btn" data-day="WED" onclick="bulkMoveTo('WED')">WED</button>
+      <button class="bulk-day-btn" data-day="THU" onclick="bulkMoveTo('THU')">THU</button>
+      <button class="bulk-day-btn" data-day="FRI" onclick="bulkMoveTo('FRI')">FRI</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== MAP TAB ===== -->
@@ -622,9 +668,9 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 function fbSave(path, data) {
-  db.ref(path).set(data)
+  return db.ref(path).set(data)
     .then(() => { document.getElementById('syncDot').classList.remove('off'); })
-    .catch(e => { console.error('Firebase save error:', e); document.getElementById('syncDot').classList.add('off'); });
+    .catch(e => { console.error('Firebase save error:', e); document.getElementById('syncDot').classList.add('off'); throw e; });
 }
 
 async function fbLoad(path) {
@@ -1020,7 +1066,12 @@ function selectManageDay(day) {
   ['MON','TUE','WED','THU','FRI'].forEach(d => {
     document.getElementById('mday-' + d).classList.toggle('active', d === day);
   });
-  renderManageList();
+  // Exit bulk select mode — selections don't carry across days
+  if (typeof bulkSelectMode !== 'undefined' && bulkSelectMode) {
+    exitBulkSelectMode();
+  } else {
+    renderManageList();
+  }
 }
 
 // ============================================================
@@ -1934,10 +1985,18 @@ function renderManageList() {
     list.innerHTML = '<div class="empty-state">No stops yet.<br>Add stops above.</div>';
     return;
   }
+  var inSelectMode = bulkSelectMode;
+  var selectedSet = bulkSelectedIdx;
   list.innerHTML = dayStops.map((s, i) => {
     const freq = s.frequency || 'weekly';
+    var isSelected = inSelectMode && selectedSet[i];
+    var cardClasses = 'manage-card';
+    if (inSelectMode) cardClasses += ' selectable';
+    if (isSelected) cardClasses += ' selected';
+    var clickHandler = inSelectMode ? `onclick="toggleBulkSelect(${i}, event)"` : '';
     return `
-    <div class="manage-card" id="mc-${i}">
+    <div class="${cardClasses}" id="mc-${i}" ${clickHandler}>
+      <div class="manage-checkbox">${isSelected ? '✓' : ''}</div>
       <div class="manage-num" style="font-family:var(--fd);font-size:20px;color:var(--mut);">${String(i+1).padStart(2,'0')}</div>
       <div class="manage-info">
         <div class="manage-name">${s.name} <span class="freq-tag freq-${freq}">${freq}</span>${s.notes && s.notes.length > 0 ? '<span class="freq-tag" style="background:var(--acc2);color:#000;">📝 ' + s.notes.length + '</span>' : ''}</div>
@@ -1962,6 +2021,292 @@ function renderManageList() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ============================================================
+// BULK SELECTION MODE
+// ============================================================
+var bulkSelectMode = false;
+var bulkSelectedIdx = {}; // { idx: true } for selected stops on currentManageDay
+
+function toggleBulkSelectMode() {
+  if (bulkSelectMode) {
+    exitBulkSelectMode();
+  } else {
+    enterBulkSelectMode();
+  }
+}
+
+function enterBulkSelectMode() {
+  bulkSelectMode = true;
+  bulkSelectedIdx = {};
+  document.getElementById('bulkToolbar').style.display = 'flex';
+  document.getElementById('bulkSelectToggleBtn').textContent = '✕ Exit Select';
+  document.getElementById('bulkSelectToggleBtn').style.background = 'var(--acc)';
+  document.getElementById('bulkSelectToggleBtn').style.color = '#000';
+  document.getElementById('bulkSelectToggleBtn').style.borderColor = 'var(--acc)';
+  renderManageList();
+  updateBulkUI();
+}
+
+function exitBulkSelectMode() {
+  bulkSelectMode = false;
+  bulkSelectedIdx = {};
+  document.getElementById('bulkToolbar').style.display = 'none';
+  document.getElementById('bulkActionBar').classList.remove('show');
+  document.getElementById('bulkDayRow').classList.remove('show');
+  var btn = document.getElementById('bulkSelectToggleBtn');
+  btn.textContent = '☑ Select';
+  btn.style.background = 'var(--sur2)';
+  btn.style.color = 'var(--txt)';
+  btn.style.borderColor = 'var(--bdr)';
+  renderManageList();
+}
+
+function toggleBulkSelect(idx, evt) {
+  // Don't toggle if user clicked on a button inside the card
+  if (evt && evt.target && (evt.target.tagName === 'BUTTON' || evt.target.closest('button'))) return;
+  if (bulkSelectedIdx[idx]) {
+    delete bulkSelectedIdx[idx];
+  } else {
+    bulkSelectedIdx[idx] = true;
+  }
+  // Toggle visual state without full re-render (faster)
+  var card = document.getElementById('mc-' + idx);
+  if (card) {
+    card.classList.toggle('selected', !!bulkSelectedIdx[idx]);
+    var checkbox = card.querySelector('.manage-checkbox');
+    if (checkbox) checkbox.textContent = bulkSelectedIdx[idx] ? '✓' : '';
+  }
+  updateBulkUI();
+}
+
+function bulkSelectAll() {
+  var dayStops = stops[currentManageDay] || [];
+  bulkSelectedIdx = {};
+  dayStops.forEach(function(_, i) { bulkSelectedIdx[i] = true; });
+  renderManageList();
+  updateBulkUI();
+}
+
+function bulkClearSelection() {
+  bulkSelectedIdx = {};
+  renderManageList();
+  updateBulkUI();
+}
+
+function getSelectedCount() {
+  return Object.keys(bulkSelectedIdx).length;
+}
+
+function getSelectedIndices() {
+  // Sort numerically so we operate consistently
+  return Object.keys(bulkSelectedIdx).map(function(k) { return parseInt(k, 10); }).sort(function(a, b) { return a - b; });
+}
+
+function updateBulkUI() {
+  var count = getSelectedCount();
+  var bar = document.getElementById('bulkActionBar');
+  var statusEl = document.getElementById('bulkSelectStatus');
+  var counterEl = document.getElementById('bulkActionCounter');
+  if (statusEl) statusEl.textContent = count + ' selected';
+  if (counterEl) counterEl.textContent = count + ' SELECTED';
+  if (count > 0) {
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+    document.getElementById('bulkDayRow').classList.remove('show');
+  }
+  // Disable target day = current day in the picker (can't move to same day)
+  ['MON','TUE','WED','THU','FRI'].forEach(function(d) {
+    var btn = document.querySelector('.bulk-day-btn[data-day="' + d + '"]');
+    if (btn) btn.classList.toggle('disabled', d === currentManageDay);
+  });
+}
+
+function toggleBulkDayPicker() {
+  var row = document.getElementById('bulkDayRow');
+  row.classList.toggle('show');
+}
+
+var bulkMoveInProgress = false;
+
+async function bulkMoveTo(targetDay) {
+  // Hard lock: if a previous move/delete is still saving, drop this tap.
+  if (bulkMoveInProgress) {
+    console.log('Bulk move/delete already in progress — ignoring duplicate tap.');
+    return;
+  }
+  if (targetDay === currentManageDay) {
+    alert("Can't move stops to the same day they're already on.");
+    return;
+  }
+  var indices = getSelectedIndices();
+  if (!indices.length) return;
+
+  if (!stops[targetDay]) stops[targetDay] = [];
+  if (!stopData[targetDay]) stopData[targetDay] = [];
+
+  // Check for duplicates on target day before moving anything
+  var conflicts = [];
+  indices.forEach(function(i) {
+    var s = stops[currentManageDay][i];
+    if (!s) return;
+    var dup = findDuplicateStop(s.name, s.addr, s.lat, s.lng);
+    if (dup && dup.day === targetDay) {
+      conflicts.push(s.name);
+    }
+  });
+  if (conflicts.length > 0) {
+    var msg = '⚠️ ' + conflicts.length + ' stop(s) already exist on ' + targetDay + ':\n\n';
+    msg += conflicts.slice(0, 5).join('\n');
+    if (conflicts.length > 5) msg += '\n…and ' + (conflicts.length - 5) + ' more';
+    msg += '\n\nMove the others anyway? (Duplicates will be skipped.)';
+    if (!confirm(msg)) return;
+  }
+
+  if (!confirm('Move ' + indices.length + ' stop' + (indices.length === 1 ? '' : 's') + ' from ' + currentManageDay + ' to ' + targetDay + '?')) return;
+
+  // Engage lock + visually disable bulk action buttons so user can't double-tap
+  bulkMoveInProgress = true;
+  setBulkButtonsDisabled(true, 'SAVING…');
+
+  // Pull stops + their stopData entries, skip duplicates
+  // Iterate from highest index to lowest so splice doesn't shift remaining indices
+  var movedCount = 0;
+  var skippedCount = 0;
+  var sourceDay = currentManageDay;
+  for (var k = indices.length - 1; k >= 0; k--) {
+    var i = indices[k];
+    var s = stops[sourceDay][i];
+    if (!s) continue;
+    var dup = findDuplicateStop(s.name, s.addr, s.lat, s.lng);
+    if (dup && dup.day === targetDay) {
+      // Skip — already on target day
+      skippedCount++;
+      // Still remove from current day so the user doesn't see a duplicate left behind
+      stops[sourceDay].splice(i, 1);
+      if (stopData[sourceDay]) stopData[sourceDay].splice(i, 1);
+      continue;
+    }
+    // Move to target
+    stops[targetDay].push(s);
+    stopData[targetDay].push((stopData[sourceDay] && stopData[sourceDay][i]) || blankStopData());
+    stops[sourceDay].splice(i, 1);
+    if (stopData[sourceDay]) stopData[sourceDay].splice(i, 1);
+    movedCount++;
+  }
+
+  // PERSIST: wait for all four Firebase writes to actually confirm before
+  // releasing the lock. This is what prevents a double-move — if you tap
+  // again before this resolves, the lock check at the top of the function
+  // rejects the second call.
+  try {
+    await Promise.all([
+      fbSave('stops/' + sourceDay, stops[sourceDay]),
+      fbSave('stops/' + targetDay, stops[targetDay]),
+      fbSave('stopData/' + sourceDay, stopData[sourceDay]),
+      fbSave('stopData/' + targetDay, stopData[targetDay])
+    ]);
+  } catch (e) {
+    console.error('bulkMoveTo: Firebase save failed', e);
+    bulkMoveInProgress = false;
+    setBulkButtonsDisabled(false);
+    alert('⚠️ Save failed. The move was applied locally but did not save to the database. Refresh the app and try again.');
+    return;
+  }
+
+  // Saves confirmed — now release lock and update UI
+  bulkMoveInProgress = false;
+  setBulkButtonsDisabled(false);
+
+  exitBulkSelectMode();
+  renderManageList();
+  if (sourceDay === currentDay) renderRoute();
+  if (mapView) renderMapMarkers();
+
+  var doneMsg = '✓ Moved ' + movedCount + ' stop' + (movedCount === 1 ? '' : 's') + ' from ' + sourceDay + ' to ' + targetDay + ' (saved to database).';
+  if (skippedCount > 0) doneMsg += '\n' + skippedCount + ' skipped (already on ' + targetDay + ').';
+  alert(doneMsg);
+}
+
+// Helper: disable/enable the bulk action buttons during save to prevent double-taps
+function setBulkButtonsDisabled(disabled, labelOverride) {
+  var moveBtn = document.querySelector('.bulk-action-btn.move');
+  var delBtn = document.querySelector('.bulk-action-btn.del');
+  var cancelBtn = document.querySelector('.bulk-action-btn.cancel');
+  var dayBtns = document.querySelectorAll('.bulk-day-btn');
+  if (moveBtn) {
+    moveBtn.disabled = disabled;
+    moveBtn.style.opacity = disabled ? '0.5' : '1';
+    moveBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+    if (labelOverride && disabled) {
+      if (!moveBtn.dataset.origLabel) moveBtn.dataset.origLabel = moveBtn.textContent;
+      moveBtn.textContent = labelOverride;
+    } else if (!disabled && moveBtn.dataset.origLabel) {
+      moveBtn.textContent = moveBtn.dataset.origLabel;
+      delete moveBtn.dataset.origLabel;
+    }
+  }
+  if (delBtn) {
+    delBtn.disabled = disabled;
+    delBtn.style.opacity = disabled ? '0.5' : '1';
+    delBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+  }
+  if (cancelBtn) {
+    cancelBtn.disabled = disabled;
+    cancelBtn.style.opacity = disabled ? '0.5' : '1';
+    cancelBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+  }
+  dayBtns.forEach(function(b) {
+    b.style.pointerEvents = disabled ? 'none' : 'auto';
+    if (disabled) b.style.opacity = '0.4';
+    else if (!b.classList.contains('disabled')) b.style.opacity = '1';
+  });
+}
+
+async function bulkDeleteSelected() {
+  if (bulkMoveInProgress) {
+    console.log('Bulk move/delete already in progress — ignoring duplicate tap.');
+    return;
+  }
+  var indices = getSelectedIndices();
+  if (!indices.length) return;
+  if (!confirm('Delete ' + indices.length + ' stop' + (indices.length === 1 ? '' : 's') + ' from ' + currentManageDay + '? This cannot be undone.')) return;
+
+  bulkMoveInProgress = true;
+  setBulkButtonsDisabled(true, 'SAVING…');
+
+  var sourceDay = currentManageDay;
+  // Remove highest-to-lowest
+  for (var k = indices.length - 1; k >= 0; k--) {
+    var i = indices[k];
+    stops[sourceDay].splice(i, 1);
+    if (stopData[sourceDay]) stopData[sourceDay].splice(i, 1);
+  }
+
+  try {
+    await Promise.all([
+      fbSave('stops/' + sourceDay, stops[sourceDay]),
+      fbSave('stopData/' + sourceDay, stopData[sourceDay])
+    ]);
+  } catch (e) {
+    console.error('bulkDeleteSelected: Firebase save failed', e);
+    bulkMoveInProgress = false;
+    setBulkButtonsDisabled(false);
+    alert('⚠️ Save failed. Refresh and try again.');
+    return;
+  }
+
+  bulkMoveInProgress = false;
+  setBulkButtonsDisabled(false);
+
+  exitBulkSelectMode();
+  renderManageList();
+  if (sourceDay === currentDay) renderRoute();
+  if (mapView) renderMapMarkers();
+
+  alert('✓ Deleted ' + indices.length + ' stop' + (indices.length === 1 ? '' : 's') + ' (saved to database).');
 }
 
 // ============================================================

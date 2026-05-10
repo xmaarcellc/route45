@@ -890,15 +890,44 @@ function saveStops() {
   // pattern was unsafe because partial loads could clobber unloaded days.
   ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
     if (Array.isArray(stops[day])) {
-      fbSave('stops/' + day, stops[day]);
+      saveStopsForDay(day);
     }
   });
 }
 
 function saveStopsForDay(day) {
-  // Targeted version — preferred for individual edits
-  if (Array.isArray(stops[day])) {
+  // Targeted version — preferred for individual edits.
+  // CRITICAL: Firebase Realtime DB does NOT store empty arrays — calling set([])
+  // deletes the key entirely, which makes it indistinguishable from "key never
+  // existed" on the next load. We track empty-on-purpose days in a separate
+  // `clearedDays` Firebase record so the sync logic knows not to reseed defaults.
+  if (!Array.isArray(stops[day])) return;
+
+  if (stops[day].length === 0) {
+    // Mark this day as intentionally empty
+    fbSave('clearedDays/' + day, true);
+    fbSave('stops/' + day, null); // explicit delete (also empty array would work)
+  } else {
+    // Day has stops — clear the cleared-marker if it was set
+    fbSave('clearedDays/' + day, null);
     fbSave('stops/' + day, stops[day]);
+  }
+}
+
+// Promise version — returns an array of fbSave promises so callers can Promise.all().
+// Use this when you need to await the saves before proceeding.
+function saveStopsForDayPromises(day) {
+  if (!Array.isArray(stops[day])) return [];
+  if (stops[day].length === 0) {
+    return [
+      fbSave('clearedDays/' + day, true),
+      fbSave('stops/' + day, null)
+    ];
+  } else {
+    return [
+      fbSave('clearedDays/' + day, null),
+      fbSave('stops/' + day, stops[day])
+    ];
   }
 }
 
@@ -937,29 +966,37 @@ function init() {
 async function syncFromFirebase() {
   try {
     const savedStops = await fbLoad('stops');
-    var firebaseHasData = savedStops && typeof savedStops === 'object' && Object.keys(savedStops).length > 0;
+    const clearedDays = await fbLoad('clearedDays') || {};
+    var firebaseHasData = (savedStops && typeof savedStops === 'object' && Object.keys(savedStops).length > 0)
+                       || (Object.keys(clearedDays).length > 0);
 
     if (firebaseHasData) {
       // Merge — Firebase is the authoritative source for any day it has.
       // For days Firebase doesn't have at all (key missing), keep the local defaults
-      // (which were seeded in init()). This way we never lose Firebase-stored days.
+      // (which were seeded in init()) — UNLESS the user has explicitly cleared
+      // that day, which we track separately in `clearedDays`.
       ['MON','TUE','WED','THU','FRI'].forEach(function(d) {
-        if (savedStops[d] !== undefined && savedStops[d] !== null) {
-          // Firebase has this day — use Firebase. Convert objects to arrays if needed
-          // (Realtime DB stores arrays as objects when indexes are sparse).
+        // Case 1: Day was intentionally cleared by the user → empty, regardless of Firebase
+        if (clearedDays[d] === true) {
+          stops[d] = [];
+          return;
+        }
+        // Case 2: Firebase has this day with content → use Firebase
+        if (savedStops && savedStops[d] !== undefined && savedStops[d] !== null) {
           var raw = savedStops[d];
           if (Array.isArray(raw)) {
             stops[d] = raw;
           } else if (typeof raw === 'object') {
+            // Realtime DB stores arrays as objects when indexes are sparse
             var arr = [];
             Object.keys(raw).forEach(function(k) {
               var idx = parseInt(k, 10);
               if (!isNaN(idx)) arr[idx] = raw[k];
             });
-            stops[d] = arr.filter(function(x) { return x; }); // remove sparse holes
+            stops[d] = arr.filter(function(x) { return x; });
           }
         }
-        // else: keep whatever init() set (defaults for MON/TUE/THU, [] for WED/FRI)
+        // Case 3: Firebase has neither stops nor cleared marker → keep local defaults
       });
 
       // Clean up any lingering notes we want removed
@@ -1405,7 +1442,7 @@ function addStop() {
   stopData[currentManageDay].push(blankStopData());
 
   // Save ONLY this day's stops + stopData (per-day write, not whole object)
-  fbSave('stops/' + currentManageDay, stops[currentManageDay]);
+  saveStopsForDay(currentManageDay);
   fbSave('stopData/' + currentManageDay, stopData[currentManageDay]);
 
   // Hide auto-fill checkmarks
@@ -1436,7 +1473,7 @@ function addStop() {
         if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
           stops[currentManageDay][lastIdx].lat = coords.lat;
           stops[currentManageDay][lastIdx].lng = coords.lng;
-          fbSave('stops/' + currentManageDay, stops[currentManageDay]);
+          saveStopsForDay(currentManageDay);
           if (mapView) renderMapMarkers();
           console.log('Geocoded', name, 'to', coords.lat, coords.lng);
         }
@@ -1468,13 +1505,22 @@ async function removeStop(day, idx) {
   if (stopData[day]) stopData[day].splice(idx, 1);
 
   // Save BOTH stops and stopData for this day, and wait for Firebase to confirm
-  // before showing UI as updated. This prevents the user from re-deleting (or
-  // editing the wrong index) before the write lands.
+  // before showing UI as updated. Handles the empty-day case via clearedDays
+  // marker so refresh doesn't re-seed defaults.
   try {
-    await Promise.all([
-      fbSave('stops/' + day, stops[day]),
+    var savePromises = [
       fbSave('stopData/' + day, stopData[day] || [])
-    ]);
+    ];
+    if (stops[day].length === 0) {
+      // Day is now empty — write cleared marker AND null out stops/{day}
+      savePromises.push(fbSave('clearedDays/' + day, true));
+      savePromises.push(fbSave('stops/' + day, null));
+    } else {
+      // Day has remaining stops — clear any stale "cleared" marker
+      savePromises.push(fbSave('clearedDays/' + day, null));
+      savePromises.push(fbSave('stops/' + day, stops[day]));
+    }
+    await Promise.all(savePromises);
   } catch (e) {
     console.error('removeStop: Firebase save failed', e);
     alert('⚠️ Failed to save deletion to database. Refresh and try again.');
@@ -1623,9 +1669,9 @@ function saveEditedStop() {
     stops[newDay].push(updatedStop);
     stopData[newDay].push(blankStopData());
 
-    // Persist both day arrays to Firebase
-    fbSave('stops/' + day, stops[day]);
-    fbSave('stops/' + newDay, stops[newDay]);
+    // Persist both day arrays to Firebase (handles empty-day cleared-marker)
+    saveStopsForDay(day);
+    saveStopsForDay(newDay);
     fbSave('stopData/' + day, stopData[day]);
     fbSave('stopData/' + newDay, stopData[newDay]);
 
@@ -1633,7 +1679,7 @@ function saveEditedStop() {
   } else {
     // Just update in place
     stops[day][idx] = updatedStop;
-    saveStops();
+    saveStopsForDay(day);
   }
 
   closeEditModal();
@@ -1813,7 +1859,7 @@ function renderRoute() {
           <div class="stop-info">
             <div class="stop-name">${stop.name}${getFreqTag(stop)}${stop.note ? '<span class="note-tag">!</span>' : ''}</div>
             <div class="stop-meta">${stop.opens} · ${stop.addr.split(',')[0]}${driveTime}</div>
-            ${(function(){ var svc = getServiceStatus(stop); return svc.cls !== 'svc-ok' ? '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>' : ''; })()}
+            ${(function(){ var svc = getServiceStatus(stop); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; })()}
             ${stop.note ? '<div class="stop-note">' + stop.note + '</div>' : ''}
             <div class="stop-dist" id="dist-${origIdx}">📍 --</div>
           </div>
@@ -2027,12 +2073,14 @@ function completeStop(i) {
   // keeps it as an array (not an object), preserving order/length on reload.
   fbSave('stopData/' + currentDay, stopData[currentDay]);
 
-  // Record last serviced date on the stop itself and save to Firebase
+  // Record last serviced date on the stop itself and save to Firebase.
+  // We write the whole day's stops array (not just the single field) so Firebase
+  // keeps it as a proper array — single-field writes at deep paths cause
+  // Firebase to convert the parent into an object keyed by index strings.
   var today = new Date().toISOString();
   if (stops[currentDay][i]) {
     stops[currentDay][i].lastServiced = today;
-    // Save just this stop's lastServiced immediately
-    fbSave('stops/' + currentDay + '/' + i + '/lastServiced', today);
+    saveStopsForDay(currentDay);
   }
 
   // Collapse the card — just show green check, no details
@@ -2306,14 +2354,13 @@ async function bulkMoveTo(targetDay) {
     movedCount++;
   }
 
-  // PERSIST: wait for all four Firebase writes to actually confirm before
-  // releasing the lock. This is what prevents a double-move — if you tap
-  // again before this resolves, the lock check at the top of the function
-  // rejects the second call.
+  // PERSIST: wait for all Firebase writes to actually confirm before
+  // releasing the lock. Uses saveStopsForDayPromises so empty-day cleared-marker
+  // is properly written when source day is fully drained.
   try {
     await Promise.all([
-      fbSave('stops/' + sourceDay, stops[sourceDay]),
-      fbSave('stops/' + targetDay, stops[targetDay]),
+      ...saveStopsForDayPromises(sourceDay),
+      ...saveStopsForDayPromises(targetDay),
       fbSave('stopData/' + sourceDay, stopData[sourceDay]),
       fbSave('stopData/' + targetDay, stopData[targetDay])
     ]);
@@ -2396,7 +2443,7 @@ async function bulkDeleteSelected() {
 
   try {
     await Promise.all([
-      fbSave('stops/' + sourceDay, stops[sourceDay]),
+      ...saveStopsForDayPromises(sourceDay),
       fbSave('stopData/' + sourceDay, stopData[sourceDay])
     ]);
   } catch (e) {

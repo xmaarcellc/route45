@@ -764,6 +764,11 @@ function _doMapsInit() {
     var map = new google.maps.Map(mapDiv, { center: { lat: 40.70, lng: -74.26 }, zoom: 12 });
     placesService = new google.maps.places.PlacesService(map);
     console.log('Google Maps + PlacesService ready');
+    // Auto-correct the BASE_LOCATION coordinates by geocoding the address
+    // (cached to Firebase so it only runs once per address change)
+    if (typeof ensureBaseLocationCoords === 'function') {
+      ensureBaseLocationCoords();
+    }
     // If user is already on map tab, init it
     var mapTab = document.getElementById('mapTab');
     if (mapTab && mapTab.style.display !== 'none' && typeof initMapView === 'function') {
@@ -2820,6 +2825,48 @@ function initMapView() {
 
 var baseMarker = null;
 var BASE_LOCATION = { lat: 40.6976, lng: -74.2598, name: 'Cintas Union (Base)', addr: '410 Clermont Terrace Ste. E, Union, NJ 07083' };
+
+// Auto-correct BASE_LOCATION coords using the geocoder, then cache to Firebase
+// so we don't have to re-geocode on every load. Runs once on startup after
+// Maps API is ready.
+async function ensureBaseLocationCoords() {
+  try {
+    // Check Firebase cache first
+    var cached = await fbLoad('baseLocation');
+    if (cached && cached.addr === BASE_LOCATION.addr && cached.lat && cached.lng) {
+      // Cached coords match the current address — use them
+      BASE_LOCATION.lat = cached.lat;
+      BASE_LOCATION.lng = cached.lng;
+      console.log('Base location loaded from cache:', cached.lat, cached.lng);
+      // Re-render the map marker now that we have correct coords
+      if (mapView && typeof renderMapMarkers === 'function') renderMapMarkers();
+      return;
+    }
+  } catch (e) {
+    console.log('No cached base location, will geocode');
+  }
+
+  // No cache (or address changed) — geocode the address now
+  if (typeof geocodeAddress !== 'function') {
+    console.log('geocodeAddress not yet available — will retry');
+    setTimeout(ensureBaseLocationCoords, 1500);
+    return;
+  }
+
+  geocodeAddress(BASE_LOCATION.addr, function(coords) {
+    if (coords && coords.lat && coords.lng) {
+      console.log('Base geocoded to', coords.lat, coords.lng, '(was', BASE_LOCATION.lat, BASE_LOCATION.lng + ')');
+      BASE_LOCATION.lat = coords.lat;
+      BASE_LOCATION.lng = coords.lng;
+      // Cache to Firebase for next time
+      fbSave('baseLocation', { addr: BASE_LOCATION.addr, lat: coords.lat, lng: coords.lng });
+      // Re-render the map marker at the corrected position
+      if (mapView && typeof renderMapMarkers === 'function') renderMapMarkers();
+    } else {
+      console.log('Base geocoding failed — keeping default coords');
+    }
+  });
+}
 
 function renderMapMarkers() {
   if (!mapView) return;

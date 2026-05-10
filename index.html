@@ -262,7 +262,7 @@ body.nav-active .tabs,
 body.nav-active .sync-banner { display: none !important; }
 body.nav-active #routeTab,
 body.nav-active #manageTab { display: none !important; }
-body.nav-active #mapTab { display: block !important; position: fixed; inset: 0; z-index: 9000; }
+body.nav-active #mapTab { display: block !important; position: fixed !important; inset: 0 !important; z-index: 9000 !important; }
 body.nav-active #mapContainer { height: 100vh !important; }
 body.nav-active .nav-hud { z-index: 9100; }
 body.nav-active .upcoming-turn { z-index: 9101; }
@@ -548,12 +548,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">WED</button>
     <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">THU</button>
     <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">FRI</button>
-  </div>
-  <div id="mapLegend" style="position:absolute;bottom:16px;left:12px;background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;font-family:var(--fm);font-size:10px;color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.4);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;background:#0033a0;border:1px solid #fff;flex-shrink:0;"></div>Base (Cintas)</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ef476f;flex-shrink:0;"></div>Pending</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><div style="width:12px;height:12px;border-radius:50%;background:#ff6b2b;flex-shrink:0;"></div>Active</div>
-    <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:50%;background:#888;flex-shrink:0;"></div>Done</div>
   </div>
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->

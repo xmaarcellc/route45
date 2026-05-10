@@ -1365,6 +1365,12 @@ function addStop() {
   if (!name) { alert('Please enter a business name.'); return; }
   if (!addr) { alert('Please enter a street address.'); return; }
 
+  // Block adds while sync is still in progress — prevents clobbering unloaded days
+  if (!firebaseReady) {
+    alert('⏳ Still syncing with database — please wait a moment, then try again.');
+    return;
+  }
+
   // Check for duplicates across ALL days
   var lat = selectedPlaceCoords ? selectedPlaceCoords.lat : null;
   var lng = selectedPlaceCoords ? selectedPlaceCoords.lng : null;
@@ -1394,9 +1400,13 @@ function addStop() {
   };
 
   if (!stops[currentManageDay]) stops[currentManageDay] = [];
+  if (!stopData[currentManageDay]) stopData[currentManageDay] = [];
   stops[currentManageDay].push(newStop);
   stopData[currentManageDay].push(blankStopData());
-  saveStops();
+
+  // Save ONLY this day's stops + stopData (per-day write, not whole object)
+  fbSave('stops/' + currentManageDay, stops[currentManageDay]);
+  fbSave('stopData/' + currentManageDay, stopData[currentManageDay]);
 
   // Hide auto-fill checkmarks
   var na = document.getElementById('nameAutoFill');
@@ -1426,7 +1436,7 @@ function addStop() {
         if (stops[currentManageDay][lastIdx] && stops[currentManageDay][lastIdx].name === name) {
           stops[currentManageDay][lastIdx].lat = coords.lat;
           stops[currentManageDay][lastIdx].lng = coords.lng;
-          saveStops();
+          fbSave('stops/' + currentManageDay, stops[currentManageDay]);
           if (mapView) renderMapMarkers();
           console.log('Geocoded', name, 'to', coords.lat, coords.lng);
         }
@@ -1447,11 +1457,30 @@ function addStop() {
 // ============================================================
 // REMOVE / EDIT STOP
 // ============================================================
-function removeStop(day, idx) {
+async function removeStop(day, idx) {
+  if (!stops[day] || !stops[day][idx]) return;
+  if (!firebaseReady) {
+    alert('⏳ Still syncing with database — please wait a moment, then try again.');
+    return;
+  }
   if (!confirm('Remove ' + stops[day][idx].name + '?')) return;
   stops[day].splice(idx, 1);
-  stopData[day].splice(idx, 1);
-  saveStops();
+  if (stopData[day]) stopData[day].splice(idx, 1);
+
+  // Save BOTH stops and stopData for this day, and wait for Firebase to confirm
+  // before showing UI as updated. This prevents the user from re-deleting (or
+  // editing the wrong index) before the write lands.
+  try {
+    await Promise.all([
+      fbSave('stops/' + day, stops[day]),
+      fbSave('stopData/' + day, stopData[day] || [])
+    ]);
+  } catch (e) {
+    console.error('removeStop: Firebase save failed', e);
+    alert('⚠️ Failed to save deletion to database. Refresh and try again.');
+    return;
+  }
+
   renderManageList();
   if (day === currentDay) { activeStopIdx = null; renderRoute(); }
   if (mapView) renderMapMarkers();

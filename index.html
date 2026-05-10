@@ -2598,7 +2598,7 @@ function getFilteredStops() {
 
 function getFreqTag(stop) {
   const freq = stop.frequency || 'weekly';
-  if (freq === 'weekly') return '';
+  if (freq === 'weekly') return '<span class="freq-tag freq-weekly">Weekly</span>';
   if (freq === 'biweekly') return '<span class="freq-tag freq-biweekly">Biweekly</span>';
   if (freq === 'monthly') return '<span class="freq-tag freq-monthly">Monthly</span>';
   return '';

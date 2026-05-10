@@ -255,6 +255,21 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 /* NAVIGATION HUD */
 .nav-hud { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 2px solid var(--acc); padding: 14px 16px; z-index: 25; display: none; }
 .nav-hud.show { display: block; }
+
+/* NAV TAKEOVER MODE — full-screen lock. Set when isNavigating === true. */
+body.nav-active .hdr,
+body.nav-active .tabs,
+body.nav-active .sync-banner { display: none !important; }
+body.nav-active #routeTab,
+body.nav-active #manageTab { display: none !important; }
+body.nav-active #mapTab { display: block !important; position: fixed; inset: 0; z-index: 9000; }
+body.nav-active #mapContainer { height: 100vh !important; }
+body.nav-active .nav-hud { z-index: 9100; }
+body.nav-active .upcoming-turn { z-index: 9101; }
+.nav-stop-btn:hover { filter: brightness(1.15); }
+.nav-stop-btn:active { transform: scale(0.97); }
+/* Bigger, more obvious STOP button when nav is active */
+body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 4px 12px rgba(239,71,111,.4); }
 .nav-hud-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .nav-hud-dest { font-family: var(--fd); font-size: 20px; color: var(--acc); letter-spacing: 1px; }
 .nav-stop-btn { background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
@@ -331,6 +346,9 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .mode-banner-text { flex: 1; font-size: 14px; }
 .mode-banner-counter { font-family: var(--fd); font-size: 22px; letter-spacing: 1px; }
+.mode-banner-last { font-family: 'DM Mono', monospace; font-size: 12px; margin-top: 8px; padding: 8px 10px; background: rgba(0,0,0,0.18); border-radius: 6px; line-height: 1.3; display: none; }
+.mode-banner-last.show { display: block; }
+.mode-banner-last-num { font-family: var(--fd); font-size: 14px; letter-spacing: 1px; margin-right: 6px; opacity: 0.7; }
 .mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
 .mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .mode-btn-cancel { background: rgba(0,0,0,0.2); color: #000; }
@@ -589,6 +607,9 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <div class="mode-banner-row">
       <div class="mode-banner-text" id="modeBannerText">Tap stops in the order you want them</div>
       <div class="mode-banner-counter" id="modeBannerCounter">0/0</div>
+    </div>
+    <div class="mode-banner-last" id="modeBannerLast">
+      <span class="mode-banner-last-num" id="modeBannerLastNum"></span><span id="modeBannerLastName"></span>
     </div>
     <div class="mode-banner-btns">
       <button class="mode-btn mode-btn-cancel" onclick="cancelMode()">CANCEL</button>
@@ -1144,6 +1165,11 @@ function calcAdjustedDuration(day, idx) {
 // TAB SWITCHING
 // ============================================================
 function switchTab(tab) {
+  // Lock tabs during navigation — user must STOP nav first
+  if (isNavigating) {
+    alert('🧭 Navigation is active. Tap ■ STOP at the top to end navigation before switching tabs.');
+    return;
+  }
   ['route','manage','map'].forEach(t => {
     var el = document.getElementById(t + 'Tab');
     if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -3233,6 +3259,23 @@ function startInAppNav() {
   autoFollow = true;
   closeMapPopup();
 
+  // ENGAGE NAV TAKEOVER MODE — full-screen, locks user out of other tabs.
+  // The only way back out is the ■ STOP button in the nav HUD, which calls
+  // stopNavigation() and removes the takeover.
+  document.body.classList.add('nav-active');
+  // Force map tab to be the visible one (in case user was on route/stops)
+  document.getElementById('routeTab').style.display = 'none';
+  document.getElementById('manageTab').style.display = 'none';
+  document.getElementById('mapTab').style.display = 'block';
+  // Trigger a Google Maps resize so it fills the new fullscreen container.
+  // Without this the map can render at the old smaller size until the user pans.
+  setTimeout(function() {
+    if (mapView && google && google.maps && google.maps.event) {
+      google.maps.event.trigger(mapView, 'resize');
+      if (userLat) mapView.panTo({ lat: userLat, lng: userLng });
+    }
+  }, 100);
+
   // Reset heading tracking for clean nav start
   smoothedHeading = null;
 
@@ -3606,7 +3649,13 @@ function checkOffRoute(lat, lng) {
   }
 }
 
-function stopNavigation() {
+function stopNavigation(skipConfirm) {
+  // Confirm before stopping — prevents accidental taps of the big STOP button
+  // from killing the nav mid-drive. Pass true to skip (used internally on arrival).
+  if (isNavigating && !skipConfirm) {
+    if (!confirm('Stop navigation?')) return;
+  }
+
   isNavigating = false;
   navStopIdx = null;
   navSteps = [];
@@ -3633,6 +3682,15 @@ function stopNavigation() {
   if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
   // Reset map heading to north-up
   if (mapView) { mapView.setHeading(0); }
+
+  // EXIT NAV TAKEOVER MODE — restore tabs/header and normal map sizing
+  document.body.classList.remove('nav-active');
+  // Trigger map resize so it goes back to the embedded size
+  setTimeout(function() {
+    if (mapView && google && google.maps && google.maps.event) {
+      google.maps.event.trigger(mapView, 'resize');
+    }
+  }, 100);
 }
 
 var is3D = false;
@@ -3777,7 +3835,7 @@ function navigateToBase() {
     if (!confirm('Already navigating to ' + (stops[currentDay][navStopIdx] ? stops[currentDay][navStopIdx].name : 'a stop') + '. Switch to navigating to base?')) {
       return;
     }
-    stopNavigation();
+    stopNavigation(true); // skip the standard confirm — user already agreed
   }
 
   // Set up navigation as if base were a stop, but use special index -1
@@ -3785,6 +3843,18 @@ function navigateToBase() {
   isNavigating = true;
   autoFollow = true;
   closeMapPopup();
+
+  // ENGAGE NAV TAKEOVER MODE (same as startInAppNav)
+  document.body.classList.add('nav-active');
+  document.getElementById('routeTab').style.display = 'none';
+  document.getElementById('manageTab').style.display = 'none';
+  document.getElementById('mapTab').style.display = 'block';
+  setTimeout(function() {
+    if (mapView && google && google.maps && google.maps.event) {
+      google.maps.event.trigger(mapView, 'resize');
+      if (userLat) mapView.panTo({ lat: userLat, lng: userLng });
+    }
+  }, 100);
 
   // Snap map to user immediately and lock to nav zoom
   if (mapView && userLat) {
@@ -4502,6 +4572,7 @@ function startReorganize() {
   document.getElementById('modeBannerText').textContent = 'Tap stops in new order, then DONE. Untapped stops keep their order at the end.';
   document.getElementById('modeDoneBtn').style.display = 'block';
   updateReorgCounter();
+  updateLastTappedIndicator(); // hide on start
   closeMapPopup();
   renderModeMarkers();
 }
@@ -4529,6 +4600,8 @@ function cancelMode() {
   reorgOrder = [];
   measureSelection = [];
   document.getElementById('modeBanner').classList.remove('show');
+  var lastEl = document.getElementById('modeBannerLast');
+  if (lastEl) lastEl.classList.remove('show');
   var doneBtn = document.getElementById('modeDoneBtn');
   if (doneBtn) doneBtn.style.display = 'block';
   closeMeasureResult();
@@ -4552,18 +4625,42 @@ function updateReorgCounter() {
   btn.textContent = reorgOrder.length < 1 ? 'TAP STOPS' : 'DONE (' + reorgOrder.length + ')';
 }
 
+function updateLastTappedIndicator() {
+  // Show the most recently tapped reorganize stop in the mode banner
+  var el = document.getElementById('modeBannerLast');
+  var nameEl = document.getElementById('modeBannerLastName');
+  var numEl = document.getElementById('modeBannerLastNum');
+  if (!el || !nameEl || !numEl) return;
+  if (mapMode !== 'reorganize' || reorgOrder.length === 0) {
+    el.classList.remove('show');
+    return;
+  }
+  var lastIdx = reorgOrder[reorgOrder.length - 1];
+  var dayStops = stops[currentDay] || [];
+  var stop = dayStops[lastIdx];
+  if (!stop) {
+    el.classList.remove('show');
+    return;
+  }
+  numEl.textContent = '#' + reorgOrder.length;
+  nameEl.textContent = '✓ ' + stop.name;
+  el.classList.add('show');
+}
+
 function handleReorgTap(stopIdx) {
   if (reorgOrder.indexOf(stopIdx) !== -1) {
     if (reorgOrder[reorgOrder.length - 1] === stopIdx) {
       reorgOrder.pop();
       updateReorgCounter();
       renderModeMarkers();
+      updateLastTappedIndicator();
     }
     return;
   }
   reorgOrder.push(stopIdx);
   updateReorgCounter();
   renderModeMarkers();
+  updateLastTappedIndicator();
 }
 
 function handleMeasureTap(stopIdx) {
@@ -4574,11 +4671,16 @@ function handleMeasureTap(stopIdx) {
   if (measureSelection.length === 2) runMeasurement();
 }
 
-function saveReorganize() {
+async function saveReorganize() {
   var day = currentDay;
   var dayStops = stops[day] || [];
   var dayData = stopData[day] || [];
   if (reorgOrder.length === 0) { alert('Tap at least one stop first.'); return; }
+
+  if (!firebaseReady) {
+    alert('⏳ Still syncing with database — please wait a moment, then try again.');
+    return;
+  }
 
   // Capture counts BEFORE we mutate anything
   var tappedCount = reorgOrder.length;
@@ -4612,20 +4714,35 @@ function saveReorganize() {
   stops[day] = newStops;
   stopData[day] = newData;
 
-  // Persist to Firebase — write specific day path so it overwrites cleanly
-  fbSave('stops/' + day, stops[day]);
-  fbSave('stopData/' + day, stopData[day]);
+  // Persist to Firebase and WAIT for confirmation before showing success.
+  // Uses saveStopsForDayPromises so any stale clearedDays marker is cleared.
+  try {
+    await Promise.all([
+      ...saveStopsForDayPromises(day),
+      fbSave('stopData/' + day, stopData[day])
+    ]);
+  } catch (e) {
+    console.error('saveReorganize: Firebase save failed', e);
+    alert('⚠️ Save failed. The new order was applied locally but did not save to the database. Refresh and try again.');
+    return;
+  }
 
   // Reset mode
   mapMode = null;
   reorgOrder = [];
   document.getElementById('modeBanner').classList.remove('show');
+  var lastEl = document.getElementById('modeBannerLast');
+  if (lastEl) lastEl.classList.remove('show');
 
+  // Refresh ALL views that show this day's stops:
+  // - Route tab (numbered list)
+  // - Stops tab (manage list, if currently viewing this day)
+  // - Map tab (markers in correct order)
   renderRoute();
   renderManageList();
   renderMapMarkers();
 
-  var msg = '✓ Route reorganized and saved!\n\n' + tappedCount + ' stop' + (tappedCount === 1 ? '' : 's') + ' moved to top in your tap order.';
+  var msg = '✓ Route reorganized and saved to database!\n\n' + tappedCount + ' stop' + (tappedCount === 1 ? '' : 's') + ' moved to top in your tap order.';
   if (untappedCount > 0) {
     msg += '\n' + untappedCount + ' untouched stop' + (untappedCount === 1 ? '' : 's') + ' kept at the end.';
   }

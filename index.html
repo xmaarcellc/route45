@@ -240,6 +240,25 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .nav-turn-icon { font-size: 22px; flex-shrink: 0; }
 .nav-turn-txt { font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.4; flex: 1; }
 .nav-turn-dist { font-family: var(--fd); font-size: 16px; color: var(--acc); flex-shrink: 0; }
+
+/* BIG UPCOMING-TURN ALERT (shows when ≤ 0.5 mi from next turn) */
+.upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #ff6b2b, #ff8c00); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(255,107,43,.45), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse 1.4s ease-in-out infinite; }
+.upcoming-turn.show { display: block; }
+.upcoming-turn.imminent { background: linear-gradient(135deg, #ef476f, #c9184a); color: #fff; box-shadow: 0 6px 24px rgba(239,71,111,.6), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse-fast 0.8s ease-in-out infinite; }
+.upcoming-turn-row { display: flex; align-items: center; gap: 14px; }
+.upcoming-turn-icon { font-size: 56px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
+.upcoming-turn-info { flex: 1; min-width: 0; }
+.upcoming-turn-dist { font-family: var(--fd); font-size: 38px; line-height: 1; letter-spacing: 1px; }
+.upcoming-turn-action { font-family: var(--fm); font-size: 13px; font-weight: 600; line-height: 1.25; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; word-wrap: break-word; }
+@keyframes upcoming-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+@keyframes upcoming-pulse-fast {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
 .recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(--sur); border: 1px solid var(--acc); border-radius: 50%; color: var(--acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .dots-btn { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(--bdr); }
@@ -372,11 +391,16 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 
   <div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap;">
     <button class="filter-pill active" data-filter="all" onclick="setRouteFilter('all')">All</button>
-    <button class="filter-pill" data-filter="open-now" onclick="setRouteFilter('open-now')">🟢 Open Now</button>
-    <button class="filter-pill" data-filter="opens-soon" onclick="setRouteFilter('opens-soon')">⏳ Opens Soon</button>
-    <button class="filter-pill" data-filter="not-yet-open" onclick="setRouteFilter('not-yet-open')">🔒 Not Yet</button>
     <button class="filter-pill" data-filter="pending" onclick="setRouteFilter('pending')">Pending</button>
     <button class="filter-pill" data-filter="done" onclick="setRouteFilter('done')">✅ Done</button>
+  </div>
+
+  <div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+    <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-right:4px;">Freq:</span>
+    <button class="filter-pill freq-filter-pill active" data-freqfilter="all" onclick="setFreqFilter('all')">All</button>
+    <button class="filter-pill freq-filter-pill" data-freqfilter="weekly" onclick="setFreqFilter('weekly')" style="border-color:var(--grn);">🟢 Weekly</button>
+    <button class="filter-pill freq-filter-pill" data-freqfilter="biweekly" onclick="setFreqFilter('biweekly')" style="border-color:var(--acc2);">🟠 Biweekly</button>
+    <button class="filter-pill freq-filter-pill" data-freqfilter="monthly" onclick="setFreqFilter('monthly')" style="border-color:var(--acc);">🔴 Monthly</button>
   </div>
 
   <div id="filterStatus" style="padding:0 16px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);display:none;"></div>
@@ -482,6 +506,17 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
       <div class="nav-turn-icon" id="navTurnIcon">➡️</div>
       <div class="nav-turn-txt" id="navTurnTxt">Loading directions...</div>
       <div class="nav-turn-dist" id="navTurnDist"></div>
+    </div>
+  </div>
+
+  <!-- BIG UPCOMING-TURN ALERT (shown when within 0.5 mi of next turn) -->
+  <div class="upcoming-turn" id="upcomingTurn">
+    <div class="upcoming-turn-row">
+      <div class="upcoming-turn-icon" id="upcomingTurnIcon">➡️</div>
+      <div class="upcoming-turn-info">
+        <div class="upcoming-turn-dist" id="upcomingTurnDist">0.5 MI</div>
+        <div class="upcoming-turn-action" id="upcomingTurnAction">Turn right onto Main St</div>
+      </div>
     </div>
   </div>
 
@@ -842,13 +877,28 @@ async function syncFromFirebase() {
     const savedStopData = await fbLoad('stopData');
     if (savedStopData) {
       ['MON','TUE','WED','THU','FRI'].forEach(function(d) {
-        if (savedStopData[d] && Array.isArray(savedStopData[d]) && stops[d]) {
-          // Match length to current stops array, preserve saved entries where they align
-          var newData = stops[d].map(function(_, i) {
-            return savedStopData[d][i] || blankStopData();
+        var raw = savedStopData[d];
+        if (!raw || !stops[d]) return;
+        // Firebase Realtime DB returns arrays as objects with numeric keys
+        // when individual indices have been written (e.g. "stopData/MON/3").
+        // Normalize to a plain array.
+        var arr;
+        if (Array.isArray(raw)) {
+          arr = raw;
+        } else if (typeof raw === 'object') {
+          arr = [];
+          Object.keys(raw).forEach(function(k) {
+            var idx = parseInt(k, 10);
+            if (!isNaN(idx)) arr[idx] = raw[k];
           });
-          stopData[d] = newData;
+        } else {
+          return;
         }
+        // Match length to current stops array, preserve saved entries where they align
+        var newData = stops[d].map(function(_, i) {
+          return arr[i] || blankStopData();
+        });
+        stopData[d] = newData;
       });
       console.log('Loaded stopData from Firebase');
       renderRoute();
@@ -950,16 +1000,8 @@ function selectDay(day) {
     b.classList.toggle('active', b.textContent === day);
   });
   activeStopIdx = null;
-  // Reset search and filter when changing days
-  routeSearchQuery = '';
-  routeFilter = 'all';
-  var input = document.getElementById('routeSearchInput');
-  if (input) input.value = '';
-  var clearBtn = document.getElementById('routeSearchClearBtn');
-  if (clearBtn) clearBtn.style.display = 'none';
-  document.querySelectorAll('.filter-pill').forEach(function(btn) {
-    btn.classList.toggle('active', btn.getAttribute('data-filter') === 'all');
-  });
+  // Note: do NOT reset routeFilter / routeFreqFilter on day change.
+  // Filters persist across day switches until the user clicks "All".
   initStopData();
   renderRoute();
   // Refresh map if open
@@ -1144,6 +1186,46 @@ function selectSearchResult(placeId, name, addr) {
 // ============================================================
 // ADD STOP
 // ============================================================
+// ============================================================
+// DUPLICATE STOP DETECTION
+// ============================================================
+function normalizeStopKey(name, addr) {
+  // Lowercase, strip punctuation/whitespace for fuzzy matching
+  var n = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  // For address, take only the street number + street name (first part before comma)
+  var a = (addr || '').toLowerCase().split(',')[0].replace(/[^a-z0-9]/g, '');
+  return n + '|' + a;
+}
+
+function findDuplicateStop(name, addr, lat, lng) {
+  // Returns {day, idx, stop} of first match, or null if none
+  // Match by: normalized name+address, OR very close coordinates (within ~30 ft)
+  var newKey = normalizeStopKey(name, addr);
+  var found = null;
+  ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
+    if (found) return;
+    var dayStops = stops[day] || [];
+    for (var i = 0; i < dayStops.length; i++) {
+      var s = dayStops[i];
+      // Name + address match
+      if (normalizeStopKey(s.name, s.addr) === newKey) {
+        found = { day: day, idx: i, stop: s, reason: 'name+address' };
+        return;
+      }
+      // Coordinate match (within ~0.0001 deg ≈ 30 ft)
+      if (lat && lng && s.lat && s.lng) {
+        var dLat = Math.abs(s.lat - lat);
+        var dLng = Math.abs(s.lng - lng);
+        if (dLat < 0.0001 && dLng < 0.0001) {
+          found = { day: day, idx: i, stop: s, reason: 'coordinates' };
+          return;
+        }
+      }
+    }
+  });
+  return found;
+}
+
 function addStop() {
   const name = document.getElementById('newName').value.trim();
   const addr = document.getElementById('newAddr').value.trim();
@@ -1152,11 +1234,32 @@ function addStop() {
   if (!name) { alert('Please enter a business name.'); return; }
   if (!addr) { alert('Please enter a street address.'); return; }
 
+  // Check for duplicates across ALL days
+  var lat = selectedPlaceCoords ? selectedPlaceCoords.lat : null;
+  var lng = selectedPlaceCoords ? selectedPlaceCoords.lng : null;
+  var dup = findDuplicateStop(name, addr, lat, lng);
+  if (dup) {
+    var msg = '⚠️ DUPLICATE STOP DETECTED\n\n';
+    msg += '"' + dup.stop.name + '" already exists on ' + dup.day + ' (stop #' + (dup.idx + 1) + ').\n';
+    msg += 'Address: ' + dup.stop.addr + '\n\n';
+    if (dup.reason === 'coordinates') {
+      msg += '(Matched by coordinates — same location, possibly different name.)\n\n';
+    }
+    if (dup.day === currentManageDay) {
+      msg += 'Already on this day. Cannot add the same stop twice on ' + currentManageDay + '.';
+      alert(msg);
+      return;
+    } else {
+      msg += 'Add anyway to ' + currentManageDay + '? (Tap Cancel to skip.)';
+      if (!confirm(msg)) return;
+    }
+  }
+
   const newStop = {
     name, addr, opens, note,
     frequency: currentFreq,
-    lat: selectedPlaceCoords ? selectedPlaceCoords.lat : null,
-    lng: selectedPlaceCoords ? selectedPlaceCoords.lng : null
+    lat: lat,
+    lng: lng
   };
 
   if (!stops[currentManageDay]) stops[currentManageDay] = [];
@@ -1238,8 +1341,38 @@ function editStop(day, idx) {
   document.getElementById('editDay').value = day;
   document.getElementById('editDayBadge').textContent = '(currently ' + day + ')';
 
+  // Last serviced — date input expects YYYY-MM-DD
+  var lsInput = document.getElementById('editLastServiced');
+  if (lsInput) {
+    if (s.lastServiced) {
+      var d = new Date(s.lastServiced);
+      // Build YYYY-MM-DD in local time (avoid UTC offset issues)
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      lsInput.value = y + '-' + m + '-' + dd;
+    } else {
+      lsInput.value = '';
+    }
+  }
+
   // Show modal
   document.getElementById('editModal').style.display = 'flex';
+}
+
+function setLastServicedToday() {
+  var lsInput = document.getElementById('editLastServiced');
+  if (!lsInput) return;
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  lsInput.value = y + '-' + m + '-' + dd;
+}
+
+function clearLastServiced() {
+  var lsInput = document.getElementById('editLastServiced');
+  if (lsInput) lsInput.value = '';
 }
 
 function closeEditModal() {
@@ -1259,12 +1392,51 @@ function saveEditedStop() {
   const newFreq = document.getElementById('editFreq').value;
   const newDay = document.getElementById('editDay').value;
 
+  // Pull last-serviced date from form. Empty = clear ("Never serviced").
+  // Convert YYYY-MM-DD to ISO at noon local time so date arithmetic is stable
+  // across timezones (avoids midnight rolling backward to previous day in UTC).
+  var lsRaw = document.getElementById('editLastServiced').value;
+  var newLastServiced;
+  if (lsRaw) {
+    var parts = lsRaw.split('-');
+    if (parts.length === 3) {
+      var dt = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+      newLastServiced = dt.toISOString();
+    } else {
+      newLastServiced = null;
+    }
+  } else {
+    newLastServiced = null; // user cleared it
+  }
+
   if (!newName) { alert('Name required.'); return; }
   if (!newAddr) { alert('Address required.'); return; }
 
   // Detect changes
   const addrChanged = (newAddr !== s.addr);
   const dayChanged = (newDay !== day);
+  const nameChanged = (newName !== s.name);
+
+  // Duplicate check — only run if name, address, or day changed (otherwise it's a no-op edit)
+  if (nameChanged || addrChanged || dayChanged) {
+    var checkLat = addrChanged ? null : s.lat;
+    var checkLng = addrChanged ? null : s.lng;
+    var dup = findDuplicateStop(newName, newAddr, checkLat, checkLng);
+    // Exclude the stop being edited from the check
+    if (dup && !(dup.day === day && dup.idx === idx)) {
+      var msg = '⚠️ DUPLICATE DETECTED\n\n';
+      msg += '"' + dup.stop.name + '" already exists on ' + dup.day + ' (stop #' + (dup.idx + 1) + ').\n';
+      msg += 'Address: ' + dup.stop.addr + '\n\n';
+      if (dup.day === newDay) {
+        msg += 'Cannot save — would create a duplicate on ' + newDay + '.';
+        alert(msg);
+        return;
+      } else {
+        msg += 'Save anyway? (Tap Cancel to keep editing.)';
+        if (!confirm(msg)) return;
+      }
+    }
+  }
 
   const updatedStop = {
     ...s,
@@ -1273,6 +1445,7 @@ function saveEditedStop() {
     opens: newOpens,
     note: newNote,
     frequency: newFreq,
+    lastServiced: newLastServiced,
     lat: addrChanged ? null : s.lat,
     lng: addrChanged ? null : s.lng
   };
@@ -1614,8 +1787,8 @@ function logArrival(i) {
   if (!routeStartTime) routeStartTime = new Date();
   stopData[currentDay][i].arrivalTime = new Date().toISOString();
   stopData[currentDay][i].status = 'active';
-  // Persist immediately so a refresh keeps the timestamp
-  fbSave('stopData/' + currentDay + '/' + i, stopData[currentDay][i]);
+  // Persist the whole day array so Firebase keeps it as an array
+  fbSave('stopData/' + currentDay, stopData[currentDay]);
   refreshPanel(i);
   updateStats();
   checkDeviation(i);
@@ -1640,8 +1813,11 @@ function logDepartureAndComplete(i) {
     stopData[currentDay][i].duration = diffMin;
   }
 
+  // Persist departure + duration immediately — write the whole day array
+  fbSave('stopData/' + currentDay, stopData[currentDay]);
+
   updateStats();
-  // Auto-complete the stop
+  // Auto-complete the stop (this also persists status='done' + lastServiced)
   completeStop(i);
 }
 
@@ -1687,8 +1863,9 @@ function completeStop(i) {
   stopData[currentDay][i].status = 'done';
   stopData[currentDay][i].adjustedDuration = calcAdjustedDuration(currentDay, i);
 
-  // Persist the completed stop data immediately
-  fbSave('stopData/' + currentDay + '/' + i, stopData[currentDay][i]);
+  // Persist the completed stop data — write the whole day array so Firebase
+  // keeps it as an array (not an object), preserving order/length on reload.
+  fbSave('stopData/' + currentDay, stopData[currentDay]);
 
   // Record last serviced date on the stop itself and save to Firebase
   var today = new Date().toISOString();
@@ -1951,7 +2128,8 @@ function getNextStopIdx(filtered) {
 }
 
 var routeSearchQuery = '';
-var routeFilter = 'all'; // all, open-now, opens-soon, not-yet-open, pending, done
+var routeFilter = 'all'; // all, pending, done
+var routeFreqFilter = 'all'; // all, weekly, biweekly, monthly — independent from routeFilter
 
 function getFilteredStops() {
   const dayStops = stops[currentDay] || [];
@@ -1970,6 +2148,14 @@ function getFilteredStops() {
     });
   }
 
+  // Apply frequency filter (independent from status filter — they combine)
+  if (routeFreqFilter !== 'all') {
+    result = result.filter(function(item) {
+      var freq = item.stop.frequency || 'weekly';
+      return freq === routeFreqFilter;
+    });
+  }
+
   // Apply filter
   if (routeFilter !== 'all') {
     result = result.filter(function(item) {
@@ -1978,28 +2164,6 @@ function getFilteredStops() {
 
       if (routeFilter === 'pending') return status !== 'done';
       if (routeFilter === 'done') return status === 'done';
-
-      // Time-based filters - skip done stops
-      if (status === 'done') return false;
-      var openMins = parseOpenTime(item.stop.opens);
-
-      // 24hr places (openMins=0 from "24 hours" text) are always considered open
-      var isAlways24 = item.stop.opens && item.stop.opens.toLowerCase().indexOf('24') !== -1;
-
-      if (routeFilter === 'open-now') {
-        if (isAlways24) return true;
-        if (openMins === 0) return false; // TBD/unknown — exclude from "open now"
-        return openMins <= nowMins;
-      }
-      if (routeFilter === 'opens-soon') {
-        if (openMins === 0 || isAlways24) return false;
-        var diff = openMins - nowMins;
-        return diff > 0 && diff <= 60; // opens within next hour
-      }
-      if (routeFilter === 'not-yet-open') {
-        if (openMins === 0 || isAlways24) return false;
-        return openMins > nowMins + 60; // opens more than 1hr from now
-      }
       return true;
     });
   }
@@ -2134,7 +2298,7 @@ function initMapView() {
 }
 
 var baseMarker = null;
-var BASE_LOCATION = { lat: 40.6976, lng: -74.2598, name: 'Cintas Union (Base)', addr: '410 Clermont Ave, Union, NJ 07083' };
+var BASE_LOCATION = { lat: 40.6976, lng: -74.2598, name: 'Cintas Union (Base)', addr: '410 Clermont Terrace, Union, NJ 07083' };
 
 function renderMapMarkers() {
   if (!mapView) return;
@@ -2306,11 +2470,23 @@ function startGPSTracking() {
       prevGpsLng = lng;
       prevGpsTime = Date.now();
 
-      // When navigating, the map itself rotates to match heading, so the arrow
-      // should point "up" (direction of travel) relative to the rotated map.
-      // When not navigating, rotate the arrow to show heading on a north-up map.
-      var correctedHeading = pos.coords.heading != null ? pos.coords.heading : 0;
-      var iconRotation = isNavigating ? 0 : correctedHeading;
+      // Decide rotation strategy:
+      // - 3D/satellite mode: map itself rotates, arrow points "up" (rotation 0)
+      // - 2D map mode: setHeading() doesn't work on flat ROADMAP — instead, rotate the arrow
+      //   so it visually points the direction of travel on a static north-up map.
+      var iconRotation;
+      if (isNavigating) {
+        if (is3D) {
+          // 3D mode rotates the map, so arrow stays pointing up
+          iconRotation = 0;
+        } else {
+          // 2D mode can't rotate map — rotate arrow to show heading instead
+          iconRotation = (lastGpsHeading != null && !isNaN(lastGpsHeading)) ? lastGpsHeading : 0;
+        }
+      } else {
+        // Not navigating — show heading on north-up map
+        iconRotation = (lastGpsHeading != null && !isNaN(lastGpsHeading)) ? lastGpsHeading : 0;
+      }
 
       var icon = {
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -2322,9 +2498,9 @@ function startGPSTracking() {
         rotation: iconRotation
       };
 
-      // In 3D mode during navigation - face direction of travel
-      if (is3D && isNavigating && pos.coords.heading != null && mapView) {
-        mapView.setHeading(pos.coords.heading);
+      // In 3D mode during navigation - face direction of travel by rotating the map
+      if (is3D && isNavigating && lastGpsHeading != null && mapView) {
+        mapView.setHeading(lastGpsHeading);
       }
 
       function applyPos(useLat, useLng) {
@@ -2377,9 +2553,9 @@ function startGPSTracking() {
           mapView.panTo(latlng);
           // Keep zoom locked at navigation level
           if (mapView.getZoom() < 16) mapView.setZoom(17);
-          // Rotate map to match direction of travel (heading-up like Apple/Google Maps)
-          // Only update if change is meaningful (avoid jitter when stopped)
-          if (lastGpsHeading != null && !isNaN(lastGpsHeading)) {
+          // Rotate map to match direction of travel — ONLY in 3D/satellite mode
+          // (2D ROADMAP doesn't support setHeading; we rotate the arrow icon instead)
+          if (is3D && lastGpsHeading != null && !isNaN(lastGpsHeading)) {
             var currentMapHeading = mapView.getHeading() || 0;
             var headingDiff = Math.abs(lastGpsHeading - currentMapHeading);
             if (headingDiff > 180) headingDiff = 360 - headingDiff;
@@ -2570,6 +2746,7 @@ function startInAppNav() {
   document.getElementById('navDest').textContent = stop.name;
   document.getElementById('recenterBtn').style.display = 'flex';
   document.getElementById('navTurn').style.display = 'none';
+  hideUpcomingTurn();
 
   // Update follow button
   var followBtn = document.getElementById('followBtn');
@@ -2703,6 +2880,7 @@ function fetchDirectionsFallback(idx) {
     if (parseFloat(distMi) < 0.05) {
       document.getElementById('navDest').textContent = '📍 Arrived!';
       document.getElementById('navTurn').style.display = 'none';
+      hideUpcomingTurn();
     }
   });
 }
@@ -2759,43 +2937,120 @@ function updateTurnInstruction() {
   var turnTxt = document.getElementById('navTurnTxt');
   var turnDist = document.getElementById('navTurnDist');
 
-  // Find the closest upcoming step
-  var closestStep = null;
-  var closestDist = Infinity;
-  navSteps.forEach(function(step) {
-    if (!step.start_location) return;
-    var d = distanceMiles(userLat, userLng, step.start_location.lat(), step.start_location.lng());
-    if (d < closestDist) { closestDist = d; closestStep = step; }
-  });
+  // Find the NEXT upcoming step (the one we haven't reached yet).
+  // Strategy: for each step, distance from user to its END point. The step we
+  // are currently driving is the one whose END is nearest in front of us; the
+  // "next turn" is the maneuver at that end OR the start of the following step.
+  // Simpler: pick the step whose start is closest to us AND ahead — but to be
+  // robust, find step whose end is closest to user, then the maneuver is the
+  // start of the NEXT step.
+  //
+  // We use: among all step-start points, find the closest one that we haven't
+  // yet "passed". A step's start is "passed" if user is closer to its END than
+  // its START. The active step is the one we're inside; the upcoming maneuver
+  // belongs to the step AFTER the active one.
 
-  if (!closestStep) return;
+  var activeIdx = 0;
+  var bestEndDist = Infinity;
+  for (var k = 0; k < navSteps.length; k++) {
+    var s = navSteps[k];
+    if (!s.end_location) continue;
+    var endLat = typeof s.end_location.lat === 'function' ? s.end_location.lat() : s.end_location.lat;
+    var endLng = typeof s.end_location.lng === 'function' ? s.end_location.lng() : s.end_location.lng;
+    var d = distanceMiles(userLat, userLng, endLat, endLng);
+    if (d < bestEndDist) { bestEndDist = d; activeIdx = k; }
+  }
 
-  // Strip HTML tags from instructions
-  var instr = closestStep.instructions.replace(/<[^>]*>/g, ' ').replace(/\s+/g,' ').trim();
+  // The next maneuver is at the END of activeIdx (which is the START of activeIdx+1).
+  // If activeIdx is the last step, we're on the final approach to the destination.
+  var maneuverStep = navSteps[activeIdx]; // gives us instruction + maneuver type for the upcoming turn
+  if (!maneuverStep) return;
+
+  // Distance to next maneuver = distance from user to end of active step
+  var endLat = typeof maneuverStep.end_location.lat === 'function' ? maneuverStep.end_location.lat() : maneuverStep.end_location.lat;
+  var endLng = typeof maneuverStep.end_location.lng === 'function' ? maneuverStep.end_location.lng() : maneuverStep.end_location.lng;
+  var distToManeuverMi = distanceMiles(userLat, userLng, endLat, endLng);
+
+  // Instruction for the NEXT step (the one we're about to do) — that's activeIdx + 1
+  // because the maneuver text is on the step that BEGINS with that turn.
+  var instrStep = navSteps[activeIdx + 1] || navSteps[activeIdx];
+  var instr = (instrStep.instructions || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g,' ').trim();
+  var maneuver = instrStep.maneuver || '';
 
   // Pick icon based on maneuver
-  var maneuver = closestStep.maneuver || '';
-  var icon = '⬆️';
-  if (maneuver.includes('turn-right')) icon = '➡️';
-  else if (maneuver.includes('turn-left')) icon = '⬅️';
-  else if (maneuver.includes('ramp-right') || maneuver.includes('merge-right')) icon = '↗️';
-  else if (maneuver.includes('ramp-left') || maneuver.includes('merge-left')) icon = '↖️';
-  else if (maneuver.includes('uturn')) icon = '↩️';
-  else if (maneuver.includes('roundabout')) icon = '🔄';
-  else if (maneuver.includes('keep-right')) icon = '↱';
-  else if (maneuver.includes('keep-left')) icon = '↰';
-  else if (maneuver.includes('ferry')) icon = '⛴️';
+  function pickIcon(m) {
+    if (m.includes('turn-right')) return '➡️';
+    if (m.includes('turn-left')) return '⬅️';
+    if (m.includes('ramp-right') || m.includes('merge-right') || m.includes('fork-right')) return '↗️';
+    if (m.includes('ramp-left') || m.includes('merge-left') || m.includes('fork-left')) return '↖️';
+    if (m.includes('uturn')) return '↩️';
+    if (m.includes('roundabout')) return '🔄';
+    if (m.includes('keep-right')) return '↱';
+    if (m.includes('keep-left')) return '↰';
+    if (m.includes('ferry')) return '⛴️';
+    return '⬆️';
+  }
+  var icon = pickIcon(maneuver);
 
-  // Distance to this step
-  var stepDistMi = (closestStep.distance.value * 0.000621371);
-  var distLabel = stepDistMi < 0.1
-    ? Math.round(stepDistMi * 5280) + ' ft'
-    : stepDistMi.toFixed(1) + ' mi';
+  // Format distance
+  function fmtDist(mi) {
+    if (mi < 0.1) return Math.round(mi * 5280) + ' ft';
+    return mi.toFixed(1) + ' mi';
+  }
+  var distLabel = fmtDist(distToManeuverMi);
 
+  // Update the small turn box
   turnIcon.textContent = icon;
   turnTxt.textContent = instr;
   turnDist.textContent = distLabel;
   turnEl.style.display = 'flex';
+
+  // Update the BIG upcoming-turn alert
+  var bigEl = document.getElementById('upcomingTurn');
+  var bigIcon = document.getElementById('upcomingTurnIcon');
+  var bigDist = document.getElementById('upcomingTurnDist');
+  var bigAction = document.getElementById('upcomingTurnAction');
+
+  // Show big alert when within 0.5 mi of the next turn — IF there is a next turn
+  // (don't show on the last step where there's no maneuver to perform).
+  var hasNextTurn = activeIdx < navSteps.length - 1 && maneuver && maneuver !== '';
+  var SHOW_THRESHOLD = 0.5;       // start showing at 0.5 mi
+  var IMMINENT_THRESHOLD = 0.15;  // turn red/urgent under 0.15 mi (~800 ft)
+  var HIDE_THRESHOLD = 0.03;      // hide once within 0.03 mi (~160 ft) — already turning
+
+  if (hasNextTurn && distToManeuverMi <= SHOW_THRESHOLD && distToManeuverMi >= HIDE_THRESHOLD) {
+    bigEl.classList.add('show');
+    bigIcon.textContent = icon;
+
+    // Big distance — feet under 0.2 mi, miles otherwise
+    var bigDistText;
+    if (distToManeuverMi < 0.2) {
+      var ft = Math.round(distToManeuverMi * 5280);
+      // Round to nearest 50 ft for cleaner display
+      ft = Math.round(ft / 50) * 50;
+      bigDistText = ft + ' FT';
+    } else {
+      bigDistText = distToManeuverMi.toFixed(1) + ' MI';
+    }
+    bigDist.textContent = bigDistText;
+
+    // Action text — uppercase, prefer the instruction
+    bigAction.textContent = instr || 'Upcoming turn';
+
+    // Imminent styling under 0.15 mi
+    if (distToManeuverMi <= IMMINENT_THRESHOLD) {
+      bigEl.classList.add('imminent');
+    } else {
+      bigEl.classList.remove('imminent');
+    }
+  } else {
+    bigEl.classList.remove('show', 'imminent');
+  }
+}
+
+function hideUpcomingTurn() {
+  var bigEl = document.getElementById('upcomingTurn');
+  if (bigEl) bigEl.classList.remove('show', 'imminent');
 }
 
 var navOffRouteCount = 0; // consecutive off-route readings
@@ -2866,6 +3121,7 @@ function stopNavigation() {
   document.getElementById('navHud').classList.remove('show');
   document.getElementById('navTurn').style.display = 'none';
   document.getElementById('recenterBtn').style.display = 'none';
+  hideUpcomingTurn();
 
   if (navDirectionsRenderer) { navDirectionsRenderer.setMap(null); navDirectionsRenderer = null; }
   if (navPolyline) { navPolyline.setMap(null); navPolyline = null; }
@@ -3142,6 +3398,7 @@ function fetchDirectionsToBase() {
     if (parseFloat(distMi) < 0.05) {
       document.getElementById('navDest').textContent = '🏢 Arrived at base!';
       document.getElementById('navTurn').style.display = 'none';
+      hideUpcomingTurn();
     }
   });
 }
@@ -3351,20 +3608,41 @@ function doOptimizeFromLocation() {
   // Save snapshot for undo
   previousStopOrder = { day: day, stops: JSON.parse(JSON.stringify(stops[day])) };
 
-  // Only optimize pending stops (skip done ones)
+  // Determine which stops are eligible for reorder.
+  // If a filter is active, only filtered stops get reordered — other stops keep their position.
   var dayData = stopData[day] || [];
+  var filterActive = (routeFilter !== 'all') || (routeFreqFilter !== 'all') || routeSearchQuery;
+  var filteredOrigIdxSet = {};
+  if (filterActive) {
+    getFilteredStops().forEach(function(item) { filteredOrigIdxSet[item.origIdx] = true; });
+  }
+
+  // Buckets:
+  //   - pending: stops we will reorder (must be pending AND in-filter if filter is active)
+  //   - frozen: stops we leave in place (done stops, OR stops outside the active filter)
+  // We track each frozen stop's original index so we can put it back in the same slot.
   var pending = [];
-  var done = [];
+  var frozenAtIndex = {}; // origIdx -> stop object (kept in original slot)
 
   dayStops.forEach(function(s, i) {
-    if (dayData[i] && dayData[i].status === 'done') {
-      done.push({ stop: s, origIdx: i, data: dayData[i] });
+    var d = dayData[i];
+    var isDone = d && d.status === 'done';
+    var inFilter = !filterActive || filteredOrigIdxSet[i];
+
+    if (isDone || !inFilter) {
+      // Frozen — keeps its slot
+      frozenAtIndex[i] = { stop: s, data: d || blankStopData() };
     } else {
       pending.push({ stop: s, origIdx: i });
     }
   });
 
-  if (!pending.length) { alert('All stops already done!'); return; }
+  if (!pending.length) {
+    alert(filterActive
+      ? 'No pending stops match the current filter.'
+      : 'All stops already done!');
+    return;
+  }
 
   // Score each pending stop: primary = open time, secondary = distance from me
   var now = new Date();
@@ -3393,25 +3671,45 @@ function doOptimizeFromLocation() {
     return a.dist - b.dist; // same open time — closest first
   });
 
-  // Rebuild stops array: done stops in original positions, pending in new order
-  var newStops = done.map(function(d) { return d.stop; })
-    .concat(pending.map(function(p) { return p.stop; }));
-  var newData = done.map(function(d) { return d.data; })
-    .concat(pending.map(function() { return blankStopData(); }));
-
-  // Preserve done stop data
-  done.forEach(function(d, i) { newData[i] = d.data; });
+  // Rebuild full day array:
+  //   - frozen stops keep their original index (but renumbered to fit the new list)
+  //   - pending stops fill remaining slots in optimized order
+  // Strategy: walk through original indices; if frozen, keep that stop. Otherwise pull next pending.
+  var newStops = [];
+  var newData = [];
+  var pendingQueue = pending.slice(); // copy
+  for (var i = 0; i < dayStops.length; i++) {
+    if (frozenAtIndex[i]) {
+      newStops.push(frozenAtIndex[i].stop);
+      newData.push(frozenAtIndex[i].data);
+    } else {
+      var next = pendingQueue.shift();
+      if (next) {
+        newStops.push(next.stop);
+        newData.push(blankStopData());
+      }
+    }
+  }
 
   stops[day] = newStops;
   stopData[day] = newData;
-  activeStopIdx = done.length > 0 ? done.length : 0; // set to first pending
+  // First pending position — find it for activeStopIdx
+  var firstPendingIdx = newStops.findIndex(function(_, idx) {
+    return !(newData[idx] && newData[idx].status === 'done');
+  });
+  activeStopIdx = firstPendingIdx >= 0 ? firstPendingIdx : 0;
   saveStops();
   renderRoute();
   updateStopDistances();
 
   var openCount = pending.filter(function(p) { return p.alreadyOpen; }).length;
-  if (confirm('⚡ Optimized! ' + openCount + ' stops open now sorted by distance. ' + (pending.length - openCount) + ' upcoming stops sorted by open time.\n\nTap OK to keep. Cancel to undo.')) {
-    // keep
+  var msg = '⚡ Optimized! ' + openCount + ' stops open now sorted by distance. ' + (pending.length - openCount) + ' upcoming stops sorted by open time.';
+  if (filterActive) {
+    msg += '\n\n(Only ' + pending.length + ' filtered stops were reordered. Filter stays active until you clear it.)';
+  }
+  msg += '\n\nTap OK to keep. Cancel to undo.';
+  if (confirm(msg)) {
+    // keep — filter stays active per user request
   } else {
     undoOptimize();
   }
@@ -3455,8 +3753,19 @@ function clearRouteSearch() {
 
 function setRouteFilter(filter) {
   routeFilter = filter;
-  document.querySelectorAll('.filter-pill').forEach(function(btn) {
+  // Only toggle status pills (those with data-filter), not frequency pills
+  document.querySelectorAll('.filter-pill[data-filter]').forEach(function(btn) {
     btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+  });
+  renderRoute();
+  updateFilterStatus();
+}
+
+function setFreqFilter(freq) {
+  routeFreqFilter = freq;
+  // Only toggle frequency pills (those with data-freqfilter)
+  document.querySelectorAll('.filter-pill[data-freqfilter]').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-freqfilter') === freq);
   });
   renderRoute();
   updateFilterStatus();
@@ -3467,12 +3776,16 @@ function updateFilterStatus() {
   if (!statusEl) return;
   var total = (stops[currentDay] || []).length;
   var visible = getFilteredStops().length;
-  if (routeSearchQuery || routeFilter !== 'all') {
+  var anyFilter = routeSearchQuery || routeFilter !== 'all' || routeFreqFilter !== 'all';
+  if (anyFilter) {
     var msg = 'Showing ' + visible + ' of ' + total;
     if (routeSearchQuery) msg += ' · matching "' + routeSearchQuery + '"';
     if (routeFilter !== 'all') {
-      var labels = { 'open-now': 'open now', 'opens-soon': 'opens within 1hr', 'not-yet-open': 'not yet open', 'pending': 'pending', 'done': 'done' };
+      var labels = { 'pending': 'pending', 'done': 'done' };
       msg += ' · ' + (labels[routeFilter] || routeFilter);
+    }
+    if (routeFreqFilter !== 'all') {
+      msg += ' · ' + routeFreqFilter + ' only';
     }
     statusEl.textContent = msg;
     statusEl.style.display = 'block';
@@ -3507,7 +3820,7 @@ function resetStops() {
 function clearStopLog(i) {
   if (!confirm('Clear all logged data for this stop? This cannot be undone.')) return;
   stopData[currentDay][i] = blankStopData();
-  fbSave('stopData/' + currentDay + '/' + i, stopData[currentDay][i]);
+  fbSave('stopData/' + currentDay, stopData[currentDay]);
   // Close and reopen panel to refresh
   var card = document.getElementById('card-' + i);
   var panel = document.getElementById('panel-' + i);
@@ -3970,6 +4283,16 @@ function closeMeasureResult() {
     <div class="form-group">
       <label class="form-label">Note</label>
       <input class="form-input" id="editNote" placeholder="Optional">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📅 Last Serviced Date</label>
+      <input class="form-input" id="editLastServiced" type="date">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button type="button" onclick="setLastServicedToday()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Today</button>
+        <button type="button" onclick="clearLastServiced()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--mut);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Clear (Never)</button>
+      </div>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Tracks how long since this account was serviced</div>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:16px;">

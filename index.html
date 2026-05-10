@@ -35,6 +35,10 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
 .hdr-right { display: flex; align-items: center; gap: 8px; }
 .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grn); }
 .sync-dot.off { background: var(--red); }
+.sync-dot.loading { background: var(--acc); animation: sync-pulse 1s ease-in-out infinite; }
+@keyframes sync-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
+.sync-banner { position: fixed; top: 56px; left: 0; right: 0; background: var(--acc); color: #000; padding: 8px 16px; font-family: var(--fm); font-size: 11px; text-align: center; z-index: 100; font-weight: 600; letter-spacing: 0.5px; display: none; }
+.sync-banner.show { display: block; }
 .day-badge { background: var(--acc); color: #000; font-family: var(--fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* TABS */
@@ -374,10 +378,12 @@ html { background: #000; } body { background: #000; color: var(--txt); font-fami
     <div class="hdr-sub" id="currentDate">Loading...</div>
   </div>
   <div class="hdr-right">
-    <div class="sync-dot" id="syncDot"></div>
+    <div class="sync-dot loading" id="syncDot"></div>
     <div class="day-badge" id="currentDayBadge">MON</div>
   </div>
 </div>
+
+<div class="sync-banner show" id="syncBanner">⏳ SYNCING WITH DATABASE — please wait before editing</div>
 
 <!-- TABS -->
 <div class="tabs">
@@ -667,10 +673,37 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// firebaseReady becomes true ONLY after syncFromFirebase has finished loading
+// (or confirmed Firebase is empty). Any save attempted before this is queued
+// to prevent a fast tap from clobbering real Firebase data with local defaults.
+var firebaseReady = false;
+var pendingSaves = []; // [{path, data}] items queued during sync
+
 function fbSave(path, data) {
+  // If Firebase hasn't finished its initial load yet, queue the save instead of
+  // sending it. This prevents the user-typed-faster-than-network race that
+  // can wipe out unloaded days.
+  if (!firebaseReady) {
+    console.log('[fbSave queued — Firebase not ready yet]', path);
+    pendingSaves.push({ path: path, data: data });
+    return Promise.resolve(); // pretend it succeeded — we'll flush on ready
+  }
   return db.ref(path).set(data)
     .then(() => { document.getElementById('syncDot').classList.remove('off'); })
     .catch(e => { console.error('Firebase save error:', e); document.getElementById('syncDot').classList.add('off'); throw e; });
+}
+
+function flushPendingSaves() {
+  if (!pendingSaves.length) return;
+  console.log('[flushPendingSaves]', pendingSaves.length, 'queued writes');
+  // Take a snapshot and clear the queue first to avoid re-queuing during flush
+  var queue = pendingSaves.slice();
+  pendingSaves = [];
+  queue.forEach(function(item) {
+    db.ref(item.path).set(item.data)
+      .then(() => { document.getElementById('syncDot').classList.remove('off'); })
+      .catch(e => { console.error('Firebase queued save error:', e); document.getElementById('syncDot').classList.add('off'); });
+  });
 }
 
 async function fbLoad(path) {
@@ -852,7 +885,21 @@ function blankStopData() {
 // FIREBASE HELPERS
 // ============================================================
 function saveStops() {
-  fbSave('stops', stops);
+  // Write each day independently so that an in-memory change to one day
+  // never overwrites another day's data in Firebase. The whole-object write
+  // pattern was unsafe because partial loads could clobber unloaded days.
+  ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
+    if (Array.isArray(stops[day])) {
+      fbSave('stops/' + day, stops[day]);
+    }
+  });
+}
+
+function saveStopsForDay(day) {
+  // Targeted version — preferred for individual edits
+  if (Array.isArray(stops[day])) {
+    fbSave('stops/' + day, stops[day]);
+  }
 }
 
 function saveStopData() {
@@ -890,17 +937,31 @@ function init() {
 async function syncFromFirebase() {
   try {
     const savedStops = await fbLoad('stops');
-    if (savedStops && savedStops.MON && savedStops.MON.length > 0) {
-      stops = savedStops;
-      ['MON','TUE','WED','THU','FRI'].forEach(d => { if (!stops[d]) stops[d] = []; });
-      // If THU is empty in Firebase, seed it with defaults
-      if (!stops.THU || stops.THU.length === 0) {
-        stops.THU = JSON.parse(JSON.stringify(DEFAULT_THU_STOPS));
-      }
-      // If TUE is empty in Firebase, seed it with defaults
-      if (!stops.TUE || stops.TUE.length === 0) {
-        stops.TUE = JSON.parse(JSON.stringify(DEFAULT_TUE_STOPS));
-      }
+    var firebaseHasData = savedStops && typeof savedStops === 'object' && Object.keys(savedStops).length > 0;
+
+    if (firebaseHasData) {
+      // Merge — Firebase is the authoritative source for any day it has.
+      // For days Firebase doesn't have at all (key missing), keep the local defaults
+      // (which were seeded in init()). This way we never lose Firebase-stored days.
+      ['MON','TUE','WED','THU','FRI'].forEach(function(d) {
+        if (savedStops[d] !== undefined && savedStops[d] !== null) {
+          // Firebase has this day — use Firebase. Convert objects to arrays if needed
+          // (Realtime DB stores arrays as objects when indexes are sparse).
+          var raw = savedStops[d];
+          if (Array.isArray(raw)) {
+            stops[d] = raw;
+          } else if (typeof raw === 'object') {
+            var arr = [];
+            Object.keys(raw).forEach(function(k) {
+              var idx = parseInt(k, 10);
+              if (!isNaN(idx)) arr[idx] = raw[k];
+            });
+            stops[d] = arr.filter(function(x) { return x; }); // remove sparse holes
+          }
+        }
+        // else: keep whatever init() set (defaults for MON/TUE/THU, [] for WED/FRI)
+      });
+
       // Clean up any lingering notes we want removed
       ['MON','TUE','WED','THU','FRI'].forEach(function(day) {
         (stops[day] || []).forEach(function(s) {
@@ -913,12 +974,11 @@ async function syncFromFirebase() {
       initStopData();
       renderRoute();
       renderManageList();
-      saveStops(); // push the cleanup to Firebase
-      console.log('Synced from Firebase — MON stops:', stops.MON.length);
+      console.log('Synced from Firebase — MON:', (stops.MON||[]).length, 'TUE:', (stops.TUE||[]).length, 'WED:', (stops.WED||[]).length, 'THU:', (stops.THU||[]).length, 'FRI:', (stops.FRI||[]).length);
     } else {
-      saveStops();
-      console.log('Firebase empty, saved defaults');
+      console.log('Firebase appears empty — keeping local defaults');
     }
+
     // Load saved stop data (completion status, timestamps)
     const savedStopData = await fbLoad('stopData');
     if (savedStopData) {
@@ -953,7 +1013,7 @@ async function syncFromFirebase() {
     const savedHistory = await fbLoad('history');
     if (savedHistory) {
       routeHistory = Array.isArray(savedHistory) ? savedHistory : Object.values(savedHistory);
-            }
+    }
 
     // Log last serviced dates for all stops
     var svcLog = [];
@@ -964,8 +1024,28 @@ async function syncFromFirebase() {
     });
     if (svcLog.length) console.log('Last serviced records:', svcLog.join(' | '));
 
+    // GATE OPENS: any saves attempted before this point were queued to prevent
+    // them from clobbering data we hadn't yet loaded. Now flush them.
+    firebaseReady = true;
+    flushPendingSaves();
+    console.log('Firebase ready — saves enabled');
+    // Clear the syncing UI
+    var banner = document.getElementById('syncBanner');
+    if (banner) banner.classList.remove('show');
+    var dot = document.getElementById('syncDot');
+    if (dot) dot.classList.remove('loading');
+
+    // If Firebase was empty, push the local defaults up so we have a starting state.
+    if (!firebaseHasData) {
+      saveStops();
+    }
+
   } catch(e) {
-    console.log('Firebase sync failed, using defaults:', e);
+    console.error('Firebase sync failed:', e);
+    // On sync failure: still let the user work locally, but DON'T enable saves
+    // (we don't want a load-failure to wipe out real Firebase data).
+    // Show a warning instead.
+    alert('⚠️ Could not load from database. Working in offline mode — changes will NOT save until you refresh and connect.');
   }
 }
 

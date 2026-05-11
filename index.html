@@ -4961,5 +4961,663 @@ function closeMeasureResult() {
   </div>
 </div>
 
+<!-- ===================================================================== -->
+<!-- ===== PHASE 2: MILEAGE TRACKING MODULE ============================== -->
+<!-- ===================================================================== -->
+<!-- Self-contained module that hooks into existing logArrival/             -->
+<!-- logDepartureAndComplete/completeDay flow. Captures GPS trails per leg, -->
+<!-- computes distance, syncs to Firebase, draws line preview on map tab,   -->
+<!-- and prompts for fuel cost at end of day.                               -->
+<!-- ===================================================================== -->
+
+<style>
+/* === MILEAGE TRACKER FLOATING BADGE === */
+.mt-badge {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: rgba(15,15,15,0.96);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: none;
+  z-index: 200;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+}
+.mt-badge.show { display: flex; align-items: center; gap: 12px; }
+.mt-badge.tracking { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc), 0 4px 20px rgba(255,107,43,0.3); }
+.mt-pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.mt-badge.tracking .mt-pulse { background: var(--acc); animation: mt-pulse-anim 1.2s ease-in-out infinite; }
+@keyframes mt-pulse-anim { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+.mt-stats { flex: 1; display: flex; gap: 14px; }
+.mt-stat { display: flex; flex-direction: column; }
+.mt-stat-val { font-family: var(--fd); font-size: 18px; color: var(--acc); line-height: 1; }
+.mt-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.mt-toggle-btn { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 10px; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+
+/* === FUEL COST MODAL === */
+.fuel-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; padding: 16px; }
+.fuel-modal-overlay.show { display: flex; }
+.fuel-modal { background: var(--sur); border: 2px solid var(--acc); border-radius: 12px; padding: 20px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+.fuel-modal-title { font-family: var(--fd); font-size: 24px; color: var(--acc); letter-spacing: 1px; margin-bottom: 4px; }
+.fuel-modal-sub { font-family: var(--fm); font-size: 11px; color: var(--mut); margin-bottom: 16px; }
+.fuel-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.fuel-stat-box { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 6px; padding: 10px; text-align: center; }
+.fuel-stat-val { font-family: var(--fd); font-size: 22px; color: var(--acc); line-height: 1.1; }
+.fuel-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.fuel-input-group { margin-bottom: 12px; }
+.fuel-input-lbl { font-family: var(--fm); font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+.fuel-input { width: 100%; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fb); font-size: 16px; padding: 12px; border-radius: 6px; outline: none; }
+.fuel-input:focus { border-color: var(--acc); }
+.fuel-result { background: var(--sur2); border: 2px solid var(--grn); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 14px; }
+.fuel-result-val { font-family: var(--fd); font-size: 32px; color: var(--grn); line-height: 1; }
+.fuel-result-lbl { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+.fuel-btn-row { display: flex; gap: 8px; }
+.fuel-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+.fuel-btn-cancel { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); }
+.fuel-btn-save { background: var(--acc); color: #000; }
+
+/* === MAP TAB: TRAIL OVERLAY CONTROLS === */
+.trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(15,15,15,0.95); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
+.trail-controls.show { display: block; }
+.trail-controls-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.trail-controls-stats { display: flex; gap: 12px; flex: 1; }
+.trail-stat { display: flex; flex-direction: column; }
+.trail-stat-val { font-family: var(--fd); font-size: 16px; color: var(--acc); line-height: 1; }
+.trail-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.trail-date-sel { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 11px; padding: 6px 8px; border-radius: 4px; }
+
+/* === HISTORY TAB === */
+.history-card { background: #141414; border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+.history-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.history-date { font-family: var(--fd); font-size: 18px; color: var(--acc); letter-spacing: 1px; }
+.history-day-badge { background: var(--sur2); color: var(--mut); font-family: var(--fm); font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; }
+.history-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.history-cell { background: var(--sur2); border-radius: 4px; padding: 8px 6px; text-align: center; }
+.history-cell-val { font-family: var(--fd); font-size: 16px; color: var(--txt); line-height: 1; }
+.history-cell-lbl { font-family: var(--fm); font-size: 8px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+</style>
+
+<!-- === FLOATING TRACKER BADGE (shown on route tab) === -->
+<div class="mt-badge" id="mtBadge">
+  <div class="mt-pulse" id="mtPulse"></div>
+  <div class="mt-stats">
+    <div class="mt-stat"><div class="mt-stat-val" id="mtMiles">0.0</div><div class="mt-stat-lbl">Mi Today</div></div>
+    <div class="mt-stat"><div class="mt-stat-val" id="mtLeg">--</div><div class="mt-stat-lbl">Leg</div></div>
+    <div class="mt-stat"><div class="mt-stat-val" id="mtStatus">IDLE</div><div class="mt-stat-lbl">GPS</div></div>
+  </div>
+  <button class="mt-toggle-btn" onclick="mtToggleVisibility()">×</button>
+</div>
+
+<!-- === FUEL COST MODAL === -->
+<div class="fuel-modal-overlay" id="fuelModalOverlay">
+  <div class="fuel-modal">
+    <div class="fuel-modal-title">⛽ DAY SUMMARY</div>
+    <div class="fuel-modal-sub" id="fuelModalDate">Today</div>
+
+    <div class="fuel-row">
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalMiles">0.0</div><div class="fuel-stat-lbl">Miles Driven</div></div>
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalLegs">0</div><div class="fuel-stat-lbl">Legs</div></div>
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalTime">0m</div><div class="fuel-stat-lbl">Drive Time</div></div>
+    </div>
+
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Gas price ($/gallon)</label>
+      <input class="fuel-input" id="fuelGasPrice" type="number" step="0.01" placeholder="e.g. 3.45" oninput="recalcFuelCost()">
+    </div>
+
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Truck MPG (estimate)</label>
+      <input class="fuel-input" id="fuelMpg" type="number" step="0.1" placeholder="e.g. 14" oninput="recalcFuelCost()">
+    </div>
+
+    <div class="fuel-result">
+      <div class="fuel-result-val" id="fuelCostResult">$0.00</div>
+      <div class="fuel-result-lbl">Estimated fuel cost</div>
+    </div>
+
+    <div class="fuel-btn-row">
+      <button class="fuel-btn fuel-btn-cancel" onclick="closeFuelModal()">SKIP</button>
+      <button class="fuel-btn fuel-btn-save" onclick="saveFuelData()">SAVE & COMPLETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- === TRAIL OVERLAY CONTROLS (added to map tab) === -->
+<div class="trail-controls" id="trailControls">
+  <div class="trail-controls-row">
+    <div class="trail-controls-stats">
+      <div class="trail-stat"><div class="trail-stat-val" id="trailMiles">0.0</div><div class="trail-stat-lbl">Miles</div></div>
+      <div class="trail-stat"><div class="trail-stat-val" id="trailLegs">0</div><div class="trail-stat-lbl">Legs</div></div>
+      <div class="trail-stat"><div class="trail-stat-val" id="trailCost">$0</div><div class="trail-stat-lbl">Fuel</div></div>
+    </div>
+    <select class="trail-date-sel" id="trailDateSel" onchange="loadTrailForDate(this.value)">
+      <option value="">Pick date...</option>
+    </select>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// MILEAGE TRACKING STATE
+// =====================================================================
+var mtState = {
+  watchId: null,                  // GPS watchPosition ID
+  wakeLock: null,                 // Wake Lock to keep screen on
+  currentLeg: null,               // { fromIdx, toIdx, fromName, startedAt, trail: [[lat,lng,ts]...] }
+  todayDistance: 0,               // miles
+  todayLegs: [],                  // completed leg objects for today
+  todayDateKey: null,             // YYYY-MM-DD
+  trailPolylines: [],             // polylines drawn on map
+  visible: true,                  // badge visibility
+  lastSavedLegKey: null           // for dedupe
+};
+
+function mtDateKey(date) {
+  date = date || new Date();
+  var y = date.getFullYear(), m = String(date.getMonth()+1).padStart(2,'0'), d = String(date.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + d;
+}
+
+// =====================================================================
+// GPS TRACKING — start/stop/handle position updates
+// =====================================================================
+function mtStartGPS(fromIdx, fromName, toIdx, toName) {
+  if (mtState.currentLeg) {
+    console.log('[MT] Leg already in progress, finishing previous first');
+    mtFinishGPS(null, null);
+  }
+  mtState.currentLeg = {
+    fromIdx: fromIdx,
+    toIdx: toIdx,
+    fromName: fromName,
+    toName: toName,
+    startedAt: new Date().toISOString(),
+    trail: []
+  };
+  mtState.todayDateKey = mtState.todayDateKey || mtDateKey();
+  mtRequestWakeLock();
+  if (!navigator.geolocation) {
+    console.warn('[MT] Geolocation not supported');
+    mtUpdateBadge('NO GPS');
+    return;
+  }
+  // Capture initial position immediately
+  navigator.geolocation.getCurrentPosition(
+    function(pos) { mtHandlePosition(pos); },
+    function(err) { console.warn('[MT] Initial position error:', err.message); },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+  mtState.watchId = navigator.geolocation.watchPosition(
+    mtHandlePosition,
+    function(err) { console.warn('[MT] watchPosition error:', err.message); mtUpdateBadge('GPS ERR'); },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 2000 }
+  );
+  mtUpdateBadge('TRACKING');
+  mtShowBadge();
+  document.getElementById('mtBadge').classList.add('tracking');
+  console.log('[MT] Started GPS for leg', fromIdx, '->', toIdx);
+}
+
+function mtHandlePosition(pos) {
+  if (!mtState.currentLeg) return;
+  var lat = pos.coords.latitude, lng = pos.coords.longitude, ts = pos.timestamp || Date.now();
+  var trail = mtState.currentLeg.trail;
+  // Filter out noisy points: skip if accuracy is awful (>50m) and we already have points
+  if (pos.coords.accuracy && pos.coords.accuracy > 50 && trail.length > 0) return;
+  // Filter out duplicate/near-duplicate consecutive points
+  if (trail.length > 0) {
+    var last = trail[trail.length - 1];
+    var dist = mtHaversineMeters(last[0], last[1], lat, lng);
+    if (dist < 3) return; // ignore movement <3m (stationary noise)
+  }
+  trail.push([lat, lng, ts]);
+  // Update live distance shown in badge
+  if (trail.length >= 2) {
+    var legMi = mtComputeTrailMiles(trail);
+    var totalMi = mtState.todayDistance + legMi;
+    document.getElementById('mtMiles').textContent = totalMi.toFixed(1);
+    document.getElementById('mtLeg').textContent = legMi.toFixed(2);
+  }
+}
+
+function mtFinishGPS(arrivedIdx, arrivedName) {
+  if (!mtState.currentLeg) return null;
+  if (mtState.watchId !== null) {
+    navigator.geolocation.clearWatch(mtState.watchId);
+    mtState.watchId = null;
+  }
+  mtReleaseWakeLock();
+  var leg = mtState.currentLeg;
+  leg.toIdx = (arrivedIdx !== null && arrivedIdx !== undefined) ? arrivedIdx : leg.toIdx;
+  leg.toName = arrivedName || leg.toName;
+  leg.completedAt = new Date().toISOString();
+  leg.durationSeconds = Math.round((new Date(leg.completedAt) - new Date(leg.startedAt)) / 1000);
+  // Compute distance from trail (real driven miles)
+  if (leg.trail.length >= 2) {
+    leg.distanceMiles = mtComputeTrailMiles(leg.trail);
+    leg.distanceSource = 'gps';
+  } else {
+    // Fallback: straight-line between stops × 1.3 road factor
+    leg.distanceMiles = mtFallbackDistance(leg.fromIdx, leg.toIdx);
+    leg.distanceSource = 'estimate';
+  }
+  // Save to Firebase under legs/{dateKey}/{legId}
+  var dateKey = mtState.todayDateKey || mtDateKey();
+  var legId = 'leg_' + Date.now();
+  leg.dateKey = dateKey;
+  leg.day = (typeof currentDay !== 'undefined') ? currentDay : 'MON';
+  if (typeof fbSave === 'function') {
+    try { fbSave('legs/' + dateKey + '/' + legId, leg); } catch (e) { console.error('[MT] save leg err', e); }
+  }
+  mtState.todayLegs.push(leg);
+  mtState.todayDistance += leg.distanceMiles;
+  mtState.currentLeg = null;
+  document.getElementById('mtBadge').classList.remove('tracking');
+  document.getElementById('mtMiles').textContent = mtState.todayDistance.toFixed(1);
+  document.getElementById('mtLeg').textContent = '--';
+  mtUpdateBadge('IDLE');
+  console.log('[MT] Leg complete:', leg.distanceMiles.toFixed(2), 'mi via', leg.distanceSource);
+  return leg;
+}
+
+function mtFallbackDistance(fromIdx, toIdx) {
+  try {
+    var s = stops[currentDay];
+    if (!s || !s[fromIdx] || !s[toIdx]) return 0;
+    var a = s[fromIdx], b = s[toIdx];
+    if (!a.lat || !b.lat) return 0;
+    var meters = mtHaversineMeters(a.lat, a.lng, b.lat, b.lng);
+    return (meters * 0.000621371) * 1.3; // straight-line × road factor
+  } catch (e) { return 0; }
+}
+
+// =====================================================================
+// DISTANCE MATH
+// =====================================================================
+function mtHaversineMeters(lat1, lng1, lat2, lng2) {
+  var R = 6371000;
+  var toRad = function(x) { return x * Math.PI / 180; };
+  var dLat = toRad(lat2 - lat1);
+  var dLng = toRad(lng2 - lng1);
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function mtComputeTrailMiles(trail) {
+  if (!trail || trail.length < 2) return 0;
+  var meters = 0;
+  for (var i = 1; i < trail.length; i++) {
+    meters += mtHaversineMeters(trail[i-1][0], trail[i-1][1], trail[i][0], trail[i][1]);
+  }
+  return meters * 0.000621371;
+}
+
+// =====================================================================
+// WAKE LOCK — keep screen on while tracking
+// =====================================================================
+async function mtRequestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      mtState.wakeLock = await navigator.wakeLock.request('screen');
+      mtState.wakeLock.addEventListener('release', function() { console.log('[MT] Wake lock released'); });
+    }
+  } catch (e) { console.warn('[MT] Wake lock failed:', e.message); }
+}
+function mtReleaseWakeLock() {
+  if (mtState.wakeLock) {
+    try { mtState.wakeLock.release(); } catch (e) {}
+    mtState.wakeLock = null;
+  }
+}
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && mtState.currentLeg && !mtState.wakeLock) {
+    mtRequestWakeLock();
+  }
+});
+
+// =====================================================================
+// BADGE UI
+// =====================================================================
+function mtUpdateBadge(statusText) {
+  var statusEl = document.getElementById('mtStatus');
+  if (statusEl) statusEl.textContent = statusText;
+}
+function mtShowBadge() {
+  if (!mtState.visible) return;
+  var b = document.getElementById('mtBadge');
+  if (b) b.classList.add('show');
+}
+function mtHideBadge() {
+  var b = document.getElementById('mtBadge');
+  if (b) b.classList.remove('show');
+}
+function mtToggleVisibility() {
+  mtState.visible = !mtState.visible;
+  if (!mtState.visible) mtHideBadge();
+  else mtShowBadge();
+}
+
+// Show badge whenever we're on the route tab and have any tracking history today
+function mtMaybeShowBadge() {
+  if (!mtState.visible) return;
+  var routeTab = document.getElementById('routeTab');
+  if (routeTab && routeTab.style.display !== 'none') {
+    if (mtState.currentLeg || mtState.todayLegs.length > 0) {
+      mtShowBadge();
+    }
+  } else {
+    mtHideBadge();
+  }
+}
+
+// =====================================================================
+// HOOK INTO EXISTING ARRIVE/DEPART/COMPLETE FUNCTIONS
+// =====================================================================
+(function() {
+  // Wait for the originals to exist on window
+  function installHooks() {
+    if (typeof window.logArrival !== 'function' ||
+        typeof window.logDepartureAndComplete !== 'function' ||
+        typeof window.completeDay !== 'function') {
+      setTimeout(installHooks, 200);
+      return;
+    }
+
+    // --- Wrap logDepartureAndComplete: this is when we LEAVE a stop, so start tracking leg ---
+    var origLogDepartureAndComplete = window.logDepartureAndComplete;
+    window.logDepartureAndComplete = function(i) {
+      var result = origLogDepartureAndComplete.apply(this, arguments);
+      try {
+        var dayStops = stops[currentDay] || [];
+        var nextIdx = mtFindNextPendingStop(i);
+        var fromName = dayStops[i] ? dayStops[i].name : 'Stop ' + (i+1);
+        var toName = (nextIdx !== null && dayStops[nextIdx]) ? dayStops[nextIdx].name : 'Next stop';
+        mtStartGPS(i, fromName, nextIdx, toName);
+      } catch (e) { console.error('[MT] depart hook err:', e); }
+      return result;
+    };
+
+    // --- Wrap logArrival: this is when we ARRIVE at a stop, so finish the previous leg ---
+    var origLogArrival = window.logArrival;
+    window.logArrival = function(i) {
+      try {
+        var dayStops = stops[currentDay] || [];
+        var arrivedName = dayStops[i] ? dayStops[i].name : 'Stop ' + (i+1);
+        mtFinishGPS(i, arrivedName);
+      } catch (e) { console.error('[MT] arrive hook err:', e); }
+      return origLogArrival.apply(this, arguments);
+    };
+
+    // --- Wrap completeDay: prompt for fuel cost before the original runs ---
+    var origCompleteDay = window.completeDay;
+    window.completeDay = async function() {
+      // If there's an in-progress leg, finish it first
+      if (mtState.currentLeg) {
+        mtFinishGPS(null, null);
+      }
+      // If we have any tracked legs today, show fuel modal first
+      if (mtState.todayLegs.length > 0) {
+        mtPendingCompleteDay = origCompleteDay;
+        mtShowFuelModal();
+        return; // user will click SAVE in modal to trigger the original
+      }
+      return origCompleteDay.apply(this, arguments);
+    };
+
+    console.log('[MT] Hooks installed');
+  }
+  installHooks();
+})();
+
+function mtFindNextPendingStop(currentIdx) {
+  var data = stopData[currentDay] || [];
+  for (var j = currentIdx + 1; j < data.length; j++) {
+    if (!data[j] || data[j].status !== 'done') return j;
+  }
+  return null; // last stop of the day
+}
+
+// =====================================================================
+// FUEL MODAL
+// =====================================================================
+var mtPendingCompleteDay = null;
+
+function mtShowFuelModal() {
+  var totalMi = mtState.todayLegs.reduce(function(s, l) { return s + (l.distanceMiles || 0); }, 0);
+  var totalSec = mtState.todayLegs.reduce(function(s, l) { return s + (l.durationSeconds || 0); }, 0);
+  document.getElementById('fuelTotalMiles').textContent = totalMi.toFixed(1);
+  document.getElementById('fuelTotalLegs').textContent = mtState.todayLegs.length;
+  document.getElementById('fuelTotalTime').textContent = Math.round(totalSec / 60) + 'm';
+  document.getElementById('fuelModalDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  // Load last-used values from localStorage as a courtesy
+  var lastGas = localStorage.getItem('mt_lastGasPrice') || '';
+  var lastMpg = localStorage.getItem('mt_lastMpg') || '';
+  document.getElementById('fuelGasPrice').value = lastGas;
+  document.getElementById('fuelMpg').value = lastMpg;
+  recalcFuelCost();
+  document.getElementById('fuelModalOverlay').classList.add('show');
+}
+
+function closeFuelModal() {
+  document.getElementById('fuelModalOverlay').classList.remove('show');
+  // If user skips, still run original completeDay
+  if (mtPendingCompleteDay) {
+    var fn = mtPendingCompleteDay;
+    mtPendingCompleteDay = null;
+    setTimeout(function() { fn.call(window); }, 100);
+  }
+}
+
+function recalcFuelCost() {
+  var miles = mtState.todayLegs.reduce(function(s, l) { return s + (l.distanceMiles || 0); }, 0);
+  var gas = parseFloat(document.getElementById('fuelGasPrice').value) || 0;
+  var mpg = parseFloat(document.getElementById('fuelMpg').value) || 0;
+  var cost = (mpg > 0 && gas > 0) ? (miles / mpg) * gas : 0;
+  document.getElementById('fuelCostResult').textContent = '$' + cost.toFixed(2);
+}
+
+function saveFuelData() {
+  var miles = mtState.todayLegs.reduce(function(s, l) { return s + (l.distanceMiles || 0); }, 0);
+  var totalSec = mtState.todayLegs.reduce(function(s, l) { return s + (l.durationSeconds || 0); }, 0);
+  var gas = parseFloat(document.getElementById('fuelGasPrice').value) || 0;
+  var mpg = parseFloat(document.getElementById('fuelMpg').value) || 0;
+  var cost = (mpg > 0 && gas > 0) ? (miles / mpg) * gas : 0;
+  var dateKey = mtState.todayDateKey || mtDateKey();
+  var record = {
+    dateKey: dateKey,
+    day: currentDay,
+    totalMiles: parseFloat(miles.toFixed(2)),
+    totalDriveSeconds: totalSec,
+    totalLegs: mtState.todayLegs.length,
+    gasPricePerGallon: gas,
+    mpg: mpg,
+    fuelCost: parseFloat(cost.toFixed(2)),
+    completedAt: new Date().toISOString()
+  };
+  if (typeof fbSave === 'function') {
+    try { fbSave('routeDays/' + dateKey, record); } catch (e) { console.error('[MT] save routeDay err', e); }
+  }
+  // Save user's last-used values for next time
+  if (gas) localStorage.setItem('mt_lastGasPrice', gas);
+  if (mpg) localStorage.setItem('mt_lastMpg', mpg);
+  // Reset today's state since we're completing the day
+  mtState.todayLegs = [];
+  mtState.todayDistance = 0;
+  mtState.todayDateKey = null;
+  document.getElementById('mtMiles').textContent = '0.0';
+  // Close modal and run original completeDay
+  document.getElementById('fuelModalOverlay').classList.remove('show');
+  if (mtPendingCompleteDay) {
+    var fn = mtPendingCompleteDay;
+    mtPendingCompleteDay = null;
+    setTimeout(function() { fn.call(window); }, 100);
+  }
+}
+
+// =====================================================================
+// MAP TAB: DRAW TRAIL OVERLAY
+// =====================================================================
+// Hook into switchTab to show/hide trail controls and trigger render
+(function() {
+  function hookSwitchTab() {
+    if (typeof window.switchTab !== 'function') {
+      setTimeout(hookSwitchTab, 200); return;
+    }
+    var origSwitchTab = window.switchTab;
+    window.switchTab = function(tab) {
+      var result = origSwitchTab.apply(this, arguments);
+      try {
+        if (tab === 'map') {
+          document.getElementById('trailControls').classList.add('show');
+          mtPopulateDateSelector();
+          // Auto-load today's trail
+          var todayKey = mtDateKey();
+          var sel = document.getElementById('trailDateSel');
+          if (sel) { sel.value = todayKey; loadTrailForDate(todayKey); }
+        } else {
+          document.getElementById('trailControls').classList.remove('show');
+          mtClearTrailPolylines();
+        }
+        mtMaybeShowBadge();
+      } catch (e) { console.error('[MT] tab hook err:', e); }
+      return result;
+    };
+  }
+  hookSwitchTab();
+})();
+
+function mtClearTrailPolylines() {
+  mtState.trailPolylines.forEach(function(p) { try { p.setMap(null); } catch (e) {} });
+  mtState.trailPolylines = [];
+}
+
+async function mtPopulateDateSelector() {
+  if (typeof fbLoad !== 'function') return;
+  try {
+    var routeDays = await fbLoad('routeDays');
+    var sel = document.getElementById('trailDateSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Pick date...</option>';
+    var todayKey = mtDateKey();
+    // Add today first if we have legs in memory
+    var dates = [];
+    if (mtState.todayLegs.length > 0) dates.push(todayKey);
+    if (routeDays) {
+      Object.keys(routeDays).sort().reverse().forEach(function(k) {
+        if (k !== todayKey) dates.push(k);
+      });
+    }
+    dates.forEach(function(d) {
+      var opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d + (d === todayKey ? ' (today)' : '');
+      sel.appendChild(opt);
+    });
+  } catch (e) { console.warn('[MT] populate dates err', e); }
+}
+
+async function loadTrailForDate(dateKey) {
+  mtClearTrailPolylines();
+  if (!dateKey) return;
+  var miles = 0, legCount = 0, cost = 0;
+  var legs = [];
+  // For today, pull from memory (more up-to-date than Firebase)
+  if (dateKey === mtDateKey() && mtState.todayLegs.length > 0) {
+    legs = mtState.todayLegs;
+    miles = mtState.todayDistance;
+  } else if (typeof fbLoad === 'function') {
+    try {
+      var dayLegs = await fbLoad('legs/' + dateKey);
+      if (dayLegs) {
+        Object.keys(dayLegs).forEach(function(k) {
+          var l = dayLegs[k];
+          if (l) { legs.push(l); miles += (l.distanceMiles || 0); }
+        });
+      }
+      var routeDay = await fbLoad('routeDays/' + dateKey);
+      if (routeDay) cost = routeDay.fuelCost || 0;
+    } catch (e) { console.warn('[MT] load trail err', e); }
+  }
+  legCount = legs.length;
+  document.getElementById('trailMiles').textContent = miles.toFixed(1);
+  document.getElementById('trailLegs').textContent = legCount;
+  document.getElementById('trailCost').textContent = '$' + cost.toFixed(2);
+  // Draw polylines on Google Map
+  if (typeof window.google === 'undefined' || !window.google.maps) return;
+  // The existing code uses `mapView` as the Google Map instance
+  var map = window.mapView || window.routeMap || window.map;
+  if (!map) {
+    console.warn('[MT] Could not find map instance — polylines not drawn. Trail data still saved.');
+    return;
+  }
+  var bounds = new google.maps.LatLngBounds();
+  legs.forEach(function(leg, idx) {
+    if (!leg.trail || leg.trail.length < 2) return;
+    var path = leg.trail.map(function(pt) { return { lat: pt[0], lng: pt[1] }; });
+    var color = (leg.distanceSource === 'gps') ? '#ff6b2b' : '#886655';
+    var poly = new google.maps.Polyline({
+      path: path,
+      geodesic: true,
+      strokeColor: color,
+      strokeOpacity: 0.85,
+      strokeWeight: 4,
+      map: map
+    });
+    mtState.trailPolylines.push(poly);
+    path.forEach(function(p) { bounds.extend(p); });
+  });
+  if (legs.length > 0 && !bounds.isEmpty()) {
+    try { map.fitBounds(bounds, 60); } catch (e) {}
+  }
+}
+
+// =====================================================================
+// REHYDRATE TODAY'S STATE ON LOAD (in case page was refreshed mid-day)
+// =====================================================================
+async function mtRehydrateToday() {
+  if (typeof fbLoad !== 'function') return;
+  var todayKey = mtDateKey();
+  try {
+    var dayLegs = await fbLoad('legs/' + todayKey);
+    if (dayLegs) {
+      Object.keys(dayLegs).forEach(function(k) {
+        var l = dayLegs[k];
+        if (l && l.distanceMiles) {
+          mtState.todayLegs.push(l);
+          mtState.todayDistance += l.distanceMiles;
+        }
+      });
+      mtState.todayDateKey = todayKey;
+      document.getElementById('mtMiles').textContent = mtState.todayDistance.toFixed(1);
+      mtMaybeShowBadge();
+      console.log('[MT] Rehydrated', mtState.todayLegs.length, 'legs from today');
+    }
+  } catch (e) { console.warn('[MT] rehydrate err', e); }
+}
+
+// Run rehydrate once Firebase is ready (poll briefly)
+(function() {
+  var tries = 0;
+  function check() {
+    if (typeof firebaseReady !== 'undefined' && firebaseReady) {
+      mtRehydrateToday();
+    } else if (tries++ < 50) {
+      setTimeout(check, 500);
+    }
+  }
+  setTimeout(check, 1000);
+})();
+
+console.log('[MT] Mileage tracking module loaded');
+</script>
+<!-- ===================================================================== -->
+<!-- ===== END MILEAGE TRACKING MODULE =================================== -->
+<!-- ===================================================================== -->
+
 </body>
 </html>

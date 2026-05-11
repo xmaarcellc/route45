@@ -407,6 +407,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div class="tabs">
   <div class="tab active" id="tab-route" onclick="switchTab('route')">ROUTE</div>
   <div class="tab" id="tab-manage" onclick="switchTab('manage')">STOPS</div>
+  <div class="tab" id="tab-history" onclick="switchTab('history')">📊 HISTORY</div>
   <div class="tab" id="tab-map" onclick="switchTab('map')">🗺️ MAP</div>
 </div>
 
@@ -453,6 +454,23 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <div id="filterStatus" style="padding:0 16px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);display:none;"></div>
 
   <div class="stop-list" id="stopList"></div>
+  <!-- BASE LEG SECTION (shown when ready to head back to base) -->
+  <div id="baseLegSection" style="padding:12px 16px;display:none;">
+    <div id="baseLegStartBlock" style="background:#141414;border:1px solid var(--bdr);border-radius:8px;padding:14px;">
+      <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;margin-bottom:6px;">🏢 HEAD BACK TO BASE</div>
+      <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-bottom:12px;">Track the drive from your last stop back to the Cintas base. Will be saved as the final leg of the day.</div>
+      <button onclick="mtStartBaseLeg()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">🚗 DEPART TO BASE</button>
+    </div>
+    <div id="baseLegActiveBlock" style="display:none;background:#141414;border:1px solid var(--acc);box-shadow:0 0 0 1px var(--acc);border-radius:8px;padding:14px;">
+      <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;margin-bottom:6px;">🚗 EN ROUTE TO BASE</div>
+      <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-bottom:12px;">GPS is tracking. Tap when you arrive at base.</div>
+      <button onclick="mtArriveAtBase()" style="width:100%;background:var(--grn);color:#000;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">📍 I'M AT BASE</button>
+    </div>
+    <div id="baseLegDoneBlock" style="display:none;background:#141414;border:1px solid var(--grn);border-radius:8px;padding:14px;text-align:center;">
+      <div style="font-family:var(--fd);font-size:18px;color:var(--grn);letter-spacing:1px;">✅ BACK AT BASE</div>
+      <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-top:4px;" id="baseLegDoneSub">Final leg saved</div>
+    </div>
+  </div>
   <div class="eod-section">
     <button class="eod-btn btn-complete-day" onclick="completeDay()">✅ COMPLETE DAY & SAVE</button>
     <button class="eod-btn btn-view-log" onclick="showLog()">📋 VIEW DAY LOG</button>
@@ -528,6 +546,48 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
       <button class="bulk-day-btn" data-day="THU" onclick="bulkMoveTo('THU')">THU</button>
       <button class="bulk-day-btn" data-day="FRI" onclick="bulkMoveTo('FRI')">FRI</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== HISTORY TAB ===== -->
+<div id="historyTab" style="display:none;padding:12px 16px 80px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div>
+      <div style="font-family:var(--fd);font-size:24px;color:var(--acc);letter-spacing:1px;">HISTORY</div>
+      <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-top:2px;">Past days &amp; route data</div>
+    </div>
+    <button onclick="mtRefreshHistory()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;">↻ REFRESH</button>
+  </div>
+
+  <!-- AGGREGATE STATS -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;">
+    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+      <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalDays">0</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Days Tracked</div>
+    </div>
+    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+      <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalMiles">0</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Miles</div>
+    </div>
+    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+      <div style="font-family:var(--fd);font-size:22px;color:var(--grn);line-height:1;" id="histTotalCost">$0</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Fuel</div>
+    </div>
+  </div>
+
+  <!-- DAY-OF-WEEK FILTER -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+    <button class="filter-pill active" data-histfilter="all" onclick="mtSetHistoryFilter('all')">All</button>
+    <button class="filter-pill" data-histfilter="MON" onclick="mtSetHistoryFilter('MON')">MON</button>
+    <button class="filter-pill" data-histfilter="TUE" onclick="mtSetHistoryFilter('TUE')">TUE</button>
+    <button class="filter-pill" data-histfilter="WED" onclick="mtSetHistoryFilter('WED')">WED</button>
+    <button class="filter-pill" data-histfilter="THU" onclick="mtSetHistoryFilter('THU')">THU</button>
+    <button class="filter-pill" data-histfilter="FRI" onclick="mtSetHistoryFilter('FRI')">FRI</button>
+  </div>
+
+  <!-- DAY LIST -->
+  <div id="historyList">
+    <div style="text-align:center;padding:40px 16px;color:var(--mut);font-family:var(--fm);font-size:12px;">Loading history...</div>
   </div>
 </div>
 
@@ -5038,6 +5098,96 @@ function closeMeasureResult() {
 .history-cell { background: var(--sur2); border-radius: 4px; padding: 8px 6px; text-align: center; }
 .history-cell-val { font-family: var(--fd); font-size: 16px; color: var(--txt); line-height: 1; }
 .history-cell-lbl { font-family: var(--fm); font-size: 8px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+/* === LEG POPUP (shown when tapping a polyline on the map) === */
+.leg-popup {
+  position: fixed;
+  display: none;
+  background: rgba(15, 15, 15, 0.97);
+  border: 2px solid var(--acc);
+  border-radius: 10px;
+  padding: 12px 14px;
+  z-index: 9500;
+  min-width: 220px;
+  max-width: 280px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+}
+.leg-popup.show { display: block; }
+.leg-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--mut);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.leg-popup-color-bar {
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 10px;
+  margin-right: 22px;
+}
+.leg-popup-title {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.leg-popup-route {
+  font-family: var(--fb);
+  font-size: 12px;
+  color: var(--txt);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.leg-popup-route-arrow {
+  color: var(--acc);
+  margin: 0 4px;
+}
+.leg-popup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.leg-popup-cell {
+  background: var(--sur2);
+  border-radius: 5px;
+  padding: 8px;
+  text-align: center;
+}
+.leg-popup-cell-val {
+  font-family: var(--fd);
+  font-size: 18px;
+  color: var(--acc);
+  line-height: 1;
+}
+.leg-popup-cell-val.cost { color: var(--grn); }
+.leg-popup-cell-lbl {
+  font-family: var(--fm);
+  font-size: 8px;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+.leg-popup-footer {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--mut);
+  text-align: center;
+  padding-top: 6px;
+  border-top: 1px solid var(--bdr);
+  margin-top: 4px;
+}
+.leg-popup-footer.estimate { color: var(--acc2); }
 </style>
 
 <!-- === FLOATING TRACKER BADGE (shown on route tab) === -->
@@ -5049,6 +5199,33 @@ function closeMeasureResult() {
     <div class="mt-stat"><div class="mt-stat-val" id="mtStatus">IDLE</div><div class="mt-stat-lbl">GPS</div></div>
   </div>
   <button class="mt-toggle-btn" onclick="mtToggleVisibility()">×</button>
+</div>
+
+<!-- === LEG POPUP (shown when tapping a polyline on the map) === -->
+<div class="leg-popup" id="legPopup">
+  <button class="leg-popup-close" onclick="mtHideLegPopup()">✕</button>
+  <div class="leg-popup-color-bar" id="legPopupColorBar"></div>
+  <div class="leg-popup-title">Leg <span id="legPopupNum">1</span></div>
+  <div class="leg-popup-route" id="legPopupRoute">From → To</div>
+  <div class="leg-popup-grid">
+    <div class="leg-popup-cell">
+      <div class="leg-popup-cell-val" id="legPopupMiles">0.0</div>
+      <div class="leg-popup-cell-lbl">Miles</div>
+    </div>
+    <div class="leg-popup-cell">
+      <div class="leg-popup-cell-val" id="legPopupTime">0m</div>
+      <div class="leg-popup-cell-lbl">Drive Time</div>
+    </div>
+    <div class="leg-popup-cell">
+      <div class="leg-popup-cell-val cost" id="legPopupCost">$0.00</div>
+      <div class="leg-popup-cell-lbl">Fuel Cost</div>
+    </div>
+    <div class="leg-popup-cell">
+      <div class="leg-popup-cell-val" id="legPopupSpeed">0</div>
+      <div class="leg-popup-cell-lbl">Avg MPH</div>
+    </div>
+  </div>
+  <div class="leg-popup-footer" id="legPopupFooter">GPS tracked</div>
 </div>
 
 <!-- === FUEL COST MODAL === -->
@@ -5220,7 +5397,238 @@ function mtFinishGPS(arrivedIdx, arrivedName) {
   document.getElementById('mtLeg').textContent = '--';
   mtUpdateBadge('IDLE');
   console.log('[MT] Leg complete:', leg.distanceMiles.toFixed(2), 'mi via', leg.distanceSource);
+  // Draw this leg on the map immediately, even if user isn't viewing the map tab.
+  // The polyline persists across tab switches.
+  mtDrawSingleLeg(leg);
   return leg;
+}
+
+// Palette of visually-distinct vivid colors that work well on a dark map.
+// Each leg in a day gets the next color in order. Cycles if you have >24 legs.
+var MT_LEG_PALETTE = [
+  '#ff6b2b', // orange (brand)
+  '#06d6a0', // teal
+  '#ffd166', // gold
+  '#ef476f', // pink-red
+  '#4ecdc4', // cyan
+  '#c77dff', // purple
+  '#90e0ef', // sky blue
+  '#f4a261', // amber
+  '#e76f51', // coral
+  '#83c5be', // sage
+  '#fb8500', // bright orange
+  '#a8dadc', // pale cyan
+  '#ff006e', // hot pink
+  '#8ecae6', // baby blue
+  '#bde0fe', // ice blue
+  '#ffbe0b', // sunflower
+  '#3a86ff', // royal blue
+  '#fb5607', // burnt orange
+  '#8338ec', // violet
+  '#06ffa5', // mint
+  '#ff4d6d', // raspberry
+  '#80ed99', // light green
+  '#f72585', // magenta
+  '#c1fba4'  // pale lime
+];
+
+// Determine which color a leg should use based on its position in the day.
+// Looks at the order legs appear in mtState.todayLegs (or the loaded set).
+function mtColorForLeg(leg, legIndex) {
+  // legIndex preferred when provided (lets us color rehydrated/loaded legs correctly)
+  if (typeof legIndex === 'number' && legIndex >= 0) {
+    return MT_LEG_PALETTE[legIndex % MT_LEG_PALETTE.length];
+  }
+  // Fallback: hash the startedAt timestamp into a palette index
+  if (leg && leg.startedAt) {
+    var h = 0;
+    for (var i = 0; i < leg.startedAt.length; i++) h = ((h << 5) - h + leg.startedAt.charCodeAt(i)) | 0;
+    return MT_LEG_PALETTE[Math.abs(h) % MT_LEG_PALETTE.length];
+  }
+  return MT_LEG_PALETTE[0];
+}
+
+// Draw a single completed leg as a polyline on the map. Adds to mtState.trailPolylines
+// so it persists until explicitly cleared (e.g. by date filter change).
+// `legIndex` is the leg's position within its day (0-based). When omitted,
+// the current count of trailPolylines is used (so live-drawn legs color correctly).
+function mtDrawSingleLeg(leg, legIndex) {
+  if (!leg || !leg.trail || leg.trail.length < 2) return;
+  if (typeof window.google === 'undefined' || !window.google.maps) return;
+  var map = window.mapView;
+  if (!map) {
+    console.log('[MT] Map not initialized yet, leg will draw when map loads');
+    return;
+  }
+  var path = leg.trail.map(function(pt) { return { lat: pt[0], lng: pt[1] }; });
+  // Use the explicit index if provided, otherwise infer from current polylines drawn
+  var idx = (typeof legIndex === 'number') ? legIndex : mtState.trailPolylines.length;
+  var color = mtColorForLeg(leg, idx);
+  // Estimated legs (GPS dropped) get a dashed line to signal lower confidence
+  var isEstimate = (leg.distanceSource === 'estimate');
+  var polyOpts = {
+    path: path,
+    geodesic: true,
+    strokeColor: color,
+    strokeOpacity: isEstimate ? 0 : 0.9,
+    strokeWeight: 5,
+    map: map
+  };
+  if (isEstimate) {
+    // Dashed line via icons trick (since SVG dasharray isn't supported on Polyline)
+    polyOpts.icons = [{
+      icon: { path: 'M 0,-1 0,1', strokeOpacity: 0.9, strokeColor: color, scale: 3 },
+      offset: '0',
+      repeat: '14px'
+    }];
+  }
+  var poly = new google.maps.Polyline(polyOpts);
+  // Attach metadata so the click handler can access the leg + display info
+  poly._mtLeg = leg;
+  poly._mtColor = color;
+  poly._mtLegIndex = idx;
+  // Make polyline clickable — Google Maps will fire on tap (mobile) and click (desktop)
+  poly.addListener('click', function(evt) {
+    mtShowLegPopup(poly, evt);
+  });
+  mtState.trailPolylines.push(poly);
+}
+
+// =====================================================================
+// LEG POPUP — tap a polyline to see distance, time, fuel cost for that leg
+// =====================================================================
+
+// Per-day fuel data cache, keyed by dateKey: { mpg, gasPricePerGallon, fuelDataComplete }
+var mtFuelCache = {};
+
+async function mtGetFuelDataForDate(dateKey) {
+  if (mtFuelCache[dateKey]) return mtFuelCache[dateKey];
+  // For today, if no routeDays record yet, use the localStorage last-used values
+  // so the user gets a live estimate as they drive
+  var todayKey = mtDateKey();
+  if (dateKey === todayKey) {
+    var lastGas = parseFloat(localStorage.getItem('mt_lastGasPrice')) || 0;
+    var lastMpg = parseFloat(localStorage.getItem('mt_lastMpg')) || 0;
+    if (lastGas && lastMpg) {
+      mtFuelCache[dateKey] = { mpg: lastMpg, gasPricePerGallon: lastGas, fuelDataComplete: false, isLive: true };
+      return mtFuelCache[dateKey];
+    }
+  }
+  if (typeof fbLoad !== 'function') return null;
+  try {
+    var record = await fbLoad('routeDays/' + dateKey);
+    if (record && record.mpg && record.gasPricePerGallon) {
+      mtFuelCache[dateKey] = {
+        mpg: record.mpg,
+        gasPricePerGallon: record.gasPricePerGallon,
+        fuelDataComplete: record.fuelDataComplete !== false
+      };
+      return mtFuelCache[dateKey];
+    }
+  } catch (e) { console.warn('[MT] fuel data load err', e); }
+  return null;
+}
+
+async function mtShowLegPopup(poly, evt) {
+  var leg = poly._mtLeg;
+  var color = poly._mtColor;
+  var idx = poly._mtLegIndex;
+  if (!leg) return;
+
+  // Compute display values
+  var miles = leg.distanceMiles || 0;
+  var driveSec = leg.durationSeconds || 0;
+  var driveMin = Math.round(driveSec / 60);
+  var avgMph = (driveSec > 0) ? (miles / (driveSec / 3600)) : 0;
+  var fromName = leg.fromName || 'Stop ' + (typeof leg.fromIdx === 'number' ? leg.fromIdx + 1 : '?');
+  var toName = leg.toName || (leg.toIdx === -1 ? 'Base' : 'Stop ' + (typeof leg.toIdx === 'number' ? leg.toIdx + 1 : '?'));
+
+  // Look up fuel data for this leg's day
+  var fuelData = await mtGetFuelDataForDate(leg.dateKey);
+  var fuelCost = 0;
+  var fuelLabel = 'GPS tracked';
+  if (leg.distanceSource === 'estimate') {
+    fuelLabel = '⚠ Estimated (GPS dropped)';
+  }
+  if (fuelData && fuelData.mpg > 0 && fuelData.gasPricePerGallon > 0) {
+    fuelCost = (miles / fuelData.mpg) * fuelData.gasPricePerGallon;
+    if (fuelData.isLive) {
+      fuelLabel += ' · Live estimate (' + fuelData.gasPricePerGallon.toFixed(2) + '/gal · ' + fuelData.mpg + ' mpg)';
+    } else if (!fuelData.fuelDataComplete) {
+      fuelLabel += ' · Fuel data incomplete';
+    }
+  } else {
+    fuelLabel += ' · No fuel data yet';
+  }
+
+  // Populate popup
+  document.getElementById('legPopupNum').textContent = (idx + 1);
+  document.getElementById('legPopupColorBar').style.background = color;
+  document.getElementById('legPopupRoute').innerHTML =
+    '<strong>' + mtEscapeHtml(fromName) + '</strong>' +
+    '<span class="leg-popup-route-arrow">→</span>' +
+    '<strong>' + mtEscapeHtml(toName) + '</strong>';
+  document.getElementById('legPopupMiles').textContent = miles.toFixed(2);
+  document.getElementById('legPopupTime').textContent = driveMin + 'm';
+  document.getElementById('legPopupCost').textContent = '$' + fuelCost.toFixed(2);
+  document.getElementById('legPopupSpeed').textContent = avgMph > 0 ? avgMph.toFixed(0) : '--';
+
+  var footer = document.getElementById('legPopupFooter');
+  footer.textContent = fuelLabel;
+  footer.classList.toggle('estimate', leg.distanceSource === 'estimate');
+
+  // Position popup near tap point but clamped to viewport
+  var popup = document.getElementById('legPopup');
+  popup.classList.add('show');
+  // Get viewport coords from the map event (Google Maps provides domEvent on click)
+  var clientX = window.innerWidth / 2, clientY = window.innerHeight / 2;
+  if (evt && evt.domEvent) {
+    if (evt.domEvent.touches && evt.domEvent.touches[0]) {
+      clientX = evt.domEvent.touches[0].clientX;
+      clientY = evt.domEvent.touches[0].clientY;
+    } else if (typeof evt.domEvent.clientX === 'number') {
+      clientX = evt.domEvent.clientX;
+      clientY = evt.domEvent.clientY;
+    }
+  }
+  // Wait one frame so the popup has dimensions, then position
+  requestAnimationFrame(function() {
+    var rect = popup.getBoundingClientRect();
+    var pad = 12;
+    var left = clientX - rect.width / 2;
+    var top = clientY - rect.height - 20; // above the tap point
+    // Clamp horizontally
+    if (left < pad) left = pad;
+    if (left + rect.width > window.innerWidth - pad) left = window.innerWidth - rect.width - pad;
+    // If no room above, put it below
+    if (top < pad) top = clientY + 20;
+    // Clamp bottom
+    if (top + rect.height > window.innerHeight - pad) {
+      top = window.innerHeight - rect.height - pad;
+    }
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+  });
+}
+
+function mtHideLegPopup() {
+  document.getElementById('legPopup').classList.remove('show');
+}
+
+// Tap anywhere on the map (outside a polyline) to dismiss
+(function() {
+  function hookMapClick() {
+    if (!window.mapView) { setTimeout(hookMapClick, 500); return; }
+    try {
+      window.mapView.addListener('click', function() { mtHideLegPopup(); });
+    } catch (e) { console.warn('[MT] map click hook err', e); }
+  }
+  hookMapClick();
+})();
+
+function mtEscapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function mtFallbackDistance(fromIdx, toIdx) {
@@ -5366,7 +5774,11 @@ function mtMaybeShowBadge() {
         mtShowFuelModal();
         return; // user will click SAVE in modal to trigger the original
       }
-      return origCompleteDay.apply(this, arguments);
+      var result = await origCompleteDay.apply(this, arguments);
+      // After completeDay resets stopData, the base leg section should hide
+      mtBaseLegState = 'idle';
+      mtUpdateBaseLegVisibility();
+      return result;
     };
 
     console.log('[MT] Hooks installed');
@@ -5437,11 +5849,14 @@ function saveFuelData() {
     gasPricePerGallon: gas,
     mpg: mpg,
     fuelCost: parseFloat(cost.toFixed(2)),
+    fuelDataComplete: true,
     completedAt: new Date().toISOString()
   };
   if (typeof fbSave === 'function') {
     try { fbSave('routeDays/' + dateKey, record); } catch (e) { console.error('[MT] save routeDay err', e); }
   }
+  // Invalidate the fuel cache for this day so leg popups reflect the new data
+  if (typeof mtFuelCache !== 'undefined') delete mtFuelCache[dateKey];
   // Save user's last-used values for next time
   if (gas) localStorage.setItem('mt_lastGasPrice', gas);
   if (mpg) localStorage.setItem('mt_lastMpg', mpg);
@@ -5462,7 +5877,7 @@ function saveFuelData() {
 // =====================================================================
 // MAP TAB: DRAW TRAIL OVERLAY
 // =====================================================================
-// Hook into switchTab to show/hide trail controls and trigger render
+// Hook into switchTab to show/hide trail controls, history tab, and trigger renders
 (function() {
   function hookSwitchTab() {
     if (typeof window.switchTab !== 'function') {
@@ -5470,6 +5885,31 @@ function saveFuelData() {
     }
     var origSwitchTab = window.switchTab;
     window.switchTab = function(tab) {
+      // The original only knows about route/manage/map. For 'history' we
+      // handle the tab visibility manually since the original would leave
+      // the previously-active tab visible.
+      if (tab === 'history') {
+        // Hide all other tabs first
+        ['route','manage','map'].forEach(function(t) {
+          var el = document.getElementById(t + 'Tab');
+          if (el) el.style.display = 'none';
+          var tabEl = document.getElementById('tab-' + t);
+          if (tabEl) tabEl.classList.remove('active');
+        });
+        document.getElementById('historyTab').style.display = 'block';
+        var tabEl = document.getElementById('tab-history');
+        if (tabEl) tabEl.classList.add('active');
+        // Trail controls only show on map tab
+        document.getElementById('trailControls').classList.remove('show');
+        mtRefreshHistory();
+        mtMaybeShowBadge();
+        return;
+      }
+      // For non-history tabs, also ensure historyTab is hidden and its tab indicator off
+      document.getElementById('historyTab').style.display = 'none';
+      var hTab = document.getElementById('tab-history');
+      if (hTab) hTab.classList.remove('active');
+
       var result = origSwitchTab.apply(this, arguments);
       try {
         if (tab === 'map') {
@@ -5481,8 +5921,10 @@ function saveFuelData() {
           if (sel) { sel.value = todayKey; loadTrailForDate(todayKey); }
         } else {
           document.getElementById('trailControls').classList.remove('show');
-          mtClearTrailPolylines();
+          // NOTE: do NOT clear polylines on tab switch — keep them drawn so user
+          // sees the trail immediately when returning to the map tab.
         }
+        if (tab === 'route') mtUpdateBaseLegVisibility();
         mtMaybeShowBadge();
       } catch (e) { console.error('[MT] tab hook err:', e); }
       return result;
@@ -5547,29 +5989,19 @@ async function loadTrailForDate(dateKey) {
   document.getElementById('trailMiles').textContent = miles.toFixed(1);
   document.getElementById('trailLegs').textContent = legCount;
   document.getElementById('trailCost').textContent = '$' + cost.toFixed(2);
-  // Draw polylines on Google Map
+  // Draw polylines on Google Map using the shared helper
   if (typeof window.google === 'undefined' || !window.google.maps) return;
-  // The existing code uses `mapView` as the Google Map instance
-  var map = window.mapView || window.routeMap || window.map;
+  var map = window.mapView;
   if (!map) {
-    console.warn('[MT] Could not find map instance — polylines not drawn. Trail data still saved.');
+    console.warn('[MT] Map not ready — polylines will draw when map loads. Trail data still saved.');
     return;
   }
   var bounds = new google.maps.LatLngBounds();
+  // Sort legs by start time so color order is consistent across reloads
+  legs.sort(function(a, b) { return (a.startedAt || '').localeCompare(b.startedAt || ''); });
   legs.forEach(function(leg, idx) {
-    if (!leg.trail || leg.trail.length < 2) return;
-    var path = leg.trail.map(function(pt) { return { lat: pt[0], lng: pt[1] }; });
-    var color = (leg.distanceSource === 'gps') ? '#ff6b2b' : '#886655';
-    var poly = new google.maps.Polyline({
-      path: path,
-      geodesic: true,
-      strokeColor: color,
-      strokeOpacity: 0.85,
-      strokeWeight: 4,
-      map: map
-    });
-    mtState.trailPolylines.push(poly);
-    path.forEach(function(p) { bounds.extend(p); });
+    mtDrawSingleLeg(leg, idx);
+    if (leg.trail) leg.trail.forEach(function(pt) { bounds.extend({ lat: pt[0], lng: pt[1] }); });
   });
   if (legs.length > 0 && !bounds.isEmpty()) {
     try { map.fitBounds(bounds, 60); } catch (e) {}
@@ -5596,8 +6028,29 @@ async function mtRehydrateToday() {
       document.getElementById('mtMiles').textContent = mtState.todayDistance.toFixed(1);
       mtMaybeShowBadge();
       console.log('[MT] Rehydrated', mtState.todayLegs.length, 'legs from today');
+      // Draw rehydrated legs onto the map. If the map isn't ready yet, defer.
+      mtDrawTodayLegsOntoMap();
     }
   } catch (e) { console.warn('[MT] rehydrate err', e); }
+}
+
+// Draw all of today's legs onto the map. Polls briefly if the map instance
+// isn't initialized yet (since the user may not have visited the map tab).
+function mtDrawTodayLegsOntoMap() {
+  var tries = 0;
+  function attempt() {
+    if (window.mapView && typeof window.google !== 'undefined' && window.google.maps) {
+      // Clear any duplicates first, then draw fresh
+      mtClearTrailPolylines();
+      // Sort by start time so colors stay consistent across reloads
+      mtState.todayLegs.sort(function(a, b) { return (a.startedAt || '').localeCompare(b.startedAt || ''); });
+      mtState.todayLegs.forEach(function(leg, idx) { mtDrawSingleLeg(leg, idx); });
+      console.log('[MT] Drew', mtState.trailPolylines.length, 'polylines onto map');
+    } else if (tries++ < 30) {
+      setTimeout(attempt, 1000);
+    }
+  }
+  attempt();
 }
 
 // Run rehydrate once Firebase is ready (poll briefly)
@@ -5612,6 +6065,272 @@ async function mtRehydrateToday() {
   }
   setTimeout(check, 1000);
 })();
+
+// =====================================================================
+// FINAL LEG TO BASE
+// =====================================================================
+// Tracks the drive from the last customer stop back to the Cintas base.
+// State: 'idle' (not started) → 'active' (en route) → 'done' (arrived)
+var mtBaseLegState = 'idle';
+
+function mtUpdateBaseLegVisibility() {
+  var section = document.getElementById('baseLegSection');
+  if (!section) return;
+  // Show the base leg section only when ALL stops for the day are done.
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+  if (dayStops.length === 0) { section.style.display = 'none'; return; }
+  var allDone = dayStops.every(function(_, i) {
+    return dayData[i] && dayData[i].status === 'done';
+  });
+  if (!allDone) {
+    section.style.display = 'none';
+    mtBaseLegState = 'idle';
+    return;
+  }
+  section.style.display = 'block';
+  // Render the right block based on state
+  document.getElementById('baseLegStartBlock').style.display = (mtBaseLegState === 'idle') ? 'block' : 'none';
+  document.getElementById('baseLegActiveBlock').style.display = (mtBaseLegState === 'active') ? 'block' : 'none';
+  document.getElementById('baseLegDoneBlock').style.display = (mtBaseLegState === 'done') ? 'block' : 'none';
+}
+
+function mtStartBaseLeg() {
+  // Find the last completed stop's index (highest done index)
+  var dayStops = stops[currentDay] || [];
+  var dayData = stopData[currentDay] || [];
+  var lastIdx = -1, lastName = 'Last stop';
+  for (var i = dayData.length - 1; i >= 0; i--) {
+    if (dayData[i] && dayData[i].status === 'done') {
+      lastIdx = i;
+      lastName = dayStops[i] ? dayStops[i].name : ('Stop ' + (i+1));
+      break;
+    }
+  }
+  if (lastIdx === -1) {
+    alert('No completed stops yet.');
+    return;
+  }
+  // Start a GPS leg from last stop to base. Use -1 as the special "base" toIdx.
+  mtStartGPS(lastIdx, lastName, -1, 'Base');
+  mtBaseLegState = 'active';
+  mtUpdateBaseLegVisibility();
+}
+
+function mtArriveAtBase() {
+  var leg = mtFinishGPS(-1, 'Base');
+  mtBaseLegState = 'done';
+  if (leg) {
+    document.getElementById('baseLegDoneSub').textContent =
+      'Final leg: ' + leg.distanceMiles.toFixed(2) + ' mi · ' +
+      Math.round(leg.durationSeconds / 60) + ' min';
+  }
+  mtUpdateBaseLegVisibility();
+}
+
+// Hook into existing stop-complete flow so the base leg section appears as soon
+// as the last stop is marked done. We wrap completeStop (after the existing
+// wrap at line ~4060 in the original code) so we don't conflict with it.
+(function() {
+  function hook() {
+    if (typeof window.completeStop !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.completeStop;
+    window.completeStop = function(i) {
+      var result = orig.apply(this, arguments);
+      try { mtUpdateBaseLegVisibility(); } catch (e) {}
+      return result;
+    };
+  }
+  hook();
+})();
+// Also re-check whenever the user switches days, since "all done" status changes
+(function() {
+  function hook() {
+    if (typeof window.selectDay !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.selectDay;
+    window.selectDay = function() {
+      var result = orig.apply(this, arguments);
+      try {
+        // Reset base leg state when changing day — it's a per-day concept
+        mtBaseLegState = 'idle';
+        mtUpdateBaseLegVisibility();
+      } catch (e) {}
+      return result;
+    };
+  }
+  hook();
+})();
+
+// =====================================================================
+// SAVE-DAY-SUMMARY-EVEN-IF-FUEL-SKIPPED
+// =====================================================================
+// Wraps the SKIP path of the fuel modal so a routeDays record still saves
+// (flagged fuelDataComplete: false) for historic browsing.
+function mtSaveIncompleteDaySummary() {
+  if (mtState.todayLegs.length === 0) return;
+  var miles = mtState.todayLegs.reduce(function(s, l) { return s + (l.distanceMiles || 0); }, 0);
+  var totalSec = mtState.todayLegs.reduce(function(s, l) { return s + (l.durationSeconds || 0); }, 0);
+  var dateKey = mtState.todayDateKey || mtDateKey();
+  var record = {
+    dateKey: dateKey,
+    day: currentDay,
+    totalMiles: parseFloat(miles.toFixed(2)),
+    totalDriveSeconds: totalSec,
+    totalLegs: mtState.todayLegs.length,
+    gasPricePerGallon: 0,
+    mpg: 0,
+    fuelCost: 0,
+    fuelDataComplete: false,
+    completedAt: new Date().toISOString()
+  };
+  if (typeof fbSave === 'function') {
+    try { fbSave('routeDays/' + dateKey, record); } catch (e) { console.error('[MT] save incomplete routeDay err', e); }
+  }
+}
+
+// Patch closeFuelModal (SKIP button) to save an incomplete summary first
+var mtOrigCloseFuelModal = window.closeFuelModal;
+window.closeFuelModal = function() {
+  try { mtSaveIncompleteDaySummary(); } catch (e) { console.error('[MT] incomplete save err:', e); }
+  // Reset today's tracking state since the day is being completed
+  mtState.todayLegs = [];
+  mtState.todayDistance = 0;
+  mtState.todayDateKey = null;
+  mtBaseLegState = 'idle';
+  document.getElementById('mtMiles').textContent = '0.0';
+  mtUpdateBaseLegVisibility();
+  return mtOrigCloseFuelModal.apply(this, arguments);
+};
+
+// Patch saveFuelData to also reset base leg state after a successful save
+var mtOrigSaveFuelData = window.saveFuelData;
+window.saveFuelData = function() {
+  var result = mtOrigSaveFuelData.apply(this, arguments);
+  mtBaseLegState = 'idle';
+  mtUpdateBaseLegVisibility();
+  return result;
+};
+
+// =====================================================================
+// HISTORY TAB
+// =====================================================================
+var mtHistoryCache = []; // array of routeDay records, sorted newest-first
+var mtHistoryFilter = 'all'; // 'all' or 'MON'/'TUE'/...
+
+async function mtRefreshHistory() {
+  var list = document.getElementById('historyList');
+  list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--mut);font-family:var(--fm);font-size:12px;">Loading history...</div>';
+  if (typeof fbLoad !== 'function') {
+    list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--mut);">Firebase not ready</div>';
+    return;
+  }
+  try {
+    var routeDays = await fbLoad('routeDays') || {};
+    var records = Object.keys(routeDays).map(function(k) {
+      var r = routeDays[k];
+      r.dateKey = r.dateKey || k;
+      return r;
+    });
+    // Sort newest first
+    records.sort(function(a, b) {
+      return (b.dateKey || '').localeCompare(a.dateKey || '');
+    });
+    mtHistoryCache = records;
+    mtRenderHistory();
+  } catch (e) {
+    console.error('[MT] history load err', e);
+    list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--red);">Error loading history</div>';
+  }
+}
+
+function mtSetHistoryFilter(filter) {
+  mtHistoryFilter = filter;
+  document.querySelectorAll('[data-histfilter]').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-histfilter') === filter);
+  });
+  mtRenderHistory();
+}
+
+function mtRenderHistory() {
+  var list = document.getElementById('historyList');
+  var filtered = (mtHistoryFilter === 'all')
+    ? mtHistoryCache
+    : mtHistoryCache.filter(function(r) { return r.day === mtHistoryFilter; });
+
+  // Update aggregate stats (always show totals across the FILTERED set)
+  var totalMiles = 0, totalCost = 0;
+  filtered.forEach(function(r) {
+    totalMiles += (r.totalMiles || 0);
+    totalCost += (r.fuelCost || 0);
+  });
+  document.getElementById('histTotalDays').textContent = filtered.length;
+  document.getElementById('histTotalMiles').textContent = totalMiles.toFixed(0);
+  document.getElementById('histTotalCost').textContent = '$' + totalCost.toFixed(0);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--mut);font-family:var(--fm);font-size:12px;">No history yet. Complete a day to see it here.</div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(r) {
+    var dateLabel = mtFormatDateLabel(r.dateKey);
+    var miles = (r.totalMiles || 0).toFixed(1);
+    var legs = r.totalLegs || 0;
+    var driveMin = Math.round((r.totalDriveSeconds || 0) / 60);
+    var fuelCost = (r.fuelCost || 0).toFixed(2);
+    var incomplete = (r.fuelDataComplete === false);
+    html += '<div class="history-card" onclick="mtOpenHistoryDay(\'' + r.dateKey + '\')" style="cursor:pointer;">' +
+      '<div class="history-card-top">' +
+        '<div>' +
+          '<div class="history-date">' + dateLabel + '</div>' +
+          (incomplete ? '<div style="font-family:var(--fm);font-size:9px;color:var(--acc2);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;">⚠ Fuel data missing</div>' : '') +
+        '</div>' +
+        '<div class="history-day-badge">' + (r.day || '--') + '</div>' +
+      '</div>' +
+      '<div class="history-grid">' +
+        '<div class="history-cell"><div class="history-cell-val">' + miles + '</div><div class="history-cell-lbl">Miles</div></div>' +
+        '<div class="history-cell"><div class="history-cell-val">' + legs + '</div><div class="history-cell-lbl">Legs</div></div>' +
+        '<div class="history-cell"><div class="history-cell-val">' + driveMin + 'm</div><div class="history-cell-lbl">Drive</div></div>' +
+        '<div class="history-cell"><div class="history-cell-val" style="color:' + (incomplete ? 'var(--mut)' : 'var(--grn)') + ';">$' + fuelCost + '</div><div class="history-cell-lbl">Fuel</div></div>' +
+      '</div>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function mtFormatDateLabel(dateKey) {
+  if (!dateKey) return 'Unknown';
+  // dateKey is YYYY-MM-DD; parse as local date
+  var parts = dateKey.split('-');
+  if (parts.length !== 3) return dateKey;
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  if (isNaN(d.getTime())) return dateKey;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// Tap a history card → switch to map tab with that date loaded
+function mtOpenHistoryDay(dateKey) {
+  switchTab('map');
+  setTimeout(function() {
+    var sel = document.getElementById('trailDateSel');
+    if (sel) {
+      // Ensure the option exists, then select it
+      var exists = false;
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === dateKey) { exists = true; break; }
+      }
+      if (!exists) {
+        var opt = document.createElement('option');
+        opt.value = dateKey;
+        opt.textContent = dateKey;
+        sel.appendChild(opt);
+      }
+      sel.value = dateKey;
+    }
+    loadTrailForDate(dateKey);
+  }, 300);
+}
 
 console.log('[MT] Mileage tracking module loaded');
 </script>

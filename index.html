@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#1a1a1a">
+<meta name="theme-color" content="#1e3a8a">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Project Z</title>
@@ -14,18 +14,18 @@
 
 :root {
 color-scheme: dark only;
-–bg: #1a1a1a;
-–sur: #252525;
-–sur2: #2e2e2e;
-–bdr: #3d2d1d;
+–bg: #1e3a8a;
+–sur: #2851a8;
+–sur2: #1e4391;
+–bdr: #3d6bbf;
 –acc: #ff7a3d;
 –acc2: #ff9966;
-–grn: #06d6a0;
+–grn: #10b981;
 –red: #ef476f;
-–blu: #ff7a3d;
-–pur: #ff7a3d;
+–blu: #60a5fa;
+–pur: #c084fc;
 –txt: #ffffff;
-–mut: #c8c0b8;
+–mut: #c0d4f0;
 –fd: ‘Bebas Neue’, sans-serif;
 –fm: ‘DM Mono’, monospace;
 –fb: ‘DM Sans’, sans-serif;
@@ -36,7 +36,7 @@ color-scheme: dark only;
   body {
   background-color: var(–bg);
   /* Subtle 2px dot grid texture so the background doesn’t look flat */
-  background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
   background-size: 18px 18px;
   background-attachment: fixed;
   color: var(–txt);
@@ -104,7 +104,13 @@ transform: scale(0.95);
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
 .stop-card { background: var(–sur); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; }
 .stop-card.active { border-color: var(–acc); box-shadow: 0 0 0 1px var(–acc); }
-.stop-card.done { opacity: .65; border-color: var(–grn); }
+/* Done stops get a clear green highlight (no fading) so they stand out as completed */
+.stop-card.done {
+border-color: var(–grn);
+border-width: 2px;
+background: linear-gradient(90deg, rgba(16,185,129,0.18), rgba(16,185,129,0.06));
+box-shadow: 0 0 0 1px var(–grn), 0 2px 8px rgba(16,185,129,0.18);
+}
 .stop-header { display: flex; align-items: center; padding: 14px 12px; gap: 12px; cursor: pointer; user-select: none; }
 .stop-num { font-family: var(–fd); font-size: 26px; color: var(–mut); min-width: 34px; line-height: 1; }
 .stop-card.active .stop-num { color: var(–acc); }
@@ -357,7 +363,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 /* MODE BANNER (Reorganize / Measure) */
 .mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
 .mode-banner.show { display: block; }
-.mode-banner.measure { background: #4285f4; color: #fff; }
+
 .mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .mode-banner-text { flex: 1; font-size: 14px; }
 .mode-banner-counter { font-family: var(–fd); font-size: 22px; letter-spacing: 1px; }
@@ -367,22 +373,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
 .mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .mode-btn-cancel { background: rgba(0,0,0,0.2); color: #000; }
-.mode-banner.measure .mode-btn-cancel { background: rgba(255,255,255,0.2); color: #fff; }
+
 .mode-btn-done { background: var(–txt); color: var(–acc); font-weight: bold; }
 .mode-btn-done:disabled { background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.3); cursor: not-allowed; }
-.mode-banner.measure .mode-btn-done { background: #fff; color: #4285f4; }
-.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
-.measure-result.show { display: block; }
-.measure-result-close { position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
-.measure-pair { font-family: var(–fm); font-size: 12px; color: var(–txt); margin-bottom: 12px; padding-right: 24px; line-height: 1.4; }
-.measure-pair strong { color: #4285f4; }
-.measure-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.measure-mode-box { background: var(–sur2); border: 1px solid var(–bdr); border-radius: 8px; padding: 10px; text-align: center; }
-.measure-mode-icon { font-size: 22px; line-height: 1; }
-.measure-mode-label { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
-.measure-mode-dist { font-family: var(–fd); font-size: 22px; color: var(–acc); margin-top: 6px; line-height: 1; }
-.measure-mode-time { font-family: var(–fm); font-size: 11px; color: var(–txt); margin-top: 3px; }
-.measure-mode-traffic { font-family: var(–fm); font-size: 9px; margin-top: 2px; }
 
 </style>
 </head>
@@ -445,8 +438,42 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <div class="stat"><div class="stat-val" id="statTime">0m</div><div class="stat-lbl">On Road</div></div>
     <div class="stat"><div class="stat-val" id="statLast">--</div><div class="stat-lbl">Last Stop</div></div>
   </div>
+  <!-- START / END ROUTE -->
+  <div style="padding:8px 16px 0;">
+    <button id="startRouteBtn" onclick="toggleRouteActive()" style="width:100%;background:var(--grn);color:#fff;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:20px;letter-spacing:2px;cursor:pointer;">▶️ START ROUTE</button>
+  </div>
+
   <div style="padding:8px 16px 0;">
     <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:11px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">⚡ OPTIMIZE FROM MY LOCATION</button>
+  </div>
+
+  <!-- FUEL PRICE + LIVE COST BAR -->
+
+  <div style="padding:8px 16px 0;">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;">
+      <div style="flex:1;">
+        <label style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Gas price ($/gal)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="fuelPriceInput" type="number" step="0.01" placeholder="3.45"
+            oninput="onFuelPriceChange(this.value)"
+            style="flex:1;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-weight:600;font-size:16px;padding:7px 10px;border-radius:6px;outline:none;">
+          <input id="fuelMpgInput" type="number" step="0.1" placeholder="MPG"
+            oninput="onFuelMpgChange(this.value)"
+            title="MPG"
+            style="width:64px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 8px;border-radius:6px;outline:none;text-align:center;">
+        </div>
+      </div>
+      <div style="text-align:right;min-width:80px;">
+        <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Today's fuel</div>
+        <div id="fuelLiveCost" style="font-family:var(--fd);font-size:22px;color:var(--grn);letter-spacing:1px;line-height:1.1;">$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD CURRENT LOCATION AS STOP -->
+
+  <div style="padding:8px 16px 0;">
+    <button onclick="addCurrentLocationAsStop()" style="width:100%;background:var(--sur);border:1px dashed var(--acc);color:var(--acc);border-radius:6px;padding:10px;font-family:var(--fd);font-size:14px;letter-spacing:1.5px;cursor:pointer;">📍 ADD MY CURRENT LOCATION AS A STOP</button>
   </div>
 
   <div style="padding:10px 16px 6px;display:flex;gap:8px;align-items:center;">
@@ -626,7 +653,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
 <button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
     <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🔀 REORGANIZE</button>
-    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📏 MEASURE</button>
+    <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--sur);border:1px solid var(--acc);color:var(--acc);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 ADD HERE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -702,27 +729,8 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     </div>
   </div>
 
-  <!-- MEASURE RESULT POPUP -->
+  <!-- (measure feature removed) -->
 
-  <div class="measure-result" id="measureResult">
-    <button class="measure-result-close" onclick="closeMeasureResult()">✕</button>
-    <div class="measure-pair" id="measurePairText">From <strong>A</strong> to <strong>B</strong></div>
-    <div class="measure-modes">
-      <div class="measure-mode-box">
-        <div class="measure-mode-icon">🚗</div>
-        <div class="measure-mode-label">Driving</div>
-        <div class="measure-mode-dist" id="measureDriveDist">--</div>
-        <div class="measure-mode-time" id="measureDriveTime">--</div>
-        <div class="measure-mode-traffic" id="measureDriveTraffic"></div>
-      </div>
-      <div class="measure-mode-box">
-        <div class="measure-mode-icon">🚶</div>
-        <div class="measure-mode-label">Walking</div>
-        <div class="measure-mode-dist" id="measureWalkDist">--</div>
-        <div class="measure-mode-time" id="measureWalkTime">--</div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- MODAL -->
@@ -828,7 +836,6 @@ async function fbLoad(path) {
 // ============================================================
 // ANTHROPIC KEY
 // ============================================================
-
 
 // ============================================================
 // GOOGLE MAPS STATE
@@ -946,8 +953,6 @@ const DEFAULT_TUE_STOPS = [
   { name: "Spanish Tavern",             addr: "1239 US-22, Mountainside, NJ 07092",           opens: "12:00PM", note: "",                              lat: 40.676384, lng: -74.3472185 },
   { name: "Peak Sports Academy",        addr: "1235 US-22, Mountainside, NJ 07092",           opens: "2:00PM",  note: "Late opener - end of day fit", lat: 40.6760762, lng: -74.3461752 }
 ];
-
-
 
 const DEFAULT_MON_STOPS = [
   { name: "Mark Twain Diner",        addr: "1601 Morris Ave, Union, NJ",           opens: "7:00AM",        note: "",                          lat: 40.6923, lng: -74.2541 },
@@ -1251,8 +1256,6 @@ function calcAdjustedDuration(day, idx) {
   if (d.employees === 'Y') adj += 2;
   return adj;
 }
-
-
 
 // ============================================================
 // TAB SWITCHING
@@ -2635,8 +2638,6 @@ async function completeDay() {
   alert('✅ ' + currentDay + ' day completed!\n\n' + doneIndices.length + ' stops logged and reset for next week.');
 }
 
-
-
 // ============================================================
 // DAY LOG
 // ============================================================
@@ -3461,7 +3462,6 @@ async function fetchDirections(idx) {
   // Go straight to Directions SDK — most reliable in browser
   fetchDirectionsFallback(idx);
 }
-
 
 function fetchDirectionsFallback(idx) {
   var stop = stops[currentDay][idx];
@@ -4688,11 +4688,10 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
   // ============================================================
-// MAP MODE: REORGANIZE + MEASURE
+// MAP MODE: REORGANIZE
 // ============================================================
-var mapMode = null;          // null | 'reorganize' | 'measure'
+var mapMode = null;          // null | 'reorganize'
 var reorgOrder = [];          // origIdx[] in tap order
-var measureSelection = [];    // origIdx[] max 2
 
 function startReorganize() {
   if (mapMode) cancelMode();
@@ -4712,34 +4711,16 @@ function startReorganize() {
   renderModeMarkers();
 }
 
-function startMeasure() {
-  if (mapMode) cancelMode();
-  var dayStops = stops[currentDay] || [];
-  if (dayStops.length < 2) { alert('Need at least 2 stops to measure.'); return; }
-  if (isNavigating) { alert('Stop navigation first before measuring.'); return; }
-  mapMode = 'measure';
-  measureSelection = [];
-  var banner = document.getElementById('modeBanner');
-  banner.classList.remove('show');
-  banner.classList.add('measure', 'show');
-  document.getElementById('modeBannerText').textContent = 'Tap 2 stops to measure distance';
-  document.getElementById('modeBannerCounter').textContent = '0/2';
-  document.getElementById('modeDoneBtn').style.display = 'none';
-  closeMapPopup();
-  closeMeasureResult();
-  renderModeMarkers();
-}
+function startMeasure() { /* measure feature removed */ return; }
 
 function cancelMode() {
   mapMode = null;
   reorgOrder = [];
-  measureSelection = [];
   document.getElementById('modeBanner').classList.remove('show');
   var lastEl = document.getElementById('modeBannerLast');
   if (lastEl) lastEl.classList.remove('show');
   var doneBtn = document.getElementById('modeDoneBtn');
   if (doneBtn) doneBtn.style.display = 'block';
-  closeMeasureResult();
   renderMapMarkers();
 }
 
@@ -4798,13 +4779,7 @@ function handleReorgTap(stopIdx) {
   updateLastTappedIndicator();
 }
 
-function handleMeasureTap(stopIdx) {
-  if (measureSelection.indexOf(stopIdx) !== -1) return;
-  measureSelection.push(stopIdx);
-  document.getElementById('modeBannerCounter').textContent = measureSelection.length + '/2';
-  renderModeMarkers();
-  if (measureSelection.length === 2) runMeasurement();
-}
+function handleMeasureTap(stopIdx) { /* measure feature removed */ }
 
 async function saveReorganize() {
   var day = currentDay;
@@ -4897,10 +4872,6 @@ function renderModeMarkers() {
       var pos = reorgOrder.indexOf(i);
       if (pos !== -1) { color = '#06d6a0'; labelText = String(pos + 1); scale = 14; }
       else { color = '#666'; labelText = '?'; }
-    } else if (mapMode === 'measure') {
-      var mpos = measureSelection.indexOf(i);
-      if (mpos !== -1) { color = '#4285f4'; labelText = mpos === 0 ? 'A' : 'B'; scale = 14; }
-      else { color = '#666'; labelText = String(i + 1); }
     }
     var marker = new google.maps.Marker({
       position: { lat: stop.lat, lng: stop.lng },
@@ -4911,81 +4882,15 @@ function renderModeMarkers() {
     (function(idx) {
       marker.addListener('click', function() {
         if (mapMode === 'reorganize') handleReorgTap(idx);
-        else if (mapMode === 'measure') handleMeasureTap(idx);
       });
     })(i);
     mapMarkers.push(marker);
   });
 }
 
-function runMeasurement() {
-  if (measureSelection.length !== 2) return;
-  var stopA = stops[currentDay][measureSelection[0]];
-  var stopB = stops[currentDay][measureSelection[1]];
-  document.getElementById('measurePairText').innerHTML = 'From <strong>' + stopA.name + '</strong> to <strong>' + stopB.name + '</strong>';
-  document.getElementById('measureDriveDist').textContent = '...';
-  document.getElementById('measureDriveTime').textContent = '...';
-  document.getElementById('measureDriveTraffic').textContent = '';
-  document.getElementById('measureWalkDist').textContent = '...';
-  document.getElementById('measureWalkTime').textContent = '...';
-  document.getElementById('measureResult').classList.add('show');
-  if (!mapsReady || typeof google === 'undefined') {
-    document.getElementById('measureDriveDist').textContent = 'ERR';
-    document.getElementById('measureWalkDist').textContent = 'ERR';
-    return;
-  }
-  var origin = new google.maps.LatLng(stopA.lat, stopA.lng);
-  var dest = new google.maps.LatLng(stopB.lat, stopB.lng);
-  var svc = new google.maps.DistanceMatrixService();
-  svc.getDistanceMatrix({
-    origins: [origin], destinations: [dest],
-    travelMode: google.maps.TravelMode.DRIVING,
-    drivingOptions: { departureTime: new Date(), trafficModel: google.maps.TrafficModel.BEST_GUESS },
-    unitSystem: google.maps.UnitSystem.IMPERIAL
-  }, function(response, status) {
-    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
-      var el = response.rows[0].elements[0];
-      var miles = (el.distance.value * 0.000621371).toFixed(1);
-      var normalSec = el.duration.value;
-      var withTraffic = el.duration_in_traffic ? el.duration_in_traffic.value : normalSec;
-      var mins = Math.round(withTraffic / 60);
-      var delay = Math.round((withTraffic - normalSec) / 60);
-      document.getElementById('measureDriveDist').textContent = miles + ' mi';
-      document.getElementById('measureDriveTime').textContent = mins + ' min';
-      var trafficEl = document.getElementById('measureDriveTraffic');
-      if (delay >= 2) { trafficEl.textContent = '+' + delay + ' min traffic'; trafficEl.style.color = 'var(--red)'; }
-      else { trafficEl.textContent = 'Clear'; trafficEl.style.color = 'var(--grn)'; }
-    } else {
-      document.getElementById('measureDriveDist').textContent = 'N/A';
-      document.getElementById('measureDriveTime').textContent = '--';
-    }
-  });
-  svc.getDistanceMatrix({
-    origins: [origin], destinations: [dest],
-    travelMode: google.maps.TravelMode.WALKING,
-    unitSystem: google.maps.UnitSystem.IMPERIAL
-  }, function(response, status) {
-    if (status === 'OK' && response.rows[0].elements[0].status === 'OK') {
-      var el = response.rows[0].elements[0];
-      var miles = (el.distance.value * 0.000621371).toFixed(1);
-      var mins = Math.round(el.duration.value / 60);
-      document.getElementById('measureWalkDist').textContent = miles + ' mi';
-      document.getElementById('measureWalkTime').textContent = mins + ' min';
-    } else {
-      document.getElementById('measureWalkDist').textContent = 'N/A';
-      document.getElementById('measureWalkTime').textContent = '--';
-    }
-  });
-}
+function runMeasurement() { /* measure feature removed */ }
 
-function closeMeasureResult() {
-  document.getElementById('measureResult').classList.remove('show');
-  if (mapMode === 'measure') {
-    measureSelection = [];
-    document.getElementById('modeBannerCounter').textContent = '0/2';
-    renderModeMarkers();
-  }
-}
+function closeMeasureResult() { /* measure feature removed */ }
 </script>
 
 <!-- ===== EDIT STOP MODAL ===== -->
@@ -6385,6 +6290,347 @@ function mtOpenHistoryDay(dateKey) {
   }, 300);
 }
 
+// =====================================================================
+// PERSISTENT FUEL PRICE INPUT (top of route tab)
+// =====================================================================
+// Lets the user enter gas price + MPG once and see today's running fuel cost.
+// Values persist in localStorage and pre-fill the end-of-day fuel modal.
+
+function fuelInputInit() {
+  // Restore last-used values from localStorage
+  var lastGas = localStorage.getItem('mt_lastGasPrice') || '';
+  var lastMpg = localStorage.getItem('mt_lastMpg') || '';
+  var gasEl = document.getElementById('fuelPriceInput');
+  var mpgEl = document.getElementById('fuelMpgInput');
+  if (gasEl) gasEl.value = lastGas;
+  if (mpgEl) mpgEl.value = lastMpg;
+  recalcLiveFuelCost();
+}
+
+function onFuelPriceChange(val) {
+  var v = parseFloat(val);
+  if (!isNaN(v) && v > 0) localStorage.setItem('mt_lastGasPrice', String(v));
+  recalcLiveFuelCost();
+}
+
+function onFuelMpgChange(val) {
+  var v = parseFloat(val);
+  if (!isNaN(v) && v > 0) localStorage.setItem('mt_lastMpg', String(v));
+  recalcLiveFuelCost();
+}
+
+function recalcLiveFuelCost() {
+  var el = document.getElementById('fuelLiveCost');
+  if (!el) return;
+  var miles = (typeof mtState !== 'undefined' && mtState.todayDistance) ? mtState.todayDistance : 0;
+  var gas = parseFloat(document.getElementById('fuelPriceInput') ? document.getElementById('fuelPriceInput').value : 0) || 0;
+  var mpg = parseFloat(document.getElementById('fuelMpgInput') ? document.getElementById('fuelMpgInput').value : 0) || 0;
+  var cost = (gas > 0 && mpg > 0) ? (miles / mpg) * gas : 0;
+  el.textContent = '$' + cost.toFixed(2);
+}
+
+// Hook into the mileage tracker so the live cost updates whenever miles change.
+// We wrap the existing mtFinishGPS so a recalc fires whenever a leg completes.
+(function() {
+  function hookFuelRecalc() {
+    if (typeof window.mtFinishGPS !== 'function') { setTimeout(hookFuelRecalc, 300); return; }
+    var orig = window.mtFinishGPS;
+    window.mtFinishGPS = function() {
+      var result = orig.apply(this, arguments);
+      try { recalcLiveFuelCost(); } catch (e) {}
+      return result;
+    };
+  }
+  hookFuelRecalc();
+})();
+
+// Also recalc periodically during an active leg so live tally is visible while driving
+setInterval(function() {
+  try {
+    if (typeof mtState !== 'undefined' && mtState.currentLeg && mtState.currentLeg.trail.length >= 2) {
+      // Add the in-progress leg's miles to today's total for the display
+      var liveLegMi = (typeof mtComputeTrailMiles === 'function') ? mtComputeTrailMiles(mtState.currentLeg.trail) : 0;
+      var miles = (mtState.todayDistance || 0) + liveLegMi;
+      var el = document.getElementById('fuelLiveCost');
+      if (el) {
+        var gas = parseFloat(document.getElementById('fuelPriceInput') ? document.getElementById('fuelPriceInput').value : 0) || 0;
+        var mpg = parseFloat(document.getElementById('fuelMpgInput') ? document.getElementById('fuelMpgInput').value : 0) || 0;
+        var cost = (gas > 0 && mpg > 0) ? (miles / mpg) * gas : 0;
+        el.textContent = '$' + cost.toFixed(2);
+      }
+    }
+  } catch (e) {}
+}, 15000);
+
+// Init once DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fuelInputInit);
+} else {
+  setTimeout(fuelInputInit, 500);
+}
+
+// =====================================================================
+// ADD CURRENT LOCATION AS STOP
+// =====================================================================
+// Captures your current GPS coords, creates a new stop with placeholder name,
+// adds it to the current day's route, then opens the edit modal for naming.
+
+function addCurrentLocationAsStop() {
+  if (!navigator.geolocation) {
+    alert('GPS not available on this device.');
+    return;
+  }
+  // Show a quick loading indicator
+  var loadingMsg = '📍 Getting your location...';
+  var origText = '';
+  var btns = document.querySelectorAll('[onclick="addCurrentLocationAsStop()"]');
+  btns.forEach(function(b) {
+    b.dataset.origText = b.textContent;
+    b.textContent = loadingMsg;
+    b.disabled = true;
+  });
+
+  function restoreBtns() {
+    btns.forEach(function(b) {
+      if (b.dataset.origText) b.textContent = b.dataset.origText;
+      b.disabled = false;
+    });
+  }
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    var accuracy = pos.coords.accuracy;
+    if (accuracy > 100) {
+      var proceed = confirm('GPS accuracy is ' + Math.round(accuracy) + 'm — the location may be imprecise. Continue anyway?');
+      if (!proceed) { restoreBtns(); return; }
+    }
+    // Try reverse geocoding to pre-fill address (best effort, fails gracefully)
+    var addrPromise = adtReverseGeocode ? adtReverseGeocode(lat, lng) : Promise.reject();
+    addrPromise.then(function(addr) {
+      createStopAtLocation(lat, lng, addr || '');
+    }).catch(function() {
+      createStopAtLocation(lat, lng, '');
+    }).finally(restoreBtns);
+  }, function(err) {
+    restoreBtns();
+    alert('Could not get location: ' + err.message);
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+}
+
+function createStopAtLocation(lat, lng, address) {
+  // Build the new stop object
+  var defaultName = 'New stop (added ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ')';
+  var newStop = {
+    name: defaultName,
+    addr: address || '',
+    address: address || '',
+    lat: lat,
+    lng: lng,
+    frequency: 'weekly',
+    opens: '',
+    hours: '',
+    note: '',
+    addedAt: new Date().toISOString(),
+    addedVia: 'manual-current-location'
+  };
+  // Append to today's stops list
+  if (typeof stops === 'undefined' || !stops[currentDay]) {
+    alert('Day data not loaded yet — try again in a moment.');
+    return;
+  }
+  stops[currentDay].push(newStop);
+  // Initialize stopData for the new stop
+  if (typeof stopData !== 'undefined' && stopData[currentDay]) {
+    stopData[currentDay].push({ status: 'pending' });
+  }
+  var newIdx = stops[currentDay].length - 1;
+  // Persist
+  if (typeof fbSave === 'function') {
+    try {
+      fbSave('stops/' + currentDay, stops[currentDay]);
+      if (stopData && stopData[currentDay]) fbSave('stopData/' + currentDay, stopData[currentDay]);
+    } catch (e) { console.error('[ADDLOC] fb save err:', e); }
+  }
+  // Re-render the route list so the new stop appears
+  if (typeof renderStops === 'function') renderStops();
+  if (typeof renderMapMarkers === 'function') renderMapMarkers();
+  // Open the edit modal so the user can name it + set details
+  setTimeout(function() {
+    if (typeof editStop === 'function') editStop(currentDay, newIdx);
+  }, 200);
+  console.log('[ADDLOC] Added new stop at', lat, lng, '— opening edit modal');
+}
+
+// =====================================================================
+// START / END ROUTE — gates auto-detection
+// =====================================================================
+// routeActive is true only between START ROUTE and COMPLETE DAY.
+// Persists per-day in localStorage so a page reload keeps it active.
+
+function routeStateKey(day) {
+  // Key includes day + today's date so it resets each calendar day
+  var now = new Date();
+  var dateKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  return 'rt45_routeActive_' + (day || currentDay || 'X') + '_' + dateKey;
+}
+
+function isRouteActive() {
+  try {
+    return localStorage.getItem(routeStateKey()) === '1';
+  } catch (e) { return false; }
+}
+
+function setRouteActive(active) {
+  try {
+    if (active) localStorage.setItem(routeStateKey(), '1');
+    else localStorage.removeItem(routeStateKey());
+  } catch (e) {}
+}
+
+function toggleRouteActive() {
+  if (isRouteActive()) {
+    // Already active — show a quick info message rather than allowing end here
+    // (Complete Day is the only way to end)
+    alert("Route is active.\n\nWhen you're done for the day, tap COMPLETE DAY & SAVE to end the route and log your fuel cost.");
+    return;
+  }
+  // Confirm before activating
+  var ok = confirm('Start route now?\n\nAuto-detect will track your GPS and mark stops as you arrive at them.');
+  if (!ok) return;
+  setRouteActive(true);
+  applyRouteActiveUI();
+  // Start ambient GPS if auto-detect is on
+  if (typeof adtSettings !== 'undefined' && adtSettings.autoDetect && typeof adtStartAmbientGPS === 'function') {
+    adtStartAmbientGPS();
+  }
+  console.log('[ROUTE] Started — auto-detect now active');
+}
+
+function endRouteActive() {
+  setRouteActive(false);
+  applyRouteActiveUI();
+  // Stop ambient GPS and clear detection state
+  if (typeof adtStopAmbientGPS === 'function') {
+    try { adtStopAmbientGPS(); } catch (e) {}
+  }
+  if (typeof adtArrivedStop !== 'undefined') adtArrivedStop = null;
+  if (typeof adtCurrentEpisode !== 'undefined') adtCurrentEpisode = null;
+  console.log('[ROUTE] Ended — auto-detect deactivated');
+}
+
+function applyRouteActiveUI() {
+  var btn = document.getElementById('startRouteBtn');
+  if (!btn) return;
+  if (isRouteActive()) {
+    btn.textContent = '✅ ROUTE ACTIVE';
+    btn.style.background = 'var(--sur)';
+    btn.style.color = 'var(--grn)';
+    btn.style.border = '2px solid var(--grn)';
+    btn.style.boxShadow = '0 0 0 1px var(--grn)';
+  } else {
+    btn.textContent = '▶️ START ROUTE';
+    btn.style.background = 'var(--grn)';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.style.boxShadow = 'none';
+  }
+}
+
+// =====================================================================
+// GATE adtFeedPosition: only process positions when route is active
+// =====================================================================
+(function() {
+  function gate() {
+    if (typeof window.adtFeedPosition !== 'function') { setTimeout(gate, 200); return; }
+    var orig = window.adtFeedPosition;
+    window.adtFeedPosition = function(lat, lng, ts, accuracy) {
+      if (!isRouteActive()) return; // skip everything if route not started
+      return orig.apply(this, arguments);
+    };
+  }
+  gate();
+})();
+
+// =====================================================================
+// GATE adtStartAmbientGPS: only auto-start when route is active
+// =====================================================================
+(function() {
+  function gate() {
+    if (typeof window.adtStartAmbientGPS !== 'function') { setTimeout(gate, 200); return; }
+    var orig = window.adtStartAmbientGPS;
+    window.adtStartAmbientGPS = function() {
+      if (!isRouteActive()) {
+        console.log('[ADT] Ambient GPS request ignored — route not started');
+        return;
+      }
+      return orig.apply(this, arguments);
+    };
+  }
+  gate();
+})();
+
+// =====================================================================
+// HOOK COMPLETE DAY to also end the route
+// =====================================================================
+(function() {
+  function hook() {
+    if (typeof window.completeDay !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.completeDay;
+    window.completeDay = async function() {
+      var result = await orig.apply(this, arguments);
+      // End the route after completeDay's fuel modal flow finishes
+      // (this fires for both the modal-save path and the no-legs path)
+      try { endRouteActive(); } catch (e) {}
+      return result;
+    };
+    // Also hook saveFuelData and closeFuelModal in case completeDay returned early
+    // and the actual completion happens via those handlers
+    ['saveFuelData', 'closeFuelModal'].forEach(function(fnName) {
+      if (typeof window[fnName] !== 'function') return;
+      var origFn = window[fnName];
+      window[fnName] = function() {
+        var r = origFn.apply(this, arguments);
+        try { endRouteActive(); } catch (e) {}
+        return r;
+      };
+    });
+  }
+  hook();
+})();
+
+// On page load, sync UI to persisted state. If route was active, also restart ambient GPS.
+(function routeStateInit() {
+  function init() {
+    applyRouteActiveUI();
+    if (isRouteActive() && typeof adtSettings !== 'undefined' && adtSettings.autoDetect) {
+      // The original adtStartAmbientGPS auto-start at line ~7580 will fire too,
+      // but our gate ensures it actually runs since the route is active.
+      console.log('[ROUTE] Resuming active route from persisted state');
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 400); });
+  } else {
+    setTimeout(init, 400);
+  }
+})();
+
+// When the user changes day (via selectDay), refresh the button UI since
+// route-active state is per-day
+(function() {
+  function hook() {
+    if (typeof window.selectDay !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.selectDay;
+    window.selectDay = function() {
+      var result = orig.apply(this, arguments);
+      try { applyRouteActiveUI(); } catch (e) {}
+      return result;
+    };
+  }
+  hook();
+})();
+
 console.log('[MT] Mileage tracking module loaded');
 </script>
 
@@ -6725,6 +6971,70 @@ console.log('[MT] Mileage tracking module loaded');
 }
 .adt-status-pill.dwelling .adt-status-dot { background: var(--acc); animation: adt-pulse 1.4s ease-in-out infinite; }
 @keyframes adt-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* === UNDO BANNER (shown for 30 sec after a silent auto-arrive or auto-depart) === */
+.adt-undo-banner {
+  position: fixed;
+  bottom: 80px;
+  left: 12px;
+  right: 12px;
+  background: var(--sur);
+  border: 2px solid var(--grn);
+  border-radius: 10px;
+  padding: 12px 14px;
+  z-index: 90;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  animation: adt-undo-slide 0.3s ease-out;
+}
+.adt-undo-banner.show { display: flex; }
+@keyframes adt-undo-slide {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.adt-undo-text { flex: 1; }
+.adt-undo-verb {
+  font-family: var(--fd);
+  font-size: 14px;
+  color: var(--grn);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.adt-undo-stopname {
+  font-family: var(--fb);
+  font-size: 12px;
+  color: var(--txt);
+  margin-top: 3px;
+  line-height: 1.2;
+  /* Truncate long names so the button stays in place */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.adt-undo-btn {
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  color: var(--acc);
+  font-family: var(--fd);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.adt-undo-close {
+  background: none;
+  border: none;
+  color: var(--mut);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  flex-shrink: 0;
+}
 </style>
 
 <!-- === SETTINGS GEAR === -->
@@ -6735,6 +7045,17 @@ console.log('[MT] Mileage tracking module loaded');
 
 <div class="adt-status-pill" id="adtStatusPill">
   <span class="adt-status-dot"></span><span id="adtStatusText">IDLE</span>
+</div>
+
+<!-- === UNDO BANNER === -->
+
+<div class="adt-undo-banner" id="adtUndoBanner">
+  <div class="adt-undo-text">
+    <div class="adt-undo-verb" id="adtUndoVerb">✅ ARRIVED</div>
+    <div class="adt-undo-stopname" id="adtUndoStopName">--</div>
+  </div>
+  <button class="adt-undo-btn" onclick="adtUndoLastAction()">UNDO</button>
+  <button class="adt-undo-close" onclick="adtHideUndoBanner()">✕</button>
 </div>
 
 <!-- === SETTINGS MODAL === -->
@@ -6765,12 +7086,22 @@ console.log('[MT] Mileage tracking module loaded');
   </div>
 </div>
 
+<div class="adt-setting-row">
+  <div>
+    <div class="adt-setting-label">Silent mode</div>
+    <div class="adt-setting-desc">Auto-arrive without prompt; show UNDO banner for 30 sec</div>
+  </div>
+  <div class="adt-toggle on" id="adtToggleSilent" onclick="adtToggleSetting('silentMode')">
+    <div class="adt-toggle-knob"></div>
+  </div>
+</div>
+
 <div class="adt-slider-row">
   <div class="adt-slider-top">
-    <div class="adt-setting-label">Dwell time before prompt</div>
-    <div class="adt-slider-val"><span id="adtDwellVal">4</span> min</div>
+    <div class="adt-setting-label">Dwell time to auto-arrive</div>
+    <div class="adt-slider-val"><span id="adtDwellVal">2</span> min</div>
   </div>
-  <input class="adt-slider" id="adtDwellSlider" type="range" min="1" max="10" step="1" value="4" oninput="adtSliderChange('dwellMinutes', this.value)">
+  <input class="adt-slider" id="adtDwellSlider" type="range" min="1" max="10" step="1" value="2" oninput="adtSliderChange('dwellMinutes', this.value)">
 </div>
 
 <div class="adt-slider-row">
@@ -6779,6 +7110,14 @@ console.log('[MT] Mileage tracking module loaded');
     <div class="adt-slider-val"><span id="adtRadiusVal">150</span> ft</div>
   </div>
   <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="400" step="25" value="150" oninput="adtSliderChange('matchRadiusFt', this.value)">
+</div>
+
+<div class="adt-slider-row">
+  <div class="adt-slider-top">
+    <div class="adt-setting-label">Leave radius (auto-DONE distance)</div>
+    <div class="adt-slider-val"><span id="adtLeaveRadiusVal">500</span> ft</div>
+  </div>
+  <input class="adt-slider" id="adtLeaveRadiusSlider" type="range" min="200" max="1000" step="50" value="500" oninput="adtSliderChange('leaveRadiusFt', this.value)">
 </div>
 
 <button class="adt-settings-close" onclick="adtHideSettings()">DONE</button>
@@ -6850,9 +7189,12 @@ console.log('[MT] Mileage tracking module loaded');
 // Settings persist in localStorage. Defaults are conservative.
 var adtSettings = {
   autoDetect: false,        // off by default until user opts in
+  silentMode: true,         // silent auto-arrive (no prompt) — new default behavior
   manualButtons: true,      // manual ARRIVED/DEPARTED buttons stay visible by default
-  dwellMinutes: 4,          // minutes stationary before prompting
-  matchRadiusFt: 150        // ft within a known stop to consider it a match
+  dwellMinutes: 2,          // minutes stationary before silent-arriving (NEW default: 2)
+  matchRadiusFt: 150,       // ft within a known stop to consider it a match
+  leaveRadiusFt: 500,       // ft AWAY from arrived stop to auto-mark DONE (NEW)
+  speedThresholdMph: 2      // speed must be below this to count as "stationary" (NEW)
 };
 
 var ADT_LS_KEY = 'adt_settings_v1';
@@ -6889,17 +7231,46 @@ var adtPositionBuffer = [];                  // [{lat,lng,ts}]
 var adtCurrentEpisode = null;                // { startTs, centroidLat, centroidLng, prompted: bool }
 var adtAmbientWatchId = null;
 
+// Tracks the stop the user auto-arrived at (so we can fire DONE when they leave the radius)
+// Shape: { stopIdx, stopLat, stopLng, arrivedAt, arrivedName }
+var adtArrivedStop = null;
+
 function adtFeedPosition(lat, lng, ts, accuracy) {
   if (!adtSettings.autoDetect) return;
   if (accuracy && accuracy > 60) return; // ignore very poor fixes
   var now = ts || Date.now();
-  adtPositionBuffer.push({ lat: lat, lng: lng, ts: now });
+  // Compute speed from previous point (for stationary check)
+  var speedMph = 0;
+  if (adtPositionBuffer.length > 0) {
+    var prev = adtPositionBuffer[adtPositionBuffer.length - 1];
+    var dtSec = (now - prev.ts) / 1000;
+    if (dtSec > 0.5 && dtSec < 30) {
+      var meters = mtHaversineMeters(prev.lat, prev.lng, lat, lng);
+      speedMph = (meters / dtSec) * 2.23694; // m/s to mph
+    }
+  }
+  adtPositionBuffer.push({ lat: lat, lng: lng, ts: now, speedMph: speedMph });
   // Trim old points
   var cutoff = now - ADT_BUFFER_MAX_AGE_MS;
   while (adtPositionBuffer.length && adtPositionBuffer[0].ts < cutoff) {
     adtPositionBuffer.shift();
   }
+  // If we've arrived at a stop, check if we've now left it (for auto-DONE)
+  adtCheckLeftArrivedStop(lat, lng);
+  // Then check for new arrivals
   adtCheckDwell();
+}
+
+// Auto-mark DONE when user moves more than leaveRadiusFt from the stop they arrived at
+function adtCheckLeftArrivedStop(lat, lng) {
+  if (!adtArrivedStop) return;
+  var meters = mtHaversineMeters(lat, lng, adtArrivedStop.stopLat, adtArrivedStop.stopLng);
+  var feet = meters * 3.28084;
+  if (feet >= adtSettings.leaveRadiusFt) {
+    // User has left the stop — silently mark it DONE
+    adtSilentDepart(adtArrivedStop);
+    adtArrivedStop = null;
+  }
 }
 
 function adtCheckDwell() {
@@ -6922,22 +7293,32 @@ function adtCheckDwell() {
   var stationaryMs = latest.ts - oldestStationaryTs;
   var dwellRequiredMs = adtSettings.dwellMinutes * 60 * 1000;
 
-  // Update status pill
-  adtUpdateStatusPill(stationaryMs, dwellRequiredMs);
+  // SPEED GATE: require recent speed to be below threshold so we don't trigger
+  // at long red lights or in slow-moving traffic. Look at last 30 sec of points.
+  var recentTopSpeed = 0;
+  var speedWindowStart = latest.ts - 30000;
+  for (var k = pts.length - 1; k >= 0; k--) {
+    if (pts[k].ts < speedWindowStart) break;
+    if (pts[k].speedMph > recentTopSpeed) recentTopSpeed = pts[k].speedMph;
+  }
+  var isParked = recentTopSpeed < adtSettings.speedThresholdMph;
 
-  if (stationaryMs >= dwellRequiredMs) {
-    // We've been stationary long enough — fire the prompt (once per episode)
+  // Update status pill
+  adtUpdateStatusPill(stationaryMs, dwellRequiredMs, isParked);
+
+  if (stationaryMs >= dwellRequiredMs && isParked) {
+    // Threshold met — fire once per episode
     if (!adtCurrentEpisode) {
       adtCurrentEpisode = {
         startTs: oldestStationaryTs,
         centroidLat: latest.lat,
         centroidLng: latest.lng,
-        prompted: false
+        triggered: false
       };
     }
-    if (!adtCurrentEpisode.prompted) {
-      adtCurrentEpisode.prompted = true;
-      adtPromptForStop(latest.lat, latest.lng, Math.round(stationaryMs / 60000));
+    if (!adtCurrentEpisode.triggered) {
+      adtCurrentEpisode.triggered = true;
+      adtHandleDwellMet(latest.lat, latest.lng, Math.round(stationaryMs / 60000));
     }
   } else {
     // No longer stationary — clear episode
@@ -6947,7 +7328,150 @@ function adtCheckDwell() {
   }
 }
 
-function adtUpdateStatusPill(stationaryMs, dwellRequiredMs) {
+// Decide whether to silently auto-arrive or prompt the user, based on settings
+// and whether a matching stop is found.
+function adtHandleDwellMet(lat, lng, dwellMin) {
+  // Don't trigger if user is already at an auto-arrived stop (waiting for them to leave)
+  if (adtArrivedStop) return;
+  // Find nearest pending stop in route order
+  var match = adtFindNearestPendingStop(lat, lng);
+  if (match && adtSettings.silentMode) {
+    // SILENT PATH: auto-arrive without prompt
+    adtSilentArrive(match.idx, match.stop, match.distMeters, dwellMin);
+  } else {
+    // FALLBACK PATH: show the prompt (user can confirm/cancel/create new)
+    adtPromptForStop(lat, lng, dwellMin);
+  }
+}
+
+// Find the nearest PENDING stop in route order within match radius
+function adtFindNearestPendingStop(lat, lng) {
+  var dayStops = (typeof stops !== 'undefined' && stops[currentDay]) ? stops[currentDay] : [];
+  var dayData = (typeof stopData !== 'undefined' && stopData[currentDay]) ? stopData[currentDay] : [];
+  var radiusMeters = adtSettings.matchRadiusFt * 0.3048;
+  var bestIdx = -1, bestDist = Infinity;
+  for (var i = 0; i < dayStops.length; i++) {
+    var s = dayStops[i];
+    if (!s || !s.lat || !s.lng) continue;
+    var isDone = dayData[i] && dayData[i].status === 'done';
+    if (isDone) continue;
+    var d = mtHaversineMeters(lat, lng, s.lat, s.lng);
+    if (d <= radiusMeters && d < bestDist) {
+      bestDist = d;
+      bestIdx = i;
+    }
+  }
+  if (bestIdx === -1) return null;
+  return { idx: bestIdx, stop: dayStops[bestIdx], distMeters: bestDist };
+}
+
+// =====================================================================
+// SILENT AUTO-ARRIVE / AUTO-DEPART
+// =====================================================================
+// State tracking for the most recent silent transitions (for UNDO)
+var adtRecentAction = null; // { type:'arrive'|'depart', stopIdx, stopName, ts, undoTimerId }
+
+function adtSilentArrive(stopIdx, stop, distMeters, dwellMin) {
+  // Trigger the existing arrival flow silently
+  console.log('[ADT] SILENT ARRIVE: stop #' + (stopIdx + 1) + ' ' + (stop.name || '') +
+              ' (' + Math.round(distMeters * 3.28084) + 'ft, ' + dwellMin + 'min dwell)');
+  try {
+    if (typeof logArrival === 'function') logArrival(stopIdx);
+  } catch (e) { console.error('[ADT] silent arrive err:', e); }
+  // Track so we can fire silent-DONE later when user leaves the radius
+  adtArrivedStop = {
+    stopIdx: stopIdx,
+    stopLat: stop.lat,
+    stopLng: stop.lng,
+    arrivedAt: Date.now(),
+    arrivedName: stop.name || ('Stop ' + (stopIdx + 1))
+  };
+  // Show undo banner for 30 sec
+  adtShowUndoBanner('arrive', stopIdx, stop.name || ('Stop ' + (stopIdx + 1)));
+  // Vibrate to give haptic feedback
+  if (navigator.vibrate) { try { navigator.vibrate([60, 40, 60]); } catch (e) {} }
+}
+
+function adtSilentDepart(arrivedStop) {
+  if (!arrivedStop) return;
+  console.log('[ADT] SILENT DEPART: stop #' + (arrivedStop.stopIdx + 1) + ' ' + arrivedStop.arrivedName);
+  try {
+    if (typeof logDepartureAndComplete === 'function') logDepartureAndComplete(arrivedStop.stopIdx);
+  } catch (e) { console.error('[ADT] silent depart err:', e); }
+  adtShowUndoBanner('depart', arrivedStop.stopIdx, arrivedStop.arrivedName);
+  if (navigator.vibrate) { try { navigator.vibrate([40, 30, 40, 30, 40]); } catch (e) {} }
+}
+
+// =====================================================================
+// UNDO BANNER — visible for 30 seconds after a silent action
+// =====================================================================
+function adtShowUndoBanner(actionType, stopIdx, stopName) {
+  // Clear any pending hide on a previous banner
+  if (adtRecentAction && adtRecentAction.undoTimerId) {
+    clearTimeout(adtRecentAction.undoTimerId);
+  }
+  adtRecentAction = {
+    type: actionType,
+    stopIdx: stopIdx,
+    stopName: stopName,
+    ts: Date.now()
+  };
+  var banner = document.getElementById('adtUndoBanner');
+  if (!banner) return;
+  var verb = actionType === 'arrive' ? '✅ ARRIVED' : '🚗 COMPLETED';
+  document.getElementById('adtUndoVerb').textContent = verb;
+  document.getElementById('adtUndoStopName').textContent = stopName;
+  banner.classList.add('show');
+  // Auto-hide after 30 sec
+  adtRecentAction.undoTimerId = setTimeout(function() {
+    adtHideUndoBanner();
+  }, 30000);
+}
+
+function adtHideUndoBanner() {
+  var banner = document.getElementById('adtUndoBanner');
+  if (banner) banner.classList.remove('show');
+  if (adtRecentAction && adtRecentAction.undoTimerId) {
+    clearTimeout(adtRecentAction.undoTimerId);
+  }
+  adtRecentAction = null;
+}
+
+function adtUndoLastAction() {
+  if (!adtRecentAction) { adtHideUndoBanner(); return; }
+  var action = adtRecentAction;
+  console.log('[ADT] UNDO ' + action.type + ' for stop #' + (action.stopIdx + 1));
+  try {
+    // Restore the stop's data to pending state
+    if (typeof stopData !== 'undefined' && stopData[currentDay] && stopData[currentDay][action.stopIdx]) {
+      stopData[currentDay][action.stopIdx].status = 'pending';
+      stopData[currentDay][action.stopIdx].arrivalTime = null;
+      stopData[currentDay][action.stopIdx].departureTime = null;
+      stopData[currentDay][action.stopIdx].completed = false;
+    }
+    // Clear any in-progress leg (started by logArrival/depart)
+    if (typeof mtState !== 'undefined' && mtState.currentLeg) {
+      // Cancel the leg by clearing currentLeg without saving
+      if (mtState.watchId !== null) {
+        try { navigator.geolocation.clearWatch(mtState.watchId); } catch(e) {}
+        mtState.watchId = null;
+      }
+      mtState.currentLeg = null;
+      document.getElementById('mtBadge').classList.remove('tracking');
+    }
+    // Persist the reverted state
+    if (typeof fbSave === 'function' && typeof stopData !== 'undefined') {
+      try { fbSave('stopData/' + currentDay, stopData[currentDay]); } catch(e) {}
+    }
+    // If undoing an arrive, clear the arrivedStop tracker too so DONE doesn't auto-fire
+    if (action.type === 'arrive') adtArrivedStop = null;
+    // Re-render the stop list
+    if (typeof renderStops === 'function') renderStops();
+  } catch (e) { console.error('[ADT] undo err:', e); }
+  adtHideUndoBanner();
+}
+
+function adtUpdateStatusPill(stationaryMs, dwellRequiredMs, isParked) {
   var pill = document.getElementById('adtStatusPill');
   var text = document.getElementById('adtStatusText');
   if (!pill) return;
@@ -6957,15 +7481,21 @@ function adtUpdateStatusPill(stationaryMs, dwellRequiredMs) {
   }
   pill.classList.add('show');
   var secs = Math.floor(stationaryMs / 1000);
-  if (stationaryMs >= dwellRequiredMs) {
+  if (adtArrivedStop) {
+    pill.classList.add('dwelling');
+    text.textContent = 'AT ' + (adtArrivedStop.arrivedName || 'stop').substring(0, 14).toUpperCase();
+  } else if (!isParked) {
+    pill.classList.remove('dwelling');
+    text.textContent = 'DRIVING';
+  } else if (stationaryMs >= dwellRequiredMs) {
     pill.classList.add('dwelling');
     text.textContent = 'DWELLING ' + Math.floor(secs / 60) + 'm';
   } else if (stationaryMs > 30000) {
     pill.classList.add('dwelling');
-    text.textContent = 'STILL ' + Math.floor(secs / 60) + 'm' + (secs % 60) + 's';
+    text.textContent = 'PARKED ' + Math.floor(secs / 60) + 'm' + (secs % 60) + 's';
   } else {
     pill.classList.remove('dwelling');
-    text.textContent = 'MOVING';
+    text.textContent = 'STILL';
   }
 }
 
@@ -7191,11 +7721,14 @@ function adtSaveNewStop() {
 function adtShowSettings() {
   // Sync UI to current settings
   document.getElementById('adtToggleAuto').classList.toggle('on', !!adtSettings.autoDetect);
+  document.getElementById('adtToggleSilent').classList.toggle('on', !!adtSettings.silentMode);
   document.getElementById('adtToggleManual').classList.toggle('on', !!adtSettings.manualButtons);
   document.getElementById('adtDwellSlider').value = adtSettings.dwellMinutes;
   document.getElementById('adtDwellVal').textContent = adtSettings.dwellMinutes;
   document.getElementById('adtRadiusSlider').value = adtSettings.matchRadiusFt;
   document.getElementById('adtRadiusVal').textContent = adtSettings.matchRadiusFt;
+  document.getElementById('adtLeaveRadiusSlider').value = adtSettings.leaveRadiusFt;
+  document.getElementById('adtLeaveRadiusVal').textContent = adtSettings.leaveRadiusFt;
   document.getElementById('adtSettingsOverlay').classList.add('show');
 }
 function adtHideSettings() {

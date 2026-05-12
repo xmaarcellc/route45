@@ -5,37 +5,49 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#eef0f3">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Project Z</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-color-scheme: dark only;
-–bg: #000000;
-–sur: #0a0a0a;
-–sur2: #141414;
-–bdr: #1a2a3a;
-–acc: #3b82f6;
-–acc2: #60a5fa;
-–grn: #06d6a0;
-–red: #ef476f;
-–blu: #3b82f6;
-–pur: #3b82f6;
-–txt: #ffffff;
-–mut: #a0aec0;
+color-scheme: light only;
+–bg: #eef0f3;
+–sur: #ffffff;
+–sur2: #f6f7f9;
+–bdr: #d6dbe2;
+–acc: #2563eb;
+–acc2: #3b82f6;
+–grn: #059669;
+–red: #dc2626;
+–blu: #2563eb;
+–pur: #2563eb;
+–txt: #0f172a;
+–mut: #64748b;
 –fd: ‘Bebas Neue’, sans-serif;
 –fm: ‘DM Mono’, monospace;
 –fb: ‘DM Sans’, sans-serif;
 }
 
 - { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { background: #000; } body { background: #000; color: var(–txt); font-family: var(–fb); min-height: 100vh; padding-bottom: 20px; overflow-x: hidden; }
+  html { background: var(–bg); }
+  body {
+  background-color: var(–bg);
+  /* Subtle 2px dot grid texture so the background doesn’t look flat */
+  background-image: radial-gradient(circle, rgba(15,23,42,0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-attachment: fixed;
+  color: var(–txt);
+  font-family: var(–fb);
+  min-height: 100vh;
+  padding-bottom: 20px;
+  overflow-x: hidden;
+  }
 
 /* HEADER */
-.hdr { background: #0a0a0a; border-bottom: 1px solid #1a2a3a; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.hdr { background: var(–sur); border-bottom: 1px solid var(–bdr); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .hdr-title { font-family: var(–fd); font-size: 28px; letter-spacing: 2px; color: var(–acc); }
 .hdr-sub { font-family: var(–fm); font-size: 11px; color: var(–mut); margin-top: 2px; }
 .hdr-right { display: flex; align-items: center; gap: 8px; }
@@ -48,7 +60,7 @@ color-scheme: dark only;
 .day-badge { background: var(–acc); color: #000; font-family: var(–fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* TABS */
-.tabs { display: flex; background: #0a0a0a; border-bottom: 1px solid #1a2a3a; position: sticky; top: 53px; z-index: 99; }
+.tabs { display: flex; background: var(–sur); border-bottom: 1px solid var(–bdr); position: sticky; top: 53px; z-index: 99; }
 .tab { flex: 1; padding: 12px; text-align: center; font-family: var(–fm); font-size: 11px; color: var(–mut); cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
 .tab.active { color: var(–acc); border-bottom-color: var(–acc); }
 .badge { display: inline-block; background: var(–acc); color: #000; font-family: var(–fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
@@ -60,8 +72,8 @@ color-scheme: dark only;
 .day-btn.active { background: var(–acc); border-color: var(–acc); color: #000; font-weight: 500; }
 
 /* STATS BAR */
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1a2a3a; border-bottom: 1px solid #1a2a3a; }
-.stat { background: #0a0a0a; padding: 10px 8px; text-align: center; }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1a2a3a; border-bottom: 1px solid var(–bdr); }
+.stat { background: var(–sur); padding: 10px 8px; text-align: center; }
 .stat-val { font-family: var(–fd); font-size: 22px; color: var(–acc); line-height: 1; }
 .stat-lbl { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
@@ -90,7 +102,7 @@ transform: scale(0.95);
 
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
-.stop-card { background: #141414; border: 1px solid #1a2a3a; border-radius: 8px; overflow: hidden; }
+.stop-card { background: var(–sur); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; }
 .stop-card.active { border-color: var(–acc); box-shadow: 0 0 0 1px var(–acc); }
 .stop-card.done { opacity: .65; border-color: var(–grn); }
 .stop-header { display: flex; align-items: center; padding: 14px 12px; gap: 12px; cursor: pointer; user-select: none; }
@@ -203,7 +215,7 @@ transform: scale(0.95);
 .bulk-toolbar { padding: 10px 16px; background: var(–sur); border-bottom: 1px solid var(–bdr); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .bulk-toolbar-btn { background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 11px; padding: 7px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
 .bulk-toolbar-btn.primary { background: var(–acc); border-color: var(–acc); color: #000; font-weight: 600; }
-.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(–sur); border-top: 2px solid var(–acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(0,0,0,.6); display: none; flex-direction: column; gap: 8px; }
+.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(–sur); border-top: 2px solid var(–acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(15,23,42,.25); display: none; flex-direction: column; gap: 8px; }
 .bulk-action-bar.show { display: flex; }
 .bulk-action-row { display: flex; gap: 8px; align-items: center; }
 .bulk-action-counter { font-family: var(–fd); font-size: 18px; color: var(–acc); letter-spacing: 1px; flex: 1; }
@@ -244,7 +256,7 @@ transform: scale(0.95);
 .stop-dist { font-family: var(–fm); font-size: 10px; color: var(–acc); margin-top: 2px; }
 
 /* MAP STOP POPUP */
-.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 1px solid var(–acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,.6); display: none; }
+.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 1px solid var(–acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(15,23,42,.25); display: none; }
 .map-stop-popup.show { display: block; }
 .map-popup-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
 .map-popup-name { font-family: var(–fd); font-size: 22px; color: var(–acc); letter-spacing: 1px; padding-right: 24px; }
@@ -275,7 +287,7 @@ body.nav-active .upcoming-turn { z-index: 9101; }
 .nav-stop-btn:hover { filter: brightness(1.15); }
 .nav-stop-btn:active { transform: scale(0.97); }
 /* Bigger, more obvious STOP button when nav is active */
-body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 4px 12px rgba(239,71,111,.4); }
+body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(15,23,42,.12), 0 4px 12px rgba(239,71,111,.4); }
 .nav-hud-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .nav-hud-dest { font-family: var(–fd); font-size: 20px; color: var(–acc); letter-spacing: 1px; }
 .nav-stop-btn { background: var(–red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
@@ -290,9 +302,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .nav-turn-dist { font-family: var(–fd); font-size: 16px; color: var(–acc); flex-shrink: 0; }
 
 /* BIG UPCOMING-TURN ALERT (shows when ≤ 0.5 mi from next turn) */
-.upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(59,130,246,.45), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse 1.4s ease-in-out infinite; }
+.upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(59,130,246,.45), 0 0 0 2px rgba(15,23,42,.25); animation: upcoming-pulse 1.4s ease-in-out infinite; }
 .upcoming-turn.show { display: block; }
-.upcoming-turn.imminent { background: linear-gradient(135deg, #ef476f, #c9184a); color: #fff; box-shadow: 0 6px 24px rgba(239,71,111,.6), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse-fast 0.8s ease-in-out infinite; }
+.upcoming-turn.imminent { background: linear-gradient(135deg, #ef476f, #c9184a); color: #fff; box-shadow: 0 6px 24px rgba(239,71,111,.6), 0 0 0 2px rgba(15,23,42,.25); animation: upcoming-pulse-fast 0.8s ease-in-out infinite; }
 .upcoming-turn-row { display: flex; align-items: center; gap: 14px; }
 .upcoming-turn-icon { font-size: 56px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
 .upcoming-turn-info { flex: 1; min-width: 0; }
@@ -307,7 +319,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 50% { transform: scale(1.04); }
 }
 
-.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(–sur); border: 1px solid var(–acc); border-radius: 50%; color: var(–acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(–sur); border: 1px solid var(–acc); border-radius: 50%; color: var(–acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(15,23,42,.12); }
 .dots-btn { background: none; border: none; color: var(–mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(–bdr); }
 .freq-menu { display: none; position: absolute; right: 16px; background: var(–sur2); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
@@ -343,7 +355,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .google-btn:active { background: #f8f8f8; }
 
 /* MODE BANNER (Reorganize / Measure) */
-.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
+.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(15,23,42,.25); }
 .mode-banner.show { display: block; }
 .mode-banner.measure { background: #4285f4; color: #fff; }
 .mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -356,10 +368,10 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .mode-btn-cancel { background: rgba(0,0,0,0.2); color: #000; }
 .mode-banner.measure .mode-btn-cancel { background: rgba(255,255,255,0.2); color: #fff; }
-.mode-btn-done { background: #000; color: var(–acc); font-weight: bold; }
+.mode-btn-done { background: var(–txt); color: var(–acc); font-weight: bold; }
 .mode-btn-done:disabled { background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.3); cursor: not-allowed; }
 .mode-banner.measure .mode-btn-done { background: #fff; color: #4285f4; }
-.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.7); }
+.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(15,23,42,.18); }
 .measure-result.show { display: block; }
 .measure-result-close { position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
 .measure-pair { font-family: var(–fm); font-size: 12px; color: var(–txt); margin-bottom: 12px; padding-right: 24px; line-height: 1.4; }
@@ -463,17 +475,17 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <div class="stop-list" id="stopList"></div>
   <!-- BASE LEG SECTION (shown when ready to head back to base) -->
   <div id="baseLegSection" style="padding:12px 16px;display:none;">
-    <div id="baseLegStartBlock" style="background:#141414;border:1px solid var(--bdr);border-radius:8px;padding:14px;">
+    <div id="baseLegStartBlock" style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:14px;">
       <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;margin-bottom:6px;">🏢 HEAD BACK TO BASE</div>
       <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-bottom:12px;">Track the drive from your last stop back to the Cintas base. Will be saved as the final leg of the day.</div>
       <button onclick="mtStartBaseLeg()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">🚗 DEPART TO BASE</button>
     </div>
-    <div id="baseLegActiveBlock" style="display:none;background:#141414;border:1px solid var(--acc);box-shadow:0 0 0 1px var(--acc);border-radius:8px;padding:14px;">
+    <div id="baseLegActiveBlock" style="display:none;background:var(--sur);border:1px solid var(--acc);box-shadow:0 0 0 1px var(--acc);border-radius:8px;padding:14px;">
       <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;margin-bottom:6px;">🚗 EN ROUTE TO BASE</div>
       <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-bottom:12px;">GPS is tracking. Tap when you arrive at base.</div>
       <button onclick="mtArriveAtBase()" style="width:100%;background:var(--grn);color:#000;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">📍 I'M AT BASE</button>
     </div>
-    <div id="baseLegDoneBlock" style="display:none;background:#141414;border:1px solid var(--grn);border-radius:8px;padding:14px;text-align:center;">
+    <div id="baseLegDoneBlock" style="display:none;background:var(--sur);border:1px solid var(--grn);border-radius:8px;padding:14px;text-align:center;">
       <div style="font-family:var(--fd);font-size:18px;color:var(--grn);letter-spacing:1px;">✅ BACK AT BASE</div>
       <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-top:4px;" id="baseLegDoneSub">Final leg saved</div>
     </div>
@@ -572,15 +584,15 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <!-- AGGREGATE STATS -->
 
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;">
-    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
       <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalDays">0</div>
       <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Days Tracked</div>
     </div>
-    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
       <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalMiles">0</div>
       <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Miles</div>
     </div>
-    <div style="background:#141414;border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
       <div style="font-family:var(--fd);font-size:22px;color:var(--grn);line-height:1;" id="histTotalCost">$0</div>
       <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Fuel</div>
     </div>
@@ -609,12 +621,12 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
-    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
-    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
-<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
-    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🔀 REORGANIZE</button>
-    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📏 MEASURE</button>
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🗺️ ALL STOPS</button>
+    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🏢 BASE</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🔀 REORGANIZE</button>
+    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">📏 MEASURE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -626,7 +638,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
 
-<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️</button>
+<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,23,42,.12);">🏙️</button>
 <button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
 
   <!-- NAVIGATION HUD (shown during navigation) -->
@@ -5071,13 +5083,13 @@ function closeMeasureResult() {
   bottom: 16px;
   left: 16px;
   right: 16px;
-  background: rgba(15,15,15,0.96);
+  background: rgba(255,255,255,0.95);
   border: 1px solid var(--bdr);
   border-radius: 10px;
   padding: 10px 14px;
   display: none;
   z-index: 200;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 20px rgba(15,23,42,0.25);
   backdrop-filter: blur(8px);
 }
 .mt-badge.show { display: flex; align-items: center; gap: 12px; }
@@ -5114,7 +5126,7 @@ function closeMeasureResult() {
 .fuel-btn-save { background: var(--acc); color: #000; }
 
 /* === MAP TAB: TRAIL OVERLAY CONTROLS === */
-.trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(15,15,15,0.95); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
+.trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(255,255,255,0.92); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
 .trail-controls.show { display: block; }
 .trail-controls-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
 .trail-controls-stats { display: flex; gap: 12px; flex: 1; }
@@ -5124,7 +5136,7 @@ function closeMeasureResult() {
 .trail-date-sel { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 11px; padding: 6px 8px; border-radius: 4px; }
 
 /* === HISTORY TAB === */
-.history-card { background: #141414; border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+.history-card { background: var(--sur); border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
 .history-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .history-date { font-family: var(--fd); font-size: 18px; color: var(--acc); letter-spacing: 1px; }
 .history-day-badge { background: var(--sur2); color: var(--mut); font-family: var(--fm); font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; }
@@ -5137,14 +5149,14 @@ function closeMeasureResult() {
 .leg-popup {
   position: fixed;
   display: none;
-  background: rgba(15, 15, 15, 0.97);
+  background: rgba(255, 255, 255, 0.96);
   border: 2px solid var(--acc);
   border-radius: 10px;
   padding: 12px 14px;
   z-index: 9500;
   min-width: 220px;
   max-width: 280px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.18);
   backdrop-filter: blur(8px);
 }
 .leg-popup.show { display: block; }
@@ -6379,6 +6391,905 @@ console.log('[MT] Mileage tracking module loaded');
 <!-- ===================================================================== -->
 
 <!-- ===== END MILEAGE TRACKING MODULE =================================== -->
+
+<!-- ===================================================================== -->
+
+<!-- ===================================================================== -->
+
+<!-- ===== PHASE 3: AUTO STOP DETECTION ================================== -->
+
+<!-- ===================================================================== -->
+
+<style>
+/* === SETTINGS GEAR BUTTON (floating, top-right of route tab) === */
+.adt-gear {
+  position: fixed;
+  top: 110px;
+  right: 12px;
+  background: var(--sur);
+  border: 1px solid var(--bdr);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 80;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+}
+
+/* === SETTINGS MODAL === */
+.adt-settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  z-index: 10001;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.adt-settings-overlay.show { display: flex; }
+.adt-settings {
+  background: var(--sur);
+  border: 1px solid var(--bdr);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+}
+.adt-settings-title {
+  font-family: var(--fd);
+  font-size: 22px;
+  color: var(--acc);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.adt-settings-sub {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--mut);
+  margin-bottom: 18px;
+}
+.adt-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 1px solid var(--bdr);
+}
+.adt-setting-row:first-child { border-top: none; }
+.adt-setting-label {
+  font-family: var(--fb);
+  font-size: 13px;
+  color: var(--txt);
+  flex: 1;
+  padding-right: 12px;
+}
+.adt-setting-desc {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--mut);
+  margin-top: 2px;
+}
+/* Toggle switch */
+.adt-toggle {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.adt-toggle.on { background: var(--acc); border-color: var(--acc); }
+.adt-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.2);
+}
+.adt-toggle.on .adt-toggle-knob { left: 22px; }
+/* Slider */
+.adt-slider-row {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  border-top: 1px solid var(--bdr);
+}
+.adt-slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.adt-slider-val {
+  font-family: var(--fd);
+  font-size: 16px;
+  color: var(--acc);
+  letter-spacing: 1px;
+}
+.adt-slider {
+  width: 100%;
+  accent-color: var(--acc);
+}
+.adt-settings-close {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--acc);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--fd);
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+/* === STOP-DETECTED CONFIRMATION MODAL === */
+.adt-confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  z-index: 10002;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.adt-confirm-overlay.show { display: flex; }
+.adt-confirm {
+  background: var(--sur);
+  border: 2px solid var(--acc);
+  border-radius: 12px;
+  padding: 22px 20px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+.adt-confirm-icon { font-size: 44px; margin-bottom: 6px; }
+.adt-confirm-title {
+  font-family: var(--fd);
+  font-size: 24px;
+  color: var(--acc);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.adt-confirm-sub {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--mut);
+  margin-bottom: 14px;
+}
+.adt-confirm-card {
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+.adt-confirm-stopname {
+  font-family: var(--fb);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--txt);
+  margin-bottom: 4px;
+}
+.adt-confirm-stopaddr {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--mut);
+}
+.adt-confirm-dwell {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--mut);
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.adt-confirm-btns {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+.adt-confirm-btn {
+  padding: 13px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--fd);
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.adt-confirm-btn.yes { background: var(--grn); color: #fff; }
+.adt-confirm-btn.no  { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); }
+.adt-confirm-btn.new { background: var(--acc); color: #fff; }
+
+/* === NEW-STOP MODAL (Phase B: stop not on map) === */
+.adt-newstop-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  z-index: 10003;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.adt-newstop-overlay.show { display: flex; }
+.adt-newstop {
+  background: var(--sur);
+  border: 2px solid var(--acc);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.adt-newstop-title {
+  font-family: var(--fd);
+  font-size: 22px;
+  color: var(--acc);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.adt-newstop-sub {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--mut);
+  margin-bottom: 16px;
+}
+.adt-newstop-input-grp { margin-bottom: 12px; }
+.adt-newstop-lbl {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  display: block;
+}
+.adt-newstop-input {
+  width: 100%;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  color: var(--txt);
+  font-family: var(--fb);
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  outline: none;
+}
+.adt-newstop-input:focus { border-color: var(--acc); }
+.adt-newstop-coords {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--mut);
+  background: var(--sur2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+.adt-newstop-btns { display: flex; gap: 8px; }
+.adt-newstop-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--fd);
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.adt-newstop-btn.cancel { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); }
+.adt-newstop-btn.save   { background: var(--acc); color: #fff; }
+
+/* === AMBIENT GPS STATUS PILL (small, top of route tab) === */
+.adt-status-pill {
+  display: none;
+  position: fixed;
+  top: 110px;
+  left: 12px;
+  background: var(--sur);
+  border: 1px solid var(--bdr);
+  border-radius: 12px;
+  padding: 5px 10px;
+  z-index: 79;
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+}
+.adt-status-pill.show { display: flex; align-items: center; gap: 6px; }
+.adt-status-pill.dwelling { border-color: var(--acc); color: var(--acc); }
+.adt-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mut);
+}
+.adt-status-pill.dwelling .adt-status-dot { background: var(--acc); animation: adt-pulse 1.4s ease-in-out infinite; }
+@keyframes adt-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+</style>
+
+<!-- === SETTINGS GEAR === -->
+
+<button class="adt-gear" onclick="adtShowSettings()" title="Auto-detect settings">⚙️</button>
+
+<!-- === AMBIENT STATUS PILL === -->
+
+<div class="adt-status-pill" id="adtStatusPill">
+  <span class="adt-status-dot"></span><span id="adtStatusText">IDLE</span>
+</div>
+
+<!-- === SETTINGS MODAL === -->
+
+<div class="adt-settings-overlay" id="adtSettingsOverlay">
+  <div class="adt-settings">
+    <div class="adt-settings-title">⚙️ AUTO-DETECT</div>
+    <div class="adt-settings-sub">Detect stops automatically based on how long you've been parked</div>
+
+```
+<div class="adt-setting-row">
+  <div>
+    <div class="adt-setting-label">Auto-detect stops</div>
+    <div class="adt-setting-desc">Detect when you've been parked and prompt to mark a stop</div>
+  </div>
+  <div class="adt-toggle" id="adtToggleAuto" onclick="adtToggleSetting('autoDetect')">
+    <div class="adt-toggle-knob"></div>
+  </div>
+</div>
+
+<div class="adt-setting-row">
+  <div>
+    <div class="adt-setting-label">Show manual buttons</div>
+    <div class="adt-setting-desc">Keep ARRIVED &amp; DEPARTED buttons on stop cards</div>
+  </div>
+  <div class="adt-toggle on" id="adtToggleManual" onclick="adtToggleSetting('manualButtons')">
+    <div class="adt-toggle-knob"></div>
+  </div>
+</div>
+
+<div class="adt-slider-row">
+  <div class="adt-slider-top">
+    <div class="adt-setting-label">Dwell time before prompt</div>
+    <div class="adt-slider-val"><span id="adtDwellVal">4</span> min</div>
+  </div>
+  <input class="adt-slider" id="adtDwellSlider" type="range" min="1" max="10" step="1" value="4" oninput="adtSliderChange('dwellMinutes', this.value)">
+</div>
+
+<div class="adt-slider-row">
+  <div class="adt-slider-top">
+    <div class="adt-setting-label">Match radius for known stops</div>
+    <div class="adt-slider-val"><span id="adtRadiusVal">150</span> ft</div>
+  </div>
+  <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="400" step="25" value="150" oninput="adtSliderChange('matchRadiusFt', this.value)">
+</div>
+
+<button class="adt-settings-close" onclick="adtHideSettings()">DONE</button>
+```
+
+  </div>
+</div>
+
+<!-- === STOP-DETECTED CONFIRMATION MODAL === -->
+
+<div class="adt-confirm-overlay" id="adtConfirmOverlay">
+  <div class="adt-confirm">
+    <div class="adt-confirm-icon">📍</div>
+    <div class="adt-confirm-title">STOP DETECTED?</div>
+    <div class="adt-confirm-sub">You've been parked for <span id="adtConfirmDwellMin">--</span> minutes</div>
+    <div class="adt-confirm-card" id="adtConfirmCard">
+      <div class="adt-confirm-stopname" id="adtConfirmStopName">Unknown location</div>
+      <div class="adt-confirm-stopaddr" id="adtConfirmStopAddr">--</div>
+      <div class="adt-confirm-dwell"><span id="adtConfirmMatchInfo">--</span></div>
+    </div>
+    <div class="adt-confirm-btns">
+      <button class="adt-confirm-btn yes" id="adtConfirmYes" onclick="adtConfirmStop()">✅ YES, COMPLETED THIS STOP</button>
+      <button class="adt-confirm-btn new" id="adtConfirmNew" onclick="adtOpenNewStopModal()" style="display:none;">➕ ADD AS NEW STOP</button>
+      <button class="adt-confirm-btn no" onclick="adtDismissConfirm()">✕ NOT A STOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- === NEW-STOP CREATION MODAL === -->
+
+<div class="adt-newstop-overlay" id="adtNewStopOverlay">
+  <div class="adt-newstop">
+    <div class="adt-newstop-title">➕ ADD STOP</div>
+    <div class="adt-newstop-sub">Create a new stop at your current location</div>
+
+```
+<div class="adt-newstop-coords" id="adtNewStopCoords">Coordinates: --</div>
+
+<div class="adt-newstop-input-grp">
+  <label class="adt-newstop-lbl">Business name *</label>
+  <input class="adt-newstop-input" id="adtNewStopName" type="text" placeholder="e.g. ACME Manufacturing">
+</div>
+<div class="adt-newstop-input-grp">
+  <label class="adt-newstop-lbl">Address</label>
+  <input class="adt-newstop-input" id="adtNewStopAddr" type="text" placeholder="Street address">
+</div>
+<div class="adt-newstop-input-grp">
+  <label class="adt-newstop-lbl">Frequency</label>
+  <select class="adt-newstop-input" id="adtNewStopFreq">
+    <option value="WEEKLY">WEEKLY</option>
+    <option value="BIWEEKLY">BIWEEKLY</option>
+    <option value="MONTHLY">MONTHLY</option>
+  </select>
+</div>
+
+<div class="adt-newstop-btns">
+  <button class="adt-newstop-btn cancel" onclick="adtCloseNewStopModal()">CANCEL</button>
+  <button class="adt-newstop-btn save" onclick="adtSaveNewStop()">SAVE &amp; MARK DONE</button>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// AUTO STOP DETECTION (ADT)
+// =====================================================================
+// Settings persist in localStorage. Defaults are conservative.
+var adtSettings = {
+  autoDetect: false,        // off by default until user opts in
+  manualButtons: true,      // manual ARRIVED/DEPARTED buttons stay visible by default
+  dwellMinutes: 4,          // minutes stationary before prompting
+  matchRadiusFt: 150        // ft within a known stop to consider it a match
+};
+
+var ADT_LS_KEY = 'adt_settings_v1';
+
+function adtLoadSettings() {
+  try {
+    var raw = localStorage.getItem(ADT_LS_KEY);
+    if (raw) {
+      var s = JSON.parse(raw);
+      Object.keys(adtSettings).forEach(function(k) {
+        if (s.hasOwnProperty(k)) adtSettings[k] = s[k];
+      });
+    }
+  } catch (e) {}
+}
+function adtSaveSettings() {
+  try { localStorage.setItem(ADT_LS_KEY, JSON.stringify(adtSettings)); } catch (e) {}
+}
+adtLoadSettings();
+
+// =====================================================================
+// STATIONARY DETECTOR — tracks recent GPS points and detects parked state
+// =====================================================================
+// Approach:
+//   - Maintain a buffer of last N seconds of GPS points
+//   - Consider "stationary" when:
+//       * All points within DWELL_RADIUS_M of their centroid
+//       * Coverage (oldest to newest) >= dwellMinutes
+//   - Once stationary, fire onDwellDetected once per "stationary episode"
+
+var ADT_BUFFER_MAX_AGE_MS = 12 * 60 * 1000; // keep last 12 min of points
+var ADT_DWELL_RADIUS_M = 25;                // max drift to count as "still parked"
+var adtPositionBuffer = [];                  // [{lat,lng,ts}]
+var adtCurrentEpisode = null;                // { startTs, centroidLat, centroidLng, prompted: bool }
+var adtAmbientWatchId = null;
+
+function adtFeedPosition(lat, lng, ts, accuracy) {
+  if (!adtSettings.autoDetect) return;
+  if (accuracy && accuracy > 60) return; // ignore very poor fixes
+  var now = ts || Date.now();
+  adtPositionBuffer.push({ lat: lat, lng: lng, ts: now });
+  // Trim old points
+  var cutoff = now - ADT_BUFFER_MAX_AGE_MS;
+  while (adtPositionBuffer.length && adtPositionBuffer[0].ts < cutoff) {
+    adtPositionBuffer.shift();
+  }
+  adtCheckDwell();
+}
+
+function adtCheckDwell() {
+  if (adtPositionBuffer.length < 3) return;
+  // Compute centroid of last N points
+  var pts = adtPositionBuffer;
+  var latest = pts[pts.length - 1];
+
+  // Look back through buffer: find the OLDEST point that's still within dwell radius of latest.
+  // The "stationary span" = time between that oldest within-radius point and now.
+  var oldestStationaryTs = latest.ts;
+  for (var i = pts.length - 1; i >= 0; i--) {
+    var d = mtHaversineMeters(latest.lat, latest.lng, pts[i].lat, pts[i].lng);
+    if (d <= ADT_DWELL_RADIUS_M) {
+      oldestStationaryTs = pts[i].ts;
+    } else {
+      break; // once we hit a point outside the radius, we broke out of stationary
+    }
+  }
+  var stationaryMs = latest.ts - oldestStationaryTs;
+  var dwellRequiredMs = adtSettings.dwellMinutes * 60 * 1000;
+
+  // Update status pill
+  adtUpdateStatusPill(stationaryMs, dwellRequiredMs);
+
+  if (stationaryMs >= dwellRequiredMs) {
+    // We've been stationary long enough — fire the prompt (once per episode)
+    if (!adtCurrentEpisode) {
+      adtCurrentEpisode = {
+        startTs: oldestStationaryTs,
+        centroidLat: latest.lat,
+        centroidLng: latest.lng,
+        prompted: false
+      };
+    }
+    if (!adtCurrentEpisode.prompted) {
+      adtCurrentEpisode.prompted = true;
+      adtPromptForStop(latest.lat, latest.lng, Math.round(stationaryMs / 60000));
+    }
+  } else {
+    // No longer stationary — clear episode
+    if (adtCurrentEpisode && stationaryMs < dwellRequiredMs * 0.5) {
+      adtCurrentEpisode = null;
+    }
+  }
+}
+
+function adtUpdateStatusPill(stationaryMs, dwellRequiredMs) {
+  var pill = document.getElementById('adtStatusPill');
+  var text = document.getElementById('adtStatusText');
+  if (!pill) return;
+  if (!adtSettings.autoDetect) {
+    pill.classList.remove('show', 'dwelling');
+    return;
+  }
+  pill.classList.add('show');
+  var secs = Math.floor(stationaryMs / 1000);
+  if (stationaryMs >= dwellRequiredMs) {
+    pill.classList.add('dwelling');
+    text.textContent = 'DWELLING ' + Math.floor(secs / 60) + 'm';
+  } else if (stationaryMs > 30000) {
+    pill.classList.add('dwelling');
+    text.textContent = 'STILL ' + Math.floor(secs / 60) + 'm' + (secs % 60) + 's';
+  } else {
+    pill.classList.remove('dwelling');
+    text.textContent = 'MOVING';
+  }
+}
+
+// =====================================================================
+// AMBIENT GPS WATCH — runs whenever autoDetect is on and app is open
+// =====================================================================
+function adtStartAmbientGPS() {
+  if (adtAmbientWatchId !== null) return; // already running
+  if (!navigator.geolocation) return;
+  adtAmbientWatchId = navigator.geolocation.watchPosition(
+    function(pos) {
+      adtFeedPosition(pos.coords.latitude, pos.coords.longitude, pos.timestamp || Date.now(), pos.coords.accuracy);
+    },
+    function(err) { console.warn('[ADT] ambient GPS err:', err.message); },
+    { enableHighAccuracy: true, timeout: 25000, maximumAge: 5000 }
+  );
+  console.log('[ADT] Ambient GPS started');
+}
+
+function adtStopAmbientGPS() {
+  if (adtAmbientWatchId !== null) {
+    navigator.geolocation.clearWatch(adtAmbientWatchId);
+    adtAmbientWatchId = null;
+  }
+  adtPositionBuffer = [];
+  adtCurrentEpisode = null;
+  var pill = document.getElementById('adtStatusPill');
+  if (pill) pill.classList.remove('show', 'dwelling');
+  console.log('[ADT] Ambient GPS stopped');
+}
+
+// =====================================================================
+// PROMPT — find nearest pending stop, show confirmation
+// =====================================================================
+var adtPendingDetection = null; // { lat, lng, dwellMin, matchedStopIdx, isNew }
+
+function adtPromptForStop(lat, lng, dwellMin) {
+  // Find nearest PENDING stop in current day's route
+  var dayStops = (typeof stops !== 'undefined' && stops[currentDay]) ? stops[currentDay] : [];
+  var dayData = (typeof stopData !== 'undefined' && stopData[currentDay]) ? stopData[currentDay] : [];
+  var radiusMeters = adtSettings.matchRadiusFt * 0.3048;
+
+  var bestIdx = -1, bestDist = Infinity;
+  for (var i = 0; i < dayStops.length; i++) {
+    var s = dayStops[i];
+    if (!s || !s.lat || !s.lng) continue;
+    var isDone = dayData[i] && dayData[i].status === 'done';
+    if (isDone) continue; // skip already-done stops
+    var d = mtHaversineMeters(lat, lng, s.lat, s.lng);
+    if (d <= radiusMeters && d < bestDist) {
+      bestDist = d;
+      bestIdx = i;
+    }
+  }
+
+  adtPendingDetection = {
+    lat: lat,
+    lng: lng,
+    dwellMin: dwellMin,
+    matchedStopIdx: bestIdx,
+    isNew: bestIdx === -1
+  };
+
+  // Populate modal
+  document.getElementById('adtConfirmDwellMin').textContent = dwellMin;
+  if (bestIdx >= 0) {
+    var s = dayStops[bestIdx];
+    document.getElementById('adtConfirmStopName').textContent = s.name || 'Stop ' + (bestIdx + 1);
+    document.getElementById('adtConfirmStopAddr').textContent = s.address || '';
+    document.getElementById('adtConfirmMatchInfo').textContent =
+      'Matched stop #' + (bestIdx + 1) + ' — ' + Math.round(bestDist * 3.28084) + ' ft away';
+    document.getElementById('adtConfirmYes').style.display = 'block';
+    document.getElementById('adtConfirmNew').style.display = 'none';
+    document.getElementById('adtConfirmYes').textContent = '✅ YES, COMPLETED THIS STOP';
+  } else {
+    document.getElementById('adtConfirmStopName').textContent = 'Unknown location';
+    document.getElementById('adtConfirmStopAddr').textContent =
+      lat.toFixed(5) + ', ' + lng.toFixed(5);
+    document.getElementById('adtConfirmMatchInfo').textContent =
+      'No known stop within ' + adtSettings.matchRadiusFt + ' ft';
+    document.getElementById('adtConfirmYes').style.display = 'none';
+    document.getElementById('adtConfirmNew').style.display = 'block';
+  }
+  document.getElementById('adtConfirmOverlay').classList.add('show');
+
+  // Try a small vibration if supported (mobile feedback)
+  if (navigator.vibrate) {
+    try { navigator.vibrate([100, 50, 100]); } catch (e) {}
+  }
+}
+
+function adtDismissConfirm() {
+  document.getElementById('adtConfirmOverlay').classList.remove('show');
+  adtPendingDetection = null;
+  // Note: we don't clear the episode here, so the user won't get re-prompted for this same dwell.
+  // The episode clears when they actually move out of the dwell radius.
+}
+
+function adtConfirmStop() {
+  if (!adtPendingDetection || adtPendingDetection.matchedStopIdx < 0) {
+    adtDismissConfirm();
+    return;
+  }
+  var idx = adtPendingDetection.matchedStopIdx;
+  // Use existing flow: simulate ARRIVED then DEPARTURE & COMPLETE
+  // logArrival ends the current leg (if any) and starts the "at stop" phase
+  // logDepartureAndComplete marks the stop done
+  try {
+    if (typeof logArrival === 'function') logArrival(idx);
+    // Tiny delay so any UI updates from logArrival settle before we mark complete
+    setTimeout(function() {
+      try { if (typeof logDepartureAndComplete === 'function') logDepartureAndComplete(idx); }
+      catch (e) { console.error('[ADT] depart err:', e); }
+    }, 150);
+  } catch (e) { console.error('[ADT] arrive err:', e); }
+  console.log('[ADT] Auto-confirmed stop #' + (idx + 1));
+  adtDismissConfirm();
+}
+
+// =====================================================================
+// NEW-STOP CREATION (Phase B)
+// =====================================================================
+function adtOpenNewStopModal() {
+  if (!adtPendingDetection) return;
+  var p = adtPendingDetection;
+  document.getElementById('adtNewStopCoords').textContent =
+    'Coordinates: ' + p.lat.toFixed(5) + ', ' + p.lng.toFixed(5);
+  document.getElementById('adtNewStopName').value = '';
+  document.getElementById('adtNewStopAddr').value = '';
+  document.getElementById('adtNewStopFreq').value = 'WEEKLY';
+  document.getElementById('adtConfirmOverlay').classList.remove('show');
+  document.getElementById('adtNewStopOverlay').classList.add('show');
+  // Try reverse geocoding to pre-fill the address (best effort — fails gracefully)
+  adtReverseGeocode(p.lat, p.lng).then(function(addr) {
+    if (addr && !document.getElementById('adtNewStopAddr').value) {
+      document.getElementById('adtNewStopAddr').value = addr;
+    }
+  }).catch(function() { /* silent */ });
+}
+
+function adtCloseNewStopModal() {
+  document.getElementById('adtNewStopOverlay').classList.remove('show');
+  // Re-show confirm in case user wants to dismiss the original prompt
+  // ...actually just dismiss everything
+  adtPendingDetection = null;
+}
+
+function adtReverseGeocode(lat, lng) {
+  return new Promise(function(resolve, reject) {
+    if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+      return reject(new Error('Geocoder not available'));
+    }
+    try {
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: { lat: lat, lng: lng } }, function(results, status) {
+        if (status === 'OK' && results && results[0]) {
+          resolve(results[0].formatted_address);
+        } else {
+          reject(new Error('Geocode failed: ' + status));
+        }
+      });
+    } catch (e) { reject(e); }
+  });
+}
+
+function adtSaveNewStop() {
+  var p = adtPendingDetection;
+  if (!p) return;
+  var name = document.getElementById('adtNewStopName').value.trim();
+  if (!name) {
+    alert('Please enter a business name');
+    return;
+  }
+  var addr = document.getElementById('adtNewStopAddr').value.trim();
+  var freq = document.getElementById('adtNewStopFreq').value;
+  var newStop = {
+    name: name,
+    address: addr,
+    lat: p.lat,
+    lng: p.lng,
+    frequency: freq,
+    hours: '',
+    addedAt: new Date().toISOString(),
+    addedVia: 'auto-detect'
+  };
+  // Append to today's stops list
+  try {
+    if (typeof stops !== 'undefined' && stops[currentDay]) {
+      stops[currentDay].push(newStop);
+      // Initialize stopData for this new stop
+      if (typeof stopData !== 'undefined' && stopData[currentDay]) {
+        stopData[currentDay].push({ status: 'pending' });
+      }
+      // Persist to Firebase using existing save flow
+      if (typeof fbSave === 'function') {
+        try {
+          fbSave('stops/' + currentDay, stops[currentDay]);
+          fbSave('stopData/' + currentDay, stopData[currentDay]);
+        } catch (e) { console.error('[ADT] fb save err:', e); }
+      }
+      var newIdx = stops[currentDay].length - 1;
+      // Re-render the stop list
+      if (typeof renderStops === 'function') renderStops();
+      // Mark it as done via existing flow
+      setTimeout(function() {
+        try {
+          if (typeof logArrival === 'function') logArrival(newIdx);
+          setTimeout(function() {
+            if (typeof logDepartureAndComplete === 'function') logDepartureAndComplete(newIdx);
+          }, 150);
+        } catch (e) { console.error('[ADT] new stop mark-done err:', e); }
+      }, 300);
+    }
+  } catch (e) { console.error('[ADT] save new stop err:', e); }
+  document.getElementById('adtNewStopOverlay').classList.remove('show');
+  adtPendingDetection = null;
+  console.log('[ADT] New stop added:', name);
+}
+
+// =====================================================================
+// SETTINGS UI
+// =====================================================================
+function adtShowSettings() {
+  // Sync UI to current settings
+  document.getElementById('adtToggleAuto').classList.toggle('on', !!adtSettings.autoDetect);
+  document.getElementById('adtToggleManual').classList.toggle('on', !!adtSettings.manualButtons);
+  document.getElementById('adtDwellSlider').value = adtSettings.dwellMinutes;
+  document.getElementById('adtDwellVal').textContent = adtSettings.dwellMinutes;
+  document.getElementById('adtRadiusSlider').value = adtSettings.matchRadiusFt;
+  document.getElementById('adtRadiusVal').textContent = adtSettings.matchRadiusFt;
+  document.getElementById('adtSettingsOverlay').classList.add('show');
+}
+function adtHideSettings() {
+  document.getElementById('adtSettingsOverlay').classList.remove('show');
+}
+
+function adtToggleSetting(key) {
+  adtSettings[key] = !adtSettings[key];
+  adtSaveSettings();
+  document.getElementById('adtToggleAuto').classList.toggle('on', !!adtSettings.autoDetect);
+  document.getElementById('adtToggleManual').classList.toggle('on', !!adtSettings.manualButtons);
+  // Side effects
+  if (key === 'autoDetect') {
+    if (adtSettings.autoDetect) adtStartAmbientGPS();
+    else adtStopAmbientGPS();
+  }
+  if (key === 'manualButtons') {
+    adtApplyManualButtonVisibility();
+  }
+}
+
+function adtSliderChange(key, val) {
+  adtSettings[key] = parseInt(val, 10);
+  adtSaveSettings();
+  if (key === 'dwellMinutes') document.getElementById('adtDwellVal').textContent = val;
+  if (key === 'matchRadiusFt') document.getElementById('adtRadiusVal').textContent = val;
+}
+
+// =====================================================================
+// MANUAL BUTTONS VISIBILITY TOGGLE
+// =====================================================================
+// Inject a CSS rule we can toggle to hide the ARRIVED/DEPARTED buttons in stop cards
+(function() {
+  var styleEl = document.createElement('style');
+  styleEl.id = 'adtManualButtonsStyle';
+  styleEl.textContent = ''; // empty when manual buttons visible
+  document.head.appendChild(styleEl);
+})();
+
+function adtApplyManualButtonVisibility() {
+  var styleEl = document.getElementById('adtManualButtonsStyle');
+  if (!styleEl) return;
+  if (adtSettings.manualButtons) {
+    styleEl.textContent = '';
+  } else {
+    // Hide the action button row on stop cards. The exact selector depends on your code —
+    // this targets common patterns. Adjust if your stop cards use different class names.
+    styleEl.textContent =
+      '.stop-card .action-row, .stop-card .stop-actions, ' +
+      '.stop-card button[onclick*="logArrival"], ' +
+      '.stop-card button[onclick*="logDepartureAndComplete"] { display: none !important; }';
+  }
+}
+
+// =====================================================================
+// INTEGRATION WITH EXISTING MILEAGE TRACKER
+// =====================================================================
+// Feed the auto-detector with positions from the existing leg-tracking GPS,
+// so we don't double up on GPS watchers when a leg is active.
+(function() {
+  function hookHandlePosition() {
+    if (typeof window.mtHandlePosition !== 'function') {
+      setTimeout(hookHandlePosition, 200); return;
+    }
+    var orig = window.mtHandlePosition;
+    window.mtHandlePosition = function(pos) {
+      // Feed ADT as well
+      try {
+        adtFeedPosition(pos.coords.latitude, pos.coords.longitude, pos.timestamp || Date.now(), pos.coords.accuracy);
+      } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  }
+  hookHandlePosition();
+})();
+
+// =====================================================================
+// STARTUP
+// =====================================================================
+(function adtInit() {
+  // Apply manual button visibility based on saved settings
+  setTimeout(adtApplyManualButtonVisibility, 500);
+  // Start ambient GPS if auto-detect was on previously
+  if (adtSettings.autoDetect) {
+    setTimeout(adtStartAmbientGPS, 1500);
+  }
+})();
+
+console.log('[ADT] Auto stop detection module loaded. Settings:', adtSettings);
+</script>
+
+<!-- ===================================================================== -->
+
+<!-- ===== END AUTO STOP DETECTION MODULE ================================ -->
 
 <!-- ===================================================================== -->
 

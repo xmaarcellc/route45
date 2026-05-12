@@ -5823,6 +5823,8 @@ function saveFuelData() {
   mtState.todayDistance = 0;
   mtState.todayDateKey = null;
   document.getElementById('mtMiles').textContent = '0.0';
+  // Clear all drawn polylines so the next day starts with a fresh map
+  if (typeof mtClearTrailPolylines === 'function') mtClearTrailPolylines();
   // Close modal and run original completeDay
   document.getElementById('fuelModalOverlay').classList.remove('show');
   if (mtPendingCompleteDay) {
@@ -5972,6 +5974,12 @@ async function loadTrailForDate(dateKey) {
 async function mtRehydrateToday() {
   if (typeof fbLoad !== 'function') return;
   var todayKey = mtDateKey();
+  // Defensively reset in-memory state for today so re-runs and day changes don't accumulate
+  mtState.todayLegs = [];
+  mtState.todayDistance = 0;
+  mtState.todayDateKey = todayKey;
+  // Clear any polylines drawn from a previous day's view
+  if (typeof mtClearTrailPolylines === 'function') mtClearTrailPolylines();
   try {
     var dayLegs = await fbLoad('legs/' + todayKey);
     if (dayLegs) {
@@ -5982,12 +5990,15 @@ async function mtRehydrateToday() {
           mtState.todayDistance += l.distanceMiles;
         }
       });
-      mtState.todayDateKey = todayKey;
       document.getElementById('mtMiles').textContent = mtState.todayDistance.toFixed(1);
       mtMaybeShowBadge();
       console.log('[MT] Rehydrated', mtState.todayLegs.length, 'legs from today');
       // Draw rehydrated legs onto the map. If the map isn't ready yet, defer.
       mtDrawTodayLegsOntoMap();
+    } else {
+      // No legs today — reset the badge display to zero
+      document.getElementById('mtMiles').textContent = '0.0';
+      console.log('[MT] No legs found for today (' + todayKey + ')');
     }
   } catch (e) { console.warn('[MT] rehydrate err', e); }
 }
@@ -6156,6 +6167,8 @@ window.closeFuelModal = function() {
   mtState.todayDateKey = null;
   mtBaseLegState = 'idle';
   document.getElementById('mtMiles').textContent = '0.0';
+  // Clear all drawn polylines so the next day starts with a fresh map
+  if (typeof mtClearTrailPolylines === 'function') mtClearTrailPolylines();
   mtUpdateBaseLegVisibility();
   return mtOrigCloseFuelModal.apply(this, arguments);
 };
@@ -6617,14 +6630,36 @@ function applyRouteActiveUI() {
 })();
 
 // When the user changes day (via selectDay), refresh the button UI since
-// route-active state is per-day
+// route-active state is per-day, AND clear/rehydrate the map's polylines
+// so we don't show yesterday's lines on today's view.
 (function() {
   function hook() {
     if (typeof window.selectDay !== 'function') { setTimeout(hook, 200); return; }
     var orig = window.selectDay;
-    window.selectDay = function() {
+    window.selectDay = function(day) {
       var result = orig.apply(this, arguments);
-      try { applyRouteActiveUI(); } catch (e) {}
+      try {
+        applyRouteActiveUI();
+        // Clear any drawn polylines from the previous day's view
+        if (typeof mtClearTrailPolylines === 'function') mtClearTrailPolylines();
+        // Reset the in-memory leg state for the new day
+        if (typeof mtState !== 'undefined') {
+          mtState.todayLegs = [];
+          mtState.todayDistance = 0;
+          mtState.todayDateKey = null;
+          var milesEl = document.getElementById('mtMiles');
+          if (milesEl) milesEl.textContent = '0.0';
+        }
+        // If the day they selected is today's calendar date, rehydrate fresh
+        // (otherwise the map shows nothing until they pick a date in the trail dropdown)
+        var todayKey = mtDateKey();
+        var nowDay = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase().substring(0, 3);
+        if (day === nowDay && typeof mtRehydrateToday === 'function') {
+          setTimeout(mtRehydrateToday, 100);
+        }
+        // Recalc live fuel cost since the miles just reset
+        if (typeof recalcLiveFuelCost === 'function') recalcLiveFuelCost();
+      } catch (e) { console.error('[MT] selectDay hook err:', e); }
       return result;
     };
   }

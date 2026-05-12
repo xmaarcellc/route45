@@ -373,7 +373,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .mode-banner-last-num { font-family: var(–fd); font-size: 14px; letter-spacing: 1px; margin-right: 6px; opacity: 0.7; }
 .mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
 .mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
-.mode-btn-cancel { background: #e0e3e8; color: var(–acc); border: 2px solid #c4cad3; font-weight: bold; }
+.mode-btn-cancel { background: #e0e3e8; color: #000; border: 2px solid #c4cad3; font-weight: bold; }
 
 .mode-btn-done { background: var(–grn); color: #fff; font-weight: bold; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(16,185,129,0.5); }
 .mode-btn-done:disabled { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
@@ -474,7 +474,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <!-- ADD CURRENT LOCATION AS STOP -->
 
   <div style="padding:8px 16px 0;">
-    <button onclick="addCurrentLocationAsStop()" style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:var(--acc);border-radius:6px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);">📍 ADD MY CURRENT LOCATION AS A STOP</button>
+    <button onclick="addCurrentLocationAsStop()" style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;border-radius:6px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);">📍 ADD MY CURRENT LOCATION AS A STOP</button>
   </div>
 
   <div style="padding:10px 16px 6px;display:flex;gap:8px;align-items:center;">
@@ -649,19 +649,19 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-    <button id="followBtn" onclick="toggleAutoFollow()" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">📍 FOLLOW ME</button>
-    <button onclick="fitAllStops()" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🗺️ ALL STOPS</button>
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🗺️ ALL STOPS</button>
     <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏢 BASE</button>
-<button id="tollToggleBtn" onclick="toggleTolls()" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">💰 TOLLS: ON</button>
-    <button id="reorgBtn" onclick="startReorganize()" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🔀 REORGANIZE</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🔀 REORGANIZE</button>
     <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--acc);border:2px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">📍 ADD HERE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7), 0 0 12px rgba(255,122,61,0.5);">MON</button>
-    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">TUE</button>
-    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">WED</button>
-    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">THU</button>
-    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:#e0e3e8;border:2px solid #c4cad3;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">FRI</button>
+    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">TUE</button>
+    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">WED</button>
+    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">THU</button>
+    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:#e0e3e8;border:2px solid #c4cad3;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">FRI</button>
   </div>
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
@@ -2910,10 +2910,10 @@ function initMapView() {
         var btn = document.getElementById('followBtn');
         if (btn) {
           btn.textContent = '📍 FOLLOW ME';
-          btn.style.background = 'var(--sur)';
-          btn.style.border = '1px solid var(--bdr)';
-          btn.style.color = 'var(--txt)';
-          btn.style.fontWeight = 'normal';
+          btn.style.background = '#e0e3e8';
+          btn.style.border = '2px solid #c4cad3';
+          btn.style.color = '#000';
+          btn.style.fontWeight = '700';
         }
       }
     });
@@ -3277,7 +3277,7 @@ function selectMapDay(day) {
     } else {
       btn.style.background = '#e0e3e8';
       btn.style.border = '2px solid #c4cad3';
-      btn.style.color = 'var(--acc)';
+      btn.style.color = '#000';
       btn.style.fontWeight = '700';
       btn.style.fontSize = '12px';
       btn.style.padding = '7px 12px';
@@ -3313,10 +3313,10 @@ function toggleAutoFollow() {
     }
   } else {
     btn.textContent = '📍 FOLLOW ME';
-    btn.style.background = 'var(--sur)';
-    btn.style.border = '1px solid var(--bdr)';
-    btn.style.color = 'var(--txt)';
-    btn.style.fontWeight = 'normal';
+    btn.style.background = '#e0e3e8';
+    btn.style.border = '2px solid #c4cad3';
+    btn.style.color = '#000';
+    btn.style.fontWeight = '700';
   }
 }
 
@@ -3827,7 +3827,7 @@ function stopNavigation(skipConfirm) {
 
   autoFollow = false;
   var followBtn = document.getElementById('followBtn');
-  if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = 'var(--sur)'; followBtn.style.border = '1px solid var(--bdr)'; followBtn.style.color = 'var(--txt)'; }
+  if (followBtn) { followBtn.textContent = '📍 FOLLOW ME'; followBtn.style.background = '#e0e3e8'; followBtn.style.border = '2px solid #c4cad3'; followBtn.style.color = '#000'; }
   // Reset map heading to north-up
   if (mapView) { mapView.setHeading(0); }
 
@@ -3942,14 +3942,14 @@ function toggleTolls() {
   if (btn) {
     if (tollsEnabled) {
       btn.textContent = '💰 TOLLS: ON';
-      btn.style.background = 'var(--sur)';
-      btn.style.color = 'var(--txt)';
-      btn.style.border = '1px solid var(--bdr)';
+      btn.style.background = '#e0e3e8';
+      btn.style.color = '#000';
+      btn.style.border = '2px solid #c4cad3';
     } else {
       btn.textContent = '🚫 NO TOLLS';
       btn.style.background = 'var(--acc)';
       btn.style.color = '#000';
-      btn.style.border = 'none';
+      btn.style.border = '2px solid #fff';
     }
   }
 

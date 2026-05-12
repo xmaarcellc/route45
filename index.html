@@ -4614,126 +4614,7 @@ function snapToRoad(lat, lng, callback) {
 // ============================================================
 var auth = firebase.auth();
 
-// ============================================================
-// SECURITY: EMAIL ALLOWLIST + LOCKOUT
-// ============================================================
-// Only emails in this list can access the app. Add additional emails as needed.
-// IMPORTANT: also update Firebase Realtime Database rules to enforce server-side.
-// See SECURITY_RULES comment at the bottom of this script block for the rules to paste.
-var AUTHORIZED_EMAILS = [
-  // EDIT THIS: replace with your actual authorized Gmail address(es).
-  // Emails are normalized to lowercase before comparison.
-  'your.email@gmail.com'
-];
-
-// Cooldown duration after an unauthorized login attempt (milliseconds)
-var UNAUTHORIZED_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-// localStorage keys
-var LOCKOUT_KEY = 'rt45_lockout_until';
-var LOCKOUT_EMAIL_KEY = 'rt45_lockout_email';
-
-function isEmailAuthorized(email) {
-  if (!email) return false;
-  var normalized = String(email).toLowerCase().trim();
-  return AUTHORIZED_EMAILS.some(function(e) { return e.toLowerCase().trim() === normalized; });
-}
-
-function isDeviceLockedOut() {
-  try {
-    var until = parseInt(localStorage.getItem(LOCKOUT_KEY), 10);
-    if (!until || isNaN(until)) return false;
-    if (Date.now() < until) return until;
-    // Cooldown expired — clear it
-    localStorage.removeItem(LOCKOUT_KEY);
-    localStorage.removeItem(LOCKOUT_EMAIL_KEY);
-    return false;
-  } catch (e) { return false; }
-}
-
-function setDeviceLockout(email) {
-  try {
-    var until = Date.now() + UNAUTHORIZED_COOLDOWN_MS;
-    localStorage.setItem(LOCKOUT_KEY, String(until));
-    localStorage.setItem(LOCKOUT_EMAIL_KEY, String(email || 'unknown'));
-    return until;
-  } catch (e) { return Date.now(); }
-}
-
-function formatLockoutCountdown(untilTs) {
-  var remaining = untilTs - Date.now();
-  if (remaining <= 0) return '0d 0h 0m';
-  var days = Math.floor(remaining / (24 * 60 * 60 * 1000));
-  var hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-  var mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-  return days + 'd ' + hours + 'h ' + mins + 'm';
-}
-
-function showLockoutScreen(untilTs, email) {
-  // Hide everything else
-  var overlay = document.getElementById('loginOverlay');
-  if (overlay) overlay.style.display = 'none';
-  // Build/show lockout div
-  var lock = document.getElementById('lockoutScreen');
-  if (!lock) {
-    lock = document.createElement('div');
-    lock.id = 'lockoutScreen';
-    lock.style.cssText = 'position:fixed;inset:0;background:#0a0a0a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;';
-    lock.innerHTML =
-      '<div style="font-size:72px;margin-bottom:16px;">🔒</div>' +
-      '<div style="font-family:var(--fd);font-size:32px;color:var(--red);letter-spacing:2px;margin-bottom:8px;">ACCESS DENIED</div>' +
-      '<div style="font-family:var(--fm);font-size:13px;color:var(--mut);max-width:360px;margin-bottom:24px;line-height:1.5;">This device is locked out due to an unauthorized login attempt. Access will be restored after the cooldown period.</div>' +
-      '<div style="background:#141414;border:1px solid var(--bdr);border-radius:8px;padding:16px 24px;margin-bottom:20px;min-width:240px;">' +
-        '<div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Time Remaining</div>' +
-        '<div id="lockoutCountdown" style="font-family:var(--fd);font-size:28px;color:var(--acc);letter-spacing:1px;">--</div>' +
-      '</div>' +
-      '<div id="lockoutEmail" style="font-family:var(--fm);font-size:10px;color:var(--mut);"></div>';
-    document.body.appendChild(lock);
-  }
-  lock.style.display = 'flex';
-  var emailEl = document.getElementById('lockoutEmail');
-  if (emailEl && email) emailEl.textContent = 'Attempted: ' + email;
-  // Live-update countdown every minute
-  function tick() {
-    var el = document.getElementById('lockoutCountdown');
-    if (!el) return;
-    if (Date.now() >= untilTs) {
-      // Cooldown ended — reload so user can try again
-      localStorage.removeItem(LOCKOUT_KEY);
-      localStorage.removeItem(LOCKOUT_EMAIL_KEY);
-      location.reload();
-      return;
-    }
-    el.textContent = formatLockoutCountdown(untilTs);
-  }
-  tick();
-  if (window._lockoutInterval) clearInterval(window._lockoutInterval);
-  window._lockoutInterval = setInterval(tick, 30000);
-}
-
-// On page load, check if device is currently in cooldown before anything else
-(function checkInitialLockout() {
-  var lockedUntil = isDeviceLockedOut();
-  if (lockedUntil) {
-    var email = localStorage.getItem(LOCKOUT_EMAIL_KEY) || '';
-    console.warn('[SECURITY] Device locked out until', new Date(lockedUntil).toISOString(), '— attempted email:', email);
-    // Wait for DOM, then show lockout
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() { showLockoutScreen(lockedUntil, email); });
-    } else {
-      showLockoutScreen(lockedUntil, email);
-    }
-  }
-})();
-
 function signInWithGoogle() {
-  // Block sign-in attempts during cooldown (defense-in-depth — UI is already hidden)
-  var lockedUntil = isDeviceLockedOut();
-  if (lockedUntil) {
-    showLockoutScreen(lockedUntil, localStorage.getItem(LOCKOUT_EMAIL_KEY) || '');
-    return;
-  }
-
   var btn = document.getElementById('googleSignInBtn');
   var loading = document.getElementById('loginLoading');
   var err = document.getElementById('loginError');
@@ -4744,18 +4625,8 @@ function signInWithGoogle() {
   var provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
     .then(function(result) {
-      var email = result.user && result.user.email ? result.user.email : '';
-      // SECURITY GATE: verify the email is on the allowlist
-      if (!isEmailAuthorized(email)) {
-        console.warn('[SECURITY] Unauthorized login attempt:', email, 'at', new Date().toISOString());
-        var until = setDeviceLockout(email);
-        // Sign them out immediately so they don't retain an auth token
-        auth.signOut().catch(function(e) { console.error('Sign-out err:', e); });
-        showLockoutScreen(until, email);
-        return;
-      }
-      // Authorized — auth state change handler will call init()
-      console.log('Signed in:', email);
+      // Auth state change handler will call init()
+      console.log('Signed in:', result.user.email);
     })
     .catch(function(e) {
       console.error('Sign in error:', e);
@@ -4778,23 +4649,13 @@ function requestMicPermission() {
 // Auth state listener - fires on page load if already signed in
 auth.onAuthStateChanged(function(user) {
   if (user) {
-    // Double-check the email even on existing sessions (in case allowlist changed
-    // or someone managed to authenticate outside this app's UI)
-    if (!isEmailAuthorized(user.email)) {
-      console.warn('[SECURITY] Existing session has unauthorized email — signing out:', user.email);
-      var until = setDeviceLockout(user.email);
-      auth.signOut();
-      showLockoutScreen(until, user.email);
-      return;
-    }
     // Signed in - hide login and start app
     console.log('Auth: signed in as', user.email);
     document.getElementById('loginOverlay').style.display = 'none';
     requestMicPermission();
     init();
   } else {
-    // Not signed in - show login (unless we're already in lockout state)
-    if (isDeviceLockedOut()) return;
+    // Not signed in - show login
     document.getElementById('loginOverlay').style.display = 'flex';
     var btn = document.getElementById('googleSignInBtn');
     var loading = document.getElementById('loginLoading');
@@ -4802,26 +4663,6 @@ auth.onAuthStateChanged(function(user) {
     if (loading) loading.style.display = 'none';
   }
 });
-
-/* ============================================================
- * SECURITY_RULES — Firebase Realtime Database rules to paste
- * ============================================================
- * Go to Firebase Console → Realtime Database → Rules and paste this
- * (replace "YOUR_FIREBASE_UID" with your actual UID, which you can find
- *  in Firebase Console → Authentication → Users tab):
- *
- * {
- *   "rules": {
- *     ".read":  "auth != null && auth.uid === 'YOUR_FIREBASE_UID'",
- *     ".write": "auth != null && auth.uid === 'YOUR_FIREBASE_UID'"
- *   }
- * }
- *
- * This ensures that even if someone gets a valid auth token through some
- * other route, the database itself refuses all reads and writes from
- * anyone other than your specific UID.
- * ============================================================
- */
 
 // ============================================================
 // START THE APP
@@ -6539,4 +6380,4 @@ console.log('[MT] Mileage tracking module loaded');
 <!-- ===================================================================== -->
 
 </body>
-</html> 
+</html>

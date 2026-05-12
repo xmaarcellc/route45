@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#1e3a8a">
+<meta name="theme-color" content="#1e40af">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Project Z</title>
@@ -14,10 +14,10 @@
 
 :root {
 color-scheme: dark only;
-–bg: #1e3a8a;
-–sur: #2851a8;
-–sur2: #1e4391;
-–bdr: #3d6bbf;
+–bg: #1e40af;
+–sur: #2e5cd6;
+–sur2: #234d9e;
+–bdr: #7da3e0;
 –acc: #ff7a3d;
 –acc2: #ff9966;
 –grn: #10b981;
@@ -25,7 +25,7 @@ color-scheme: dark only;
 –blu: #60a5fa;
 –pur: #c084fc;
 –txt: #ffffff;
-–mut: #c0d4f0;
+–mut: #dce8f8;
 –fd: ‘Bebas Neue’, sans-serif;
 –fm: ‘DM Mono’, monospace;
 –fb: ‘DM Sans’, sans-serif;
@@ -68,8 +68,8 @@ color-scheme: dark only;
 /* DAY SELECTOR */
 .day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: var(–sur); border-bottom: 1px solid var(–bdr); scrollbar-width: none; }
 .day-sel::-webkit-scrollbar { display: none; }
-.day-btn { flex-shrink: 0; background: var(–sur2); border: 1px solid var(–bdr); color: var(–mut); font-family: var(–fm); font-size: 12px; padding: 6px 14px; border-radius: 4px; cursor: pointer; -webkit-appearance: none; }
-.day-btn.active { background: var(–acc); border-color: var(–acc); color: #000; font-weight: 500; }
+.day-btn { flex-shrink: 0; background: var(–sur); border: 2px solid #fff; color: #fff; font-family: var(–fm); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 5px; cursor: pointer; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.day-btn.active { background: var(–acc); border-color: #fff; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.5), 0 0 0 2px #fff; }
 
 /* STATS BAR */
 .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1a2a3a; border-bottom: 1px solid var(–bdr); }
@@ -188,8 +188,9 @@ box-shadow: 0 0 0 1px var(–grn), 0 2px 8px rgba(16,185,129,0.18);
 .add-title { font-family: var(–fd); font-size: 24px; color: var(–acc); letter-spacing: 2px; margin-bottom: 16px; }
 .form-group { margin-bottom: 12px; }
 .form-label { font-family: var(–fm); font-size: 10px; color: var(–mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-.form-input { width: 100%; background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fb); font-size: 14px; padding: 12px; border-radius: 6px; outline: none; }
-.form-input:focus { border-color: var(–acc); }
+.form-input { width: 100%; background: #fff; border: 2px solid var(–bdr); color: #000; font-family: var(–fb); font-size: 15px; font-weight: 500; padding: 12px; border-radius: 6px; outline: none; }
+.form-input:focus { border-color: var(–acc); box-shadow: 0 0 0 3px rgba(255,122,61,0.25); }
+.form-input::placeholder { color: #888; }
 .form-row { display: flex; gap: 8px; }
 .form-row .form-group { flex: 1; }
 .search-results { background: var(–sur2); border: 1px solid var(–bdr); border-radius: 6px; margin-top: 4px; display: none; overflow: hidden; }
@@ -372,10 +373,10 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .mode-banner-last-num { font-family: var(–fd); font-size: 14px; letter-spacing: 1px; margin-right: 6px; opacity: 0.7; }
 .mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
 .mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
-.mode-btn-cancel { background: rgba(0,0,0,0.2); color: #000; }
+.mode-btn-cancel { background: #fff; color: var(–acc); border: 2px solid #fff; font-weight: bold; }
 
-.mode-btn-done { background: var(–txt); color: var(–acc); font-weight: bold; }
-.mode-btn-done:disabled { background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+.mode-btn-done { background: var(–grn); color: #fff; font-weight: bold; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(16,185,129,0.5); }
+.mode-btn-done:disabled { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
 
 </style>
 </head>
@@ -444,7 +445,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <div style="padding:8px 16px 0;">
-    <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:none;border-radius:6px;padding:11px;font-family:var(--fd);font-size:18px;letter-spacing:2px;cursor:pointer;">⚡ OPTIMIZE FROM MY LOCATION</button>
+    <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:2px solid #fff;border-radius:6px;padding:12px;font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 0 14px rgba(255,122,61,0.4);">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
 
   <!-- FUEL PRICE + LIVE COST BAR -->
@@ -456,11 +457,11 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
         <div style="display:flex;gap:8px;align-items:center;">
           <input id="fuelPriceInput" type="number" step="0.01" placeholder="3.45"
             oninput="onFuelPriceChange(this.value)"
-            style="flex:1;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-weight:600;font-size:16px;padding:7px 10px;border-radius:6px;outline:none;">
+            style="flex:1;background:#fff;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:18px;padding:9px 12px;border-radius:6px;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
           <input id="fuelMpgInput" type="number" step="0.1" placeholder="MPG"
             oninput="onFuelMpgChange(this.value)"
             title="MPG"
-            style="width:64px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 8px;border-radius:6px;outline:none;text-align:center;">
+            style="width:72px;background:#fff;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:16px;padding:9px 8px;border-radius:6px;outline:none;text-align:center;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
         </div>
       </div>
       <div style="text-align:right;min-width:80px;">
@@ -473,13 +474,13 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <!-- ADD CURRENT LOCATION AS STOP -->
 
   <div style="padding:8px 16px 0;">
-    <button onclick="addCurrentLocationAsStop()" style="width:100%;background:var(--sur);border:1px dashed var(--acc);color:var(--acc);border-radius:6px;padding:10px;font-family:var(--fd);font-size:14px;letter-spacing:1.5px;cursor:pointer;">📍 ADD MY CURRENT LOCATION AS A STOP</button>
+    <button onclick="addCurrentLocationAsStop()" style="width:100%;background:#fff;border:2px solid var(--acc);color:var(--acc);border-radius:6px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);">📍 ADD MY CURRENT LOCATION AS A STOP</button>
   </div>
 
   <div style="padding:10px 16px 6px;display:flex;gap:8px;align-items:center;">
     <div style="position:relative;flex:1;">
-      <input id="routeSearchInput" type="text" placeholder="🔍 Search stop by name..." oninput="onRouteSearch(this.value)" style="width:100%;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fb);font-size:13px;padding:9px 32px 9px 12px;border-radius:6px;outline:none;">
-      <button id="routeSearchClearBtn" onclick="clearRouteSearch()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mut);font-size:14px;cursor:pointer;display:none;padding:4px 8px;">✕</button>
+      <input id="routeSearchInput" type="text" placeholder="🔍 Search stop by name..." oninput="onRouteSearch(this.value)" style="width:100%;background:#fff;border:2px solid #fff;color:#000;font-family:var(--fb);font-size:14px;font-weight:500;padding:11px 32px 11px 14px;border-radius:6px;outline:none;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+      <button id="routeSearchClearBtn" onclick="clearRouteSearch()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;font-size:16px;font-weight:bold;cursor:pointer;display:none;padding:4px 8px;">✕</button>
     </div>
   </div>
 
@@ -648,19 +649,19 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">📍 FOLLOW ME</button>
-    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🗺️ ALL STOPS</button>
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:rgba(255,255,255,0.95);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:rgba(255,255,255,0.95);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🗺️ ALL STOPS</button>
     <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏢 BASE</button>
-<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">💰 TOLLS: ON</button>
-    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🔀 REORGANIZE</button>
-    <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--sur);border:1px solid var(--acc);color:var(--acc);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">📍 ADD HERE</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:rgba(255,255,255,0.95);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:rgba(255,255,255,0.95);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">🔀 REORGANIZE</button>
+    <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--acc);border:2px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:700;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.7);">📍 ADD HERE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7), 0 0 12px rgba(255,122,61,0.5);">MON</button>
-    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">TUE</button>
-    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">WED</button>
-    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">THU</button>
-    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">FRI</button>
+    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:rgba(255,255,255,0.92);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">TUE</button>
+    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:rgba(255,255,255,0.92);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">WED</button>
+    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:rgba(255,255,255,0.92);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">THU</button>
+    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:rgba(255,255,255,0.92);border:2px solid #fff;color:var(--acc);font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">FRI</button>
   </div>
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
@@ -3267,17 +3268,17 @@ function selectMapDay(day) {
     if (!btn) return;
     if (d === day) {
       btn.style.background = 'var(--acc)';
-      btn.style.border = 'none';
+      btn.style.border = '2px solid #fff';
       btn.style.color = '#000';
       btn.style.fontWeight = '700';
       btn.style.fontSize = '12px';
       btn.style.padding = '7px 12px';
-      btn.style.boxShadow = '0 3px 10px rgba(0,0,0,0.7), 0 0 12px rgba(255,122,61,0.5)';
+      btn.style.boxShadow = '0 3px 10px rgba(0,0,0,0.7), 0 0 14px rgba(255,122,61,0.6)';
     } else {
-      btn.style.background = 'rgba(0,0,0,0.55)';
-      btn.style.border = '1px solid rgba(255,255,255,0.25)';
-      btn.style.color = '#fff';
-      btn.style.fontWeight = '600';
+      btn.style.background = 'rgba(255,255,255,0.92)';
+      btn.style.border = '2px solid #fff';
+      btn.style.color = 'var(--acc)';
+      btn.style.fontWeight = '700';
       btn.style.fontSize = '12px';
       btn.style.padding = '7px 12px';
       btn.style.boxShadow = '0 3px 10px rgba(0,0,0,0.7)';
@@ -4933,7 +4934,7 @@ function closeMeasureResult() { /* measure feature removed */ }
   </div>
   <div class="form-group">
     <label class="form-label">Frequency</label>
-    <select class="form-input" id="editFreq" style="background:var(--sur2);color:var(--txt);">
+    <select class="form-input" id="editFreq" style="background:#fff;color:#000;">
       <option value="weekly">Weekly</option>
       <option value="biweekly">Biweekly</option>
       <option value="monthly">Monthly</option>
@@ -4943,7 +4944,7 @@ function closeMeasureResult() { /* measure feature removed */ }
 
 <div class="form-group">
   <label class="form-label">📅 Day <span id="editDayBadge" style="font-size:9px;color:var(--mut);"></span></label>
-  <select class="form-input" id="editDay" style="background:var(--sur2);color:var(--txt);">
+  <select class="form-input" id="editDay" style="background:#fff;color:#000;">
     <option value="MON">Monday</option>
     <option value="TUE">Tuesday</option>
     <option value="WED">Wednesday</option>
@@ -4970,7 +4971,7 @@ function closeMeasureResult() { /* measure feature removed */ }
 
 <div style="display:flex;gap:8px;margin-top:16px;">
   <button onclick="closeEditModal()" style="flex:1;padding:12px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);cursor:pointer;">CANCEL</button>
-  <button onclick="saveEditedStop()" style="flex:2;padding:12px;background:var(--acc);border:none;color:#000;border-radius:6px;font-family:var(--fm);font-weight:600;cursor:pointer;">SAVE CHANGES</button>
+  <button onclick="saveEditedStop()" style="flex:2;padding:13px;background:var(--acc);border:2px solid #fff;color:#000;border-radius:6px;font-family:var(--fm);font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 12px rgba(255,122,61,0.5);">SAVE CHANGES</button>
 </div>
 ```
 
@@ -5032,15 +5033,15 @@ function closeMeasureResult() { /* measure feature removed */ }
 .fuel-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
 .fuel-input-group { margin-bottom: 12px; }
 .fuel-input-lbl { font-family: var(--fm); font-size: 11px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-.fuel-input { width: 100%; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fb); font-size: 16px; padding: 12px; border-radius: 6px; outline: none; }
-.fuel-input:focus { border-color: var(--acc); }
+.fuel-input { width: 100%; background: #fff; border: 2px solid var(--bdr); color: #000; font-family: var(--fb); font-size: 18px; font-weight: 600; padding: 12px; border-radius: 6px; outline: none; }
+.fuel-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(255,122,61,0.25); }
 .fuel-result { background: var(--sur2); border: 2px solid var(--grn); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 14px; }
 .fuel-result-val { font-family: var(--fd); font-size: 32px; color: var(--grn); line-height: 1; }
 .fuel-result-lbl { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
 .fuel-btn-row { display: flex; gap: 8px; }
 .fuel-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .fuel-btn-cancel { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); }
-.fuel-btn-save { background: var(--acc); color: #000; }
+.fuel-btn-save { background: var(--acc); color: #000; border: 2px solid #fff !important; font-weight: 700; box-shadow: 0 3px 12px rgba(255,122,61,0.5); }
 
 /* === MAP TAB: TRAIL OVERLAY CONTROLS === */
 .trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(40,40,40,0.94); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
@@ -7407,16 +7408,17 @@ console.log('[MT] Mileage tracking module loaded');
 }
 .adt-newstop-input {
   width: 100%;
-  background: var(--sur2);
-  border: 1px solid var(--bdr);
-  color: var(--txt);
+  background: #fff;
+  border: 2px solid var(--bdr);
+  color: #000;
   font-family: var(--fb);
-  font-size: 15px;
-  padding: 10px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 11px 12px;
   border-radius: 6px;
   outline: none;
 }
-.adt-newstop-input:focus { border-color: var(--acc); }
+.adt-newstop-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(255,122,61,0.25); }
 .adt-newstop-coords {
   font-family: var(--fm);
   font-size: 11px;

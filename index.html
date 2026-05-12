@@ -5,27 +5,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#eef0f3">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Project Z</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-color-scheme: light only;
-–bg: #eef0f3;
-–sur: #ffffff;
-–sur2: #f6f7f9;
-–bdr: #d6dbe2;
-–acc: #2563eb;
-–acc2: #3b82f6;
-–grn: #059669;
-–red: #dc2626;
-–blu: #2563eb;
-–pur: #2563eb;
-–txt: #0f172a;
-–mut: #64748b;
+color-scheme: dark only;
+–bg: #1a1a1a;
+–sur: #252525;
+–sur2: #2e2e2e;
+–bdr: #3d2d1d;
+–acc: #ff7a3d;
+–acc2: #ff9966;
+–grn: #06d6a0;
+–red: #ef476f;
+–blu: #ff7a3d;
+–pur: #ff7a3d;
+–txt: #ffffff;
+–mut: #c8c0b8;
 –fd: ‘Bebas Neue’, sans-serif;
 –fm: ‘DM Mono’, monospace;
 –fb: ‘DM Sans’, sans-serif;
@@ -36,7 +36,7 @@ color-scheme: light only;
   body {
   background-color: var(–bg);
   /* Subtle 2px dot grid texture so the background doesn’t look flat */
-  background-image: radial-gradient(circle, rgba(15,23,42,0.06) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
   background-size: 18px 18px;
   background-attachment: fixed;
   color: var(–txt);
@@ -215,7 +215,7 @@ transform: scale(0.95);
 .bulk-toolbar { padding: 10px 16px; background: var(–sur); border-bottom: 1px solid var(–bdr); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .bulk-toolbar-btn { background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 11px; padding: 7px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
 .bulk-toolbar-btn.primary { background: var(–acc); border-color: var(–acc); color: #000; font-weight: 600; }
-.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(–sur); border-top: 2px solid var(–acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(15,23,42,.25); display: none; flex-direction: column; gap: 8px; }
+.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(–sur); border-top: 2px solid var(–acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(0,0,0,.6); display: none; flex-direction: column; gap: 8px; }
 .bulk-action-bar.show { display: flex; }
 .bulk-action-row { display: flex; gap: 8px; align-items: center; }
 .bulk-action-counter { font-family: var(–fd); font-size: 18px; color: var(–acc); letter-spacing: 1px; flex: 1; }
@@ -256,7 +256,7 @@ transform: scale(0.95);
 .stop-dist { font-family: var(–fm); font-size: 10px; color: var(–acc); margin-top: 2px; }
 
 /* MAP STOP POPUP */
-.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 1px solid var(–acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(15,23,42,.25); display: none; }
+.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 1px solid var(–acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,.6); display: none; }
 .map-stop-popup.show { display: block; }
 .map-popup-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
 .map-popup-name { font-family: var(–fd); font-size: 22px; color: var(–acc); letter-spacing: 1px; padding-right: 24px; }
@@ -287,7 +287,7 @@ body.nav-active .upcoming-turn { z-index: 9101; }
 .nav-stop-btn:hover { filter: brightness(1.15); }
 .nav-stop-btn:active { transform: scale(0.97); }
 /* Bigger, more obvious STOP button when nav is active */
-body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(15,23,42,.12), 0 4px 12px rgba(239,71,111,.4); }
+body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 4px 12px rgba(239,71,111,.4); }
 .nav-hud-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .nav-hud-dest { font-family: var(–fd); font-size: 20px; color: var(–acc); letter-spacing: 1px; }
 .nav-stop-btn { background: var(–red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
@@ -302,9 +302,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .nav-turn-dist { font-family: var(–fd); font-size: 16px; color: var(–acc); flex-shrink: 0; }
 
 /* BIG UPCOMING-TURN ALERT (shows when ≤ 0.5 mi from next turn) */
-.upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(59,130,246,.45), 0 0 0 2px rgba(15,23,42,.25); animation: upcoming-pulse 1.4s ease-in-out infinite; }
+.upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(59,130,246,.45), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse 1.4s ease-in-out infinite; }
 .upcoming-turn.show { display: block; }
-.upcoming-turn.imminent { background: linear-gradient(135deg, #ef476f, #c9184a); color: #fff; box-shadow: 0 6px 24px rgba(239,71,111,.6), 0 0 0 2px rgba(15,23,42,.25); animation: upcoming-pulse-fast 0.8s ease-in-out infinite; }
+.upcoming-turn.imminent { background: linear-gradient(135deg, #ef476f, #c9184a); color: #fff; box-shadow: 0 6px 24px rgba(239,71,111,.6), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse-fast 0.8s ease-in-out infinite; }
 .upcoming-turn-row { display: flex; align-items: center; gap: 14px; }
 .upcoming-turn-icon { font-size: 56px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
 .upcoming-turn-info { flex: 1; min-width: 0; }
@@ -319,7 +319,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 50% { transform: scale(1.04); }
 }
 
-.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(–sur); border: 1px solid var(–acc); border-radius: 50%; color: var(–acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(15,23,42,.12); }
+.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(–sur); border: 1px solid var(–acc); border-radius: 50%; color: var(–acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
 .dots-btn { background: none; border: none; color: var(–mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
 .dots-btn:active { background: var(–bdr); }
 .freq-menu { display: none; position: absolute; right: 16px; background: var(–sur2); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
@@ -355,7 +355,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .google-btn:active { background: #f8f8f8; }
 
 /* MODE BANNER (Reorganize / Measure) */
-.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(15,23,42,.25); }
+.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
 .mode-banner.show { display: block; }
 .mode-banner.measure { background: #4285f4; color: #fff; }
 .mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -371,7 +371,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .mode-btn-done { background: var(–txt); color: var(–acc); font-weight: bold; }
 .mode-btn-done:disabled { background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.3); cursor: not-allowed; }
 .mode-banner.measure .mode-btn-done { background: #fff; color: #4285f4; }
-.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(15,23,42,.18); }
+.measure-result { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 2px solid #4285f4; border-radius: 12px; padding: 14px 16px; z-index: 25; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .measure-result.show { display: block; }
 .measure-result-close { position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
 .measure-pair { font-family: var(–fm); font-size: 12px; color: var(–txt); margin-bottom: 12px; padding-right: 24px; line-height: 1.4; }
@@ -621,12 +621,12 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">📍 FOLLOW ME</button>
-    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🗺️ ALL STOPS</button>
-    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🏢 BASE</button>
-<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">💰 TOLLS: ON</button>
-    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">🔀 REORGANIZE</button>
-    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12);">📏 MEASURE</button>
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
+    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🔀 REORGANIZE</button>
+    <button id="measureBtn" onclick="startMeasure()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📏 MEASURE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
     <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
@@ -638,7 +638,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
 
-<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,23,42,.12);">🏙️</button>
+<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️</button>
 <button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
 
   <!-- NAVIGATION HUD (shown during navigation) -->
@@ -5083,13 +5083,13 @@ function closeMeasureResult() {
   bottom: 16px;
   left: 16px;
   right: 16px;
-  background: rgba(255,255,255,0.95);
+  background: rgba(40,40,40,0.96);
   border: 1px solid var(--bdr);
   border-radius: 10px;
   padding: 10px 14px;
   display: none;
   z-index: 200;
-  box-shadow: 0 4px 20px rgba(15,23,42,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
   backdrop-filter: blur(8px);
 }
 .mt-badge.show { display: flex; align-items: center; gap: 12px; }
@@ -5126,7 +5126,7 @@ function closeMeasureResult() {
 .fuel-btn-save { background: var(--acc); color: #000; }
 
 /* === MAP TAB: TRAIL OVERLAY CONTROLS === */
-.trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(255,255,255,0.92); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
+.trail-controls { position: absolute; bottom: 80px; left: 10px; right: 10px; background: rgba(40,40,40,0.94); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 12px; z-index: 15; display: none; backdrop-filter: blur(8px); }
 .trail-controls.show { display: block; }
 .trail-controls-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
 .trail-controls-stats { display: flex; gap: 12px; flex: 1; }
@@ -5149,14 +5149,14 @@ function closeMeasureResult() {
 .leg-popup {
   position: fixed;
   display: none;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(40, 40, 40, 0.97);
   border: 2px solid var(--acc);
   border-radius: 10px;
   padding: 12px 14px;
   z-index: 9500;
   min-width: 220px;
   max-width: 280px;
-  box-shadow: 0 8px 24px rgba(15,23,42,0.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   backdrop-filter: blur(8px);
 }
 .leg-popup.show { display: block; }
@@ -5459,7 +5459,7 @@ function mtFinishGPS(arrivedIdx, arrivedName) {
 // Palette of visually-distinct vivid colors that work well on a dark map.
 // Each leg in a day gets the next color in order. Cycles if you have >24 legs.
 var MT_LEG_PALETTE = [
-  '#3b82f6', // blue (brand)
+  '#ff7a3d', // orange (brand)
   '#06d6a0', // teal
   '#ffd166', // gold
   '#ef476f', // pink-red
@@ -6417,7 +6417,7 @@ console.log('[MT] Mileage tracking module loaded');
   cursor: pointer;
   z-index: 80;
   font-size: 18px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
 
 /* === SETTINGS MODAL === */
@@ -6425,7 +6425,7 @@ console.log('[MT] Mileage tracking module loaded');
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.45);
+  background: rgba(0,0,0,0.7);
   z-index: 10001;
   align-items: center;
   justify-content: center;
@@ -6496,7 +6496,7 @@ console.log('[MT] Mileage tracking module loaded');
   background: #fff;
   border-radius: 50%;
   transition: left 0.2s;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.2);
+  box-shadow: 0 1px 3px rgba(0,0,0,.5);
 }
 .adt-toggle.on .adt-toggle-knob { left: 22px; }
 /* Slider */
@@ -6541,7 +6541,7 @@ console.log('[MT] Mileage tracking module loaded');
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.55);
+  background: rgba(0,0,0,0.75);
   z-index: 10002;
   align-items: center;
   justify-content: center;
@@ -6622,7 +6622,7 @@ console.log('[MT] Mileage tracking module loaded');
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.55);
+  background: rgba(0,0,0,0.75);
   z-index: 10003;
   align-items: center;
   justify-content: center;
@@ -6713,7 +6713,7 @@ console.log('[MT] Mileage tracking module loaded');
   color: var(--mut);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
 .adt-status-pill.show { display: flex; align-items: center; gap: 6px; }
 .adt-status-pill.dwelling { border-color: var(--acc); color: var(--acc); }

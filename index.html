@@ -720,6 +720,12 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
       <div class="mode-banner-text" id="modeBannerText">Tap stops in the order you want them</div>
       <div class="mode-banner-counter" id="modeBannerCounter">0/0</div>
     </div>
+    <!-- LAST WEEK'S ORDER SUGGESTION -->
+    <div id="reorgSuggestionBar" style="display:none;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:8px 10px;">
+      <div style="font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:.5px;opacity:0.85;margin-bottom:2px;">📅 Suggestion available</div>
+      <div id="reorgSuggestionLabel" style="font-family:var(--fb);font-size:11px;margin-bottom:6px;">Order from previous completion</div>
+      <button onclick="applyLastWeekOrder()" style="width:100%;background:#fff;color:var(--acc);border:none;border-radius:4px;padding:8px;font-family:var(--fd);font-size:12px;letter-spacing:1px;cursor:pointer;font-weight:bold;">✨ APPLY THIS ORDER</button>
+    </div>
     <div class="mode-banner-last" id="modeBannerLast">
       <span class="mode-banner-last-num" id="modeBannerLastNum"></span><span id="modeBannerLastName"></span>
     </div>
@@ -5219,6 +5225,42 @@ function closeMeasureResult() { /* measure feature removed */ }
   </div>
 </div>
 
+<!-- === EDIT FUEL MODAL (for historical days) === -->
+
+<div class="fuel-modal-overlay" id="editFuelOverlay">
+  <div class="fuel-modal">
+    <div class="fuel-modal-title">✏️ EDIT FUEL</div>
+    <div class="fuel-modal-sub" id="editFuelDate">--</div>
+
+```
+<div class="fuel-row">
+  <div class="fuel-stat-box" style="flex:1;"><div class="fuel-stat-val" id="editFuelMiles">0.0 mi</div><div class="fuel-stat-lbl">Miles Driven</div></div>
+</div>
+
+<div class="fuel-input-group">
+  <label class="fuel-input-lbl">Gas price ($/gallon)</label>
+  <input class="fuel-input" id="editFuelGasInput" type="number" step="0.01" placeholder="e.g. 3.45" oninput="mtRecalcEditFuelCost()">
+</div>
+
+<div class="fuel-input-group">
+  <label class="fuel-input-lbl">Truck MPG</label>
+  <input class="fuel-input" id="editFuelMpgInput" type="number" step="0.1" placeholder="e.g. 14" oninput="mtRecalcEditFuelCost()">
+</div>
+
+<div class="fuel-result">
+  <div class="fuel-result-val" id="editFuelCostPreview">$0.00</div>
+  <div class="fuel-result-lbl">Updated fuel cost</div>
+</div>
+
+<div class="fuel-btn-row">
+  <button class="fuel-btn fuel-btn-cancel" onclick="mtCloseEditFuelModal()">CANCEL</button>
+  <button class="fuel-btn fuel-btn-save" onclick="mtSaveEditFuelData()">SAVE CHANGES</button>
+</div>
+```
+
+  </div>
+</div>
+
 <!-- === TRAIL OVERLAY CONTROLS (added to map tab) === -->
 
 <div class="trail-controls" id="trailControls">
@@ -6251,20 +6293,23 @@ function mtRenderHistory() {
     var driveMin = Math.round((r.totalDriveSeconds || 0) / 60);
     var fuelCost = (r.fuelCost || 0).toFixed(2);
     var incomplete = (r.fuelDataComplete === false);
-    html += '<div class="history-card" onclick="mtOpenHistoryDay(\'' + r.dateKey + '\')" style="cursor:pointer;">' +
-      '<div class="history-card-top">' +
-        '<div>' +
-          '<div class="history-date">' + dateLabel + '</div>' +
-          (incomplete ? '<div style="font-family:var(--fm);font-size:9px;color:var(--acc2);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;">⚠ Fuel data missing</div>' : '') +
+    html += '<div class="history-card" style="position:relative;">' +
+      '<div onclick="mtOpenHistoryDay(\'' + r.dateKey + '\')" style="cursor:pointer;">' +
+        '<div class="history-card-top">' +
+          '<div>' +
+            '<div class="history-date">' + dateLabel + '</div>' +
+            (incomplete ? '<div style="font-family:var(--fm);font-size:9px;color:var(--acc2);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;">⚠ Fuel data missing</div>' : '') +
+          '</div>' +
+          '<div class="history-day-badge">' + (r.day || '--') + '</div>' +
         '</div>' +
-        '<div class="history-day-badge">' + (r.day || '--') + '</div>' +
+        '<div class="history-grid">' +
+          '<div class="history-cell"><div class="history-cell-val">' + miles + '</div><div class="history-cell-lbl">Miles</div></div>' +
+          '<div class="history-cell"><div class="history-cell-val">' + legs + '</div><div class="history-cell-lbl">Legs</div></div>' +
+          '<div class="history-cell"><div class="history-cell-val">' + driveMin + 'm</div><div class="history-cell-lbl">Drive</div></div>' +
+          '<div class="history-cell"><div class="history-cell-val" style="color:' + (incomplete ? 'var(--mut)' : 'var(--grn)') + ';">$' + fuelCost + '</div><div class="history-cell-lbl">Fuel</div></div>' +
+        '</div>' +
       '</div>' +
-      '<div class="history-grid">' +
-        '<div class="history-cell"><div class="history-cell-val">' + miles + '</div><div class="history-cell-lbl">Miles</div></div>' +
-        '<div class="history-cell"><div class="history-cell-val">' + legs + '</div><div class="history-cell-lbl">Legs</div></div>' +
-        '<div class="history-cell"><div class="history-cell-val">' + driveMin + 'm</div><div class="history-cell-lbl">Drive</div></div>' +
-        '<div class="history-cell"><div class="history-cell-val" style="color:' + (incomplete ? 'var(--mut)' : 'var(--grn)') + ';">$' + fuelCost + '</div><div class="history-cell-lbl">Fuel</div></div>' +
-      '</div>' +
+      '<button onclick="event.stopPropagation();mtOpenEditFuelModal(\'' + r.dateKey + '\')" style="position:absolute;top:10px;right:50px;background:var(--sur2);border:1px solid var(--bdr);color:var(--acc);font-family:var(--fm);font-size:9px;padding:5px 8px;border-radius:4px;cursor:pointer;letter-spacing:.5px;">✏️ EDIT FUEL</button>' +
     '</div>';
   });
   list.innerHTML = html;
@@ -6432,47 +6477,59 @@ function addCurrentLocationAsStop() {
 }
 
 function createStopAtLocation(lat, lng, address) {
-  // Build the new stop object
-  var defaultName = 'New stop (added ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ')';
+  if (typeof stops === 'undefined' || !stops[currentDay]) {
+    // Initialize the day array if it doesn't exist yet (e.g. cleared day)
+    if (typeof stops !== 'undefined') stops[currentDay] = stops[currentDay] || [];
+    else { alert('Day data not loaded yet — try again in a moment.'); return; }
+  }
+  if (typeof stopData !== 'undefined' && !stopData[currentDay]) {
+    stopData[currentDay] = [];
+  }
+  // Build the new stop object using the same field names as the rest of the app
+  var defaultName = 'New stop (' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ')';
   var newStop = {
     name: defaultName,
     addr: address || '',
-    address: address || '',
+    opens: 'TBD',
+    note: '',
+    frequency: 'weekly',
     lat: lat,
     lng: lng,
-    frequency: 'weekly',
-    opens: '',
-    hours: '',
-    note: '',
+    lastServiced: null,
     addedAt: new Date().toISOString(),
     addedVia: 'manual-current-location'
   };
-  // Append to today's stops list
-  if (typeof stops === 'undefined' || !stops[currentDay]) {
-    alert('Day data not loaded yet — try again in a moment.');
-    return;
-  }
+  // Append to today's stops and initialize a matching stopData entry
   stops[currentDay].push(newStop);
-  // Initialize stopData for the new stop
-  if (typeof stopData !== 'undefined' && stopData[currentDay]) {
+  if (typeof stopData !== 'undefined' && stopData[currentDay] && typeof blankStopData === 'function') {
+    stopData[currentDay].push(blankStopData());
+  } else if (typeof stopData !== 'undefined' && stopData[currentDay]) {
     stopData[currentDay].push({ status: 'pending' });
   }
   var newIdx = stops[currentDay].length - 1;
-  // Persist
-  if (typeof fbSave === 'function') {
-    try {
+  // Persist using the app's proper save helpers
+  try {
+    if (typeof saveStopsForDay === 'function') {
+      saveStopsForDay(currentDay);
+    } else if (typeof fbSave === 'function') {
       fbSave('stops/' + currentDay, stops[currentDay]);
-      if (stopData && stopData[currentDay]) fbSave('stopData/' + currentDay, stopData[currentDay]);
-    } catch (e) { console.error('[ADDLOC] fb save err:', e); }
-  }
-  // Re-render the route list so the new stop appears
-  if (typeof renderStops === 'function') renderStops();
-  if (typeof renderMapMarkers === 'function') renderMapMarkers();
-  // Open the edit modal so the user can name it + set details
+    }
+    if (typeof fbSave === 'function' && typeof stopData !== 'undefined' && stopData[currentDay]) {
+      fbSave('stopData/' + currentDay, stopData[currentDay]);
+    }
+    console.log('[ADDLOC] Saved new stop to Firebase: stops/' + currentDay + '[' + newIdx + ']');
+  } catch (e) { console.error('[ADDLOC] fb save err:', e); }
+  // Re-render the route list, manage list, and map markers
+  try {
+    if (typeof renderRoute === 'function') renderRoute();
+    if (typeof renderManageList === 'function') renderManageList();
+    if (typeof renderMapMarkers === 'function' && typeof mapView !== 'undefined' && mapView) renderMapMarkers();
+  } catch (e) { console.error('[ADDLOC] render err:', e); }
+  // Open the edit modal so the user can name it and set hours/frequency/etc.
   setTimeout(function() {
     if (typeof editStop === 'function') editStop(currentDay, newIdx);
-  }, 200);
-  console.log('[ADDLOC] Added new stop at', lat, lng, '— opening edit modal');
+  }, 250);
+  console.log('[ADDLOC] Added new stop at', lat.toFixed(5), lng.toFixed(5), '— opening edit modal');
 }
 
 // =====================================================================
@@ -6664,6 +6721,374 @@ function applyRouteActiveUI() {
     };
   }
   hook();
+})();
+
+// =====================================================================
+// EDIT FUEL FOR HISTORICAL DAY
+// =====================================================================
+var mtEditFuelDateKey = null;
+
+function mtOpenEditFuelModal(dateKey) {
+  mtEditFuelDateKey = dateKey;
+  // Pull the existing record so we can pre-fill the inputs
+  if (typeof fbLoad !== 'function') return;
+  fbLoad('routeDays/' + dateKey).then(function(record) {
+    if (!record) {
+      alert('No data found for ' + dateKey);
+      return;
+    }
+    document.getElementById('editFuelDate').textContent = mtFormatDateLabel(dateKey);
+    document.getElementById('editFuelMiles').textContent = (record.totalMiles || 0).toFixed(1) + ' mi';
+    document.getElementById('editFuelGasInput').value = record.gasPricePerGallon || '';
+    document.getElementById('editFuelMpgInput').value = record.mpg || '';
+    mtRecalcEditFuelCost();
+    document.getElementById('editFuelOverlay').classList.add('show');
+  }).catch(function(e) { console.error('[MT] open edit fuel err', e); });
+}
+
+function mtCloseEditFuelModal() {
+  document.getElementById('editFuelOverlay').classList.remove('show');
+  mtEditFuelDateKey = null;
+}
+
+function mtRecalcEditFuelCost() {
+  var gas = parseFloat(document.getElementById('editFuelGasInput').value) || 0;
+  var mpg = parseFloat(document.getElementById('editFuelMpgInput').value) || 0;
+  var milesText = document.getElementById('editFuelMiles').textContent;
+  var miles = parseFloat(milesText) || 0;
+  var cost = (gas > 0 && mpg > 0) ? (miles / mpg) * gas : 0;
+  document.getElementById('editFuelCostPreview').textContent = '$' + cost.toFixed(2);
+}
+
+function mtSaveEditFuelData() {
+  if (!mtEditFuelDateKey) return;
+  var gas = parseFloat(document.getElementById('editFuelGasInput').value) || 0;
+  var mpg = parseFloat(document.getElementById('editFuelMpgInput').value) || 0;
+  if (gas <= 0 || mpg <= 0) {
+    alert('Please enter both gas price and MPG (must be greater than 0)');
+    return;
+  }
+  if (typeof fbLoad !== 'function' || typeof fbSave !== 'function') return;
+  fbLoad('routeDays/' + mtEditFuelDateKey).then(function(record) {
+    if (!record) return;
+    var miles = record.totalMiles || 0;
+    var cost = (miles / mpg) * gas;
+    record.gasPricePerGallon = gas;
+    record.mpg = mpg;
+    record.fuelCost = parseFloat(cost.toFixed(2));
+    record.fuelDataComplete = true;
+    record.editedAt = new Date().toISOString();
+    fbSave('routeDays/' + mtEditFuelDateKey, record);
+    // Invalidate the fuel cache so leg popups reflect the new values
+    if (typeof mtFuelCache !== 'undefined') delete mtFuelCache[mtEditFuelDateKey];
+    console.log('[MT] Edited fuel for ' + mtEditFuelDateKey + ': $' + gas + '/gal, ' + mpg + ' mpg → $' + cost.toFixed(2));
+    mtCloseEditFuelModal();
+    // Refresh history view to show updated values
+    if (typeof mtRefreshHistory === 'function') mtRefreshHistory();
+  }).catch(function(e) { console.error('[MT] save edit fuel err', e); alert('Save failed: ' + e.message); });
+}
+
+// =====================================================================
+// COMPLETION ORDER RECORDING + LAST-WEEK SUGGESTION
+// =====================================================================
+// Tracks the order stops are completed in throughout the day, then saves
+// that array to Firebase when the day completes. The order is later used
+// to suggest a reorganized route based on what worked last week.
+
+var todayCompletionOrder = []; // [{ name, addr, lat, lng, completedAt }]
+var lastWeekSuggestion = null; // { order: [...], sourceDateKey, sourceLabel }
+
+// --- Build a stable key for matching stops across weeks (name + addr) ---
+function stopMatchKey(stop) {
+  if (!stop) return '';
+  var name = String(stop.name || '').trim().toLowerCase();
+  var addr = String(stop.addr || stop.address || '').trim().toLowerCase();
+  return name + '||' + addr;
+}
+
+// --- Record a completion when logDepartureAndComplete fires ---
+(function() {
+  function hook() {
+    if (typeof window.logDepartureAndComplete !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.logDepartureAndComplete;
+    window.logDepartureAndComplete = function(i) {
+      var result = orig.apply(this, arguments);
+      try {
+        var s = (typeof stops !== 'undefined' && stops[currentDay] && stops[currentDay][i]) ? stops[currentDay][i] : null;
+        if (s) {
+          // Avoid duplicate entries if the same stop is somehow completed twice
+          var key = stopMatchKey(s);
+          var exists = todayCompletionOrder.some(function(o) { return stopMatchKey(o) === key; });
+          if (!exists) {
+            todayCompletionOrder.push({
+              name: s.name || '',
+              addr: s.addr || s.address || '',
+              lat: s.lat || null,
+              lng: s.lng || null,
+              completedAt: new Date().toISOString()
+            });
+            console.log('[COMP] Recorded completion #' + todayCompletionOrder.length + ':', s.name);
+          }
+        }
+      } catch (e) { console.error('[COMP] record err:', e); }
+      return result;
+    };
+  }
+  hook();
+})();
+
+// --- Save the completion order to Firebase when the day ends ---
+// We piggyback on saveFuelData and closeFuelModal (both endpoints of completeDay)
+function saveCompletionOrderToFirebase() {
+  if (todayCompletionOrder.length === 0) return;
+  var todayKey = (typeof mtDateKey === 'function') ? mtDateKey() : null;
+  if (!todayKey) return;
+  if (typeof fbSave !== 'function') return;
+  var record = {
+    dateKey: todayKey,
+    day: currentDay,
+    order: todayCompletionOrder.slice(), // copy
+    totalStops: todayCompletionOrder.length,
+    savedAt: new Date().toISOString()
+  };
+  try {
+    fbSave('completionHistory/' + currentDay + '/' + todayKey, record);
+    console.log('[COMP] Saved completion order to completionHistory/' + currentDay + '/' + todayKey, '(' + todayCompletionOrder.length + ' stops)');
+  } catch (e) { console.error('[COMP] save err:', e); }
+}
+
+// Hook into both day-end paths
+(function() {
+  function hookSave() {
+    if (typeof window.saveFuelData === 'function') {
+      var orig = window.saveFuelData;
+      window.saveFuelData = function() {
+        try { saveCompletionOrderToFirebase(); } catch (e) {}
+        var r = orig.apply(this, arguments);
+        // Reset for the next day
+        todayCompletionOrder = [];
+        return r;
+      };
+    }
+    if (typeof window.closeFuelModal === 'function') {
+      var orig2 = window.closeFuelModal;
+      window.closeFuelModal = function() {
+        try { saveCompletionOrderToFirebase(); } catch (e) {}
+        var r = orig2.apply(this, arguments);
+        todayCompletionOrder = [];
+        return r;
+      };
+    }
+  }
+  // Wait until our other wraps have applied
+  setTimeout(hookSave, 1500);
+})();
+
+// --- Date math: get the date 7 days before today ---
+function dateKey7DaysAgo() {
+  var d = new Date();
+  d.setDate(d.getDate() - 7);
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  return { key: y + '-' + m + '-' + dd, label: d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) };
+}
+
+// --- Load last week's completion order for the current day ---
+async function loadLastWeekOrderForCurrentDay() {
+  lastWeekSuggestion = null;
+  if (typeof fbLoad !== 'function') return null;
+  var lastWeek = dateKey7DaysAgo();
+  try {
+    var record = await fbLoad('completionHistory/' + currentDay + '/' + lastWeek.key);
+    if (record && record.order && record.order.length > 0) {
+      lastWeekSuggestion = {
+        order: record.order,
+        sourceDateKey: lastWeek.key,
+        sourceLabel: currentDay + ' last week (' + lastWeek.label + ')'
+      };
+      console.log('[COMP] Loaded last-week order:', lastWeekSuggestion.sourceLabel, '(' + record.order.length + ' stops)');
+      return lastWeekSuggestion;
+    }
+    console.log('[COMP] No last-week order found at completionHistory/' + currentDay + '/' + lastWeek.key);
+    return null;
+  } catch (e) { console.warn('[COMP] load err:', e); return null; }
+}
+
+// --- When REORGANIZE starts, check if a suggestion is available ---
+(function() {
+  function hookStartReorg() {
+    if (typeof window.startReorganize !== 'function') { setTimeout(hookStartReorg, 200); return; }
+    var orig = window.startReorganize;
+    window.startReorganize = function() {
+      var result = orig.apply(this, arguments);
+      try {
+        // Hide the bar by default while loading
+        var bar = document.getElementById('reorgSuggestionBar');
+        if (bar) bar.style.display = 'none';
+        loadLastWeekOrderForCurrentDay().then(function(suggestion) {
+          if (suggestion) {
+            var lbl = document.getElementById('reorgSuggestionLabel');
+            if (lbl) lbl.textContent = 'Order from ' + suggestion.sourceLabel + ' — ' + suggestion.order.length + ' stops';
+            if (bar) bar.style.display = 'block';
+          }
+        });
+      } catch (e) { console.error('[COMP] start-reorg hook err:', e); }
+      return result;
+    };
+  }
+  hookStartReorg();
+})();
+
+// --- Apply last week's order: match stops by name+addr, insert new ones by geography ---
+function applyLastWeekOrder() {
+  if (!lastWeekSuggestion || !lastWeekSuggestion.order) {
+    alert('No last-week order available.');
+    return;
+  }
+  var todayStops = stops[currentDay] || [];
+  if (todayStops.length === 0) {
+    alert('No stops today to reorganize.');
+    return;
+  }
+
+  // Build a map: stopMatchKey -> currentIdx (today's index)
+  var todayKeyToIdx = {};
+  todayStops.forEach(function(s, i) {
+    var k = stopMatchKey(s);
+    if (k) todayKeyToIdx[k] = i;
+  });
+
+  // Build the suggested order: walk through last week's order, pick matching today stops
+  var newOrder = [];      // ordered array of today's indices
+  var usedTodayIdx = {};  // set of today indices already placed
+
+  lastWeekSuggestion.order.forEach(function(pastStop) {
+    var k = stopMatchKey(pastStop);
+    if (todayKeyToIdx.hasOwnProperty(k)) {
+      var idx = todayKeyToIdx[k];
+      if (!usedTodayIdx[idx]) {
+        newOrder.push(idx);
+        usedTodayIdx[idx] = true;
+      }
+    }
+  });
+
+  // Find today's stops that weren't in last week's order (new stops)
+  var unplaced = [];
+  todayStops.forEach(function(s, i) {
+    if (!usedTodayIdx[i]) unplaced.push(i);
+  });
+
+  // Insert each unplaced stop at the position closest to its geographic location.
+  // Strategy: for each unplaced stop, find the position in newOrder where inserting
+  // it would minimize the geographic detour (sum of distances to neighbors).
+  unplaced.forEach(function(idx) {
+    var s = todayStops[idx];
+    if (!s.lat || !s.lng) {
+      // No coordinates — just append to end
+      newOrder.push(idx);
+      return;
+    }
+    var bestPos = newOrder.length;
+    var bestScore = Infinity;
+    // Try inserting at every position (including 0 and end)
+    for (var pos = 0; pos <= newOrder.length; pos++) {
+      var prevStop = pos > 0 ? todayStops[newOrder[pos - 1]] : null;
+      var nextStop = pos < newOrder.length ? todayStops[newOrder[pos]] : null;
+      var score = 0;
+      // Distance to prev neighbor
+      if (prevStop && prevStop.lat && prevStop.lng) {
+        score += mtHaversineMeters(s.lat, s.lng, prevStop.lat, prevStop.lng);
+      }
+      // Distance to next neighbor
+      if (nextStop && nextStop.lat && nextStop.lng) {
+        score += mtHaversineMeters(s.lat, s.lng, nextStop.lat, nextStop.lng);
+      }
+      // If we're inserting at the very start or end, only one neighbor — that's fine
+      if (score < bestScore) {
+        bestScore = score;
+        bestPos = pos;
+      }
+    }
+    newOrder.splice(bestPos, 0, idx);
+    console.log('[COMP] Inserted new stop "' + s.name + '" at position ' + (bestPos + 1));
+  });
+
+  // Apply: set reorgOrder to the computed order, then update the UI and re-render markers
+  reorgOrder = newOrder.slice();
+  if (typeof updateReorgCounter === 'function') updateReorgCounter();
+  if (typeof updateLastTappedIndicator === 'function') updateLastTappedIndicator();
+  if (typeof renderModeMarkers === 'function') renderModeMarkers();
+
+  // Hide the suggestion bar now that we've applied it
+  var bar = document.getElementById('reorgSuggestionBar');
+  if (bar) bar.style.display = 'none';
+
+  // Toast confirmation in the banner
+  var bannerText = document.getElementById('modeBannerText');
+  if (bannerText) {
+    bannerText.textContent = 'Applied ' + lastWeekSuggestion.sourceLabel + ' — tap stops to tweak, then DONE';
+  }
+  console.log('[COMP] Applied last-week order:', newOrder);
+}
+
+// --- Rehydrate todayCompletionOrder from stopData on page load ---
+// If the page reloads mid-day, we need to recover the completion order from
+// already-done stops. We use stopData[day][i].departureTime as the sort key.
+function rehydrateCompletionOrderForDay(day) {
+  todayCompletionOrder = [];
+  if (typeof stops === 'undefined' || !stops[day]) return;
+  if (typeof stopData === 'undefined' || !stopData[day]) return;
+  var completed = [];
+  stops[day].forEach(function(s, i) {
+    var d = stopData[day][i];
+    if (d && d.status === 'done' && d.departureTime) {
+      completed.push({
+        sortKey: d.departureTime,
+        entry: {
+          name: s.name || '',
+          addr: s.addr || s.address || '',
+          lat: s.lat || null,
+          lng: s.lng || null,
+          completedAt: d.departureTime
+        }
+      });
+    }
+  });
+  // Sort by departureTime ascending so order matches the actual completion sequence
+  completed.sort(function(a, b) { return String(a.sortKey).localeCompare(String(b.sortKey)); });
+  todayCompletionOrder = completed.map(function(c) { return c.entry; });
+  if (todayCompletionOrder.length > 0) {
+    console.log('[COMP] Rehydrated ' + todayCompletionOrder.length + ' completed stops for ' + day);
+  }
+}
+
+// Run rehydrate on app init + on day switch
+(function() {
+  function hookInit() {
+    if (typeof window.init !== 'function') { setTimeout(hookInit, 200); return; }
+    var orig = window.init;
+    window.init = function() {
+      var r = orig.apply(this, arguments);
+      // Defer slightly so stops/stopData have time to load from Firebase
+      setTimeout(function() {
+        try { rehydrateCompletionOrderForDay(currentDay); } catch (e) {}
+      }, 2000);
+      return r;
+    };
+  }
+  hookInit();
+  function hookSelectDay() {
+    if (typeof window.selectDay !== 'function') { setTimeout(hookSelectDay, 200); return; }
+    var orig = window.selectDay;
+    window.selectDay = function(day) {
+      var r = orig.apply(this, arguments);
+      try { rehydrateCompletionOrderForDay(day); } catch (e) {}
+      return r;
+    };
+  }
+  hookSelectDay();
 })();
 
 console.log('[MT] Mileage tracking module loaded');
@@ -7142,9 +7567,9 @@ console.log('[MT] Mileage tracking module loaded');
 <div class="adt-slider-row">
   <div class="adt-slider-top">
     <div class="adt-setting-label">Match radius for known stops</div>
-    <div class="adt-slider-val"><span id="adtRadiusVal">150</span> ft</div>
+    <div class="adt-slider-val"><span id="adtRadiusVal">250</span> ft</div>
   </div>
-  <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="400" step="25" value="150" oninput="adtSliderChange('matchRadiusFt', this.value)">
+  <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="500" step="25" value="250" oninput="adtSliderChange('matchRadiusFt', this.value)">
 </div>
 
 <div class="adt-slider-row">
@@ -7227,9 +7652,8 @@ var adtSettings = {
   silentMode: true,         // silent auto-arrive (no prompt) — new default behavior
   manualButtons: true,      // manual ARRIVED/DEPARTED buttons stay visible by default
   dwellMinutes: 2,          // minutes stationary before silent-arriving (NEW default: 2)
-  matchRadiusFt: 150,       // ft within a known stop to consider it a match
-  leaveRadiusFt: 500,       // ft AWAY from arrived stop to auto-mark DONE (NEW)
-  speedThresholdMph: 2      // speed must be below this to count as "stationary" (NEW)
+  matchRadiusFt: 250,       // ft within a known stop to consider it a match
+  leaveRadiusFt: 500        // ft AWAY from arrived stop to auto-mark DONE
 };
 
 var ADT_LS_KEY = 'adt_settings_v1';
@@ -7261,7 +7685,7 @@ adtLoadSettings();
 //   - Once stationary, fire onDwellDetected once per "stationary episode"
 
 var ADT_BUFFER_MAX_AGE_MS = 12 * 60 * 1000; // keep last 12 min of points
-var ADT_DWELL_RADIUS_M = 25;                // max drift to count as "still parked"
+var ADT_DWELL_RADIUS_M = 76;                // 250 ft — max GPS drift to count as "still at the same spot"
 var adtPositionBuffer = [];                  // [{lat,lng,ts}]
 var adtCurrentEpisode = null;                // { startTs, centroidLat, centroidLng, prompted: bool }
 var adtAmbientWatchId = null;
@@ -7274,17 +7698,7 @@ function adtFeedPosition(lat, lng, ts, accuracy) {
   if (!adtSettings.autoDetect) return;
   if (accuracy && accuracy > 60) return; // ignore very poor fixes
   var now = ts || Date.now();
-  // Compute speed from previous point (for stationary check)
-  var speedMph = 0;
-  if (adtPositionBuffer.length > 0) {
-    var prev = adtPositionBuffer[adtPositionBuffer.length - 1];
-    var dtSec = (now - prev.ts) / 1000;
-    if (dtSec > 0.5 && dtSec < 30) {
-      var meters = mtHaversineMeters(prev.lat, prev.lng, lat, lng);
-      speedMph = (meters / dtSec) * 2.23694; // m/s to mph
-    }
-  }
-  adtPositionBuffer.push({ lat: lat, lng: lng, ts: now, speedMph: speedMph });
+  adtPositionBuffer.push({ lat: lat, lng: lng, ts: now });
   // Trim old points
   var cutoff = now - ADT_BUFFER_MAX_AGE_MS;
   while (adtPositionBuffer.length && adtPositionBuffer[0].ts < cutoff) {
@@ -7328,20 +7742,10 @@ function adtCheckDwell() {
   var stationaryMs = latest.ts - oldestStationaryTs;
   var dwellRequiredMs = adtSettings.dwellMinutes * 60 * 1000;
 
-  // SPEED GATE: require recent speed to be below threshold so we don't trigger
-  // at long red lights or in slow-moving traffic. Look at last 30 sec of points.
-  var recentTopSpeed = 0;
-  var speedWindowStart = latest.ts - 30000;
-  for (var k = pts.length - 1; k >= 0; k--) {
-    if (pts[k].ts < speedWindowStart) break;
-    if (pts[k].speedMph > recentTopSpeed) recentTopSpeed = pts[k].speedMph;
-  }
-  var isParked = recentTopSpeed < adtSettings.speedThresholdMph;
+  // Update status pill (no speed gate — pure dwell-based detection)
+  adtUpdateStatusPill(stationaryMs, dwellRequiredMs);
 
-  // Update status pill
-  adtUpdateStatusPill(stationaryMs, dwellRequiredMs, isParked);
-
-  if (stationaryMs >= dwellRequiredMs && isParked) {
+  if (stationaryMs >= dwellRequiredMs) {
     // Threshold met — fire once per episode
     if (!adtCurrentEpisode) {
       adtCurrentEpisode = {
@@ -7506,7 +7910,7 @@ function adtUndoLastAction() {
   adtHideUndoBanner();
 }
 
-function adtUpdateStatusPill(stationaryMs, dwellRequiredMs, isParked) {
+function adtUpdateStatusPill(stationaryMs, dwellRequiredMs) {
   var pill = document.getElementById('adtStatusPill');
   var text = document.getElementById('adtStatusText');
   if (!pill) return;
@@ -7519,18 +7923,15 @@ function adtUpdateStatusPill(stationaryMs, dwellRequiredMs, isParked) {
   if (adtArrivedStop) {
     pill.classList.add('dwelling');
     text.textContent = 'AT ' + (adtArrivedStop.arrivedName || 'stop').substring(0, 14).toUpperCase();
-  } else if (!isParked) {
-    pill.classList.remove('dwelling');
-    text.textContent = 'DRIVING';
   } else if (stationaryMs >= dwellRequiredMs) {
     pill.classList.add('dwelling');
     text.textContent = 'DWELLING ' + Math.floor(secs / 60) + 'm';
   } else if (stationaryMs > 30000) {
     pill.classList.add('dwelling');
-    text.textContent = 'PARKED ' + Math.floor(secs / 60) + 'm' + (secs % 60) + 's';
+    text.textContent = 'STILL ' + Math.floor(secs / 60) + 'm' + (secs % 60) + 's';
   } else {
     pill.classList.remove('dwelling');
-    text.textContent = 'STILL';
+    text.textContent = 'MOVING';
   }
 }
 

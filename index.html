@@ -648,24 +648,24 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 FOLLOW ME</button>
-    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🗺️ ALL STOPS</button>
-    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏢 BASE</button>
-<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">💰 TOLLS: ON</button>
-    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">🔀 REORGANIZE</button>
-    <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--sur);border:1px solid var(--acc);color:var(--acc);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);">📍 ADD HERE</button>
+    <button id="followBtn" onclick="toggleAutoFollow()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">📍 FOLLOW ME</button>
+    <button onclick="fitAllStops()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🗺️ ALL STOPS</button>
+    <button onclick="navigateToBase()" style="background:#0033a0;border:1px solid #fff;color:#fff;font-family:var(--fm);font-size:11px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏢 BASE</button>
+<button id="tollToggleBtn" onclick="toggleTolls()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">💰 TOLLS: ON</button>
+    <button id="reorgBtn" onclick="startReorganize()" style="background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🔀 REORGANIZE</button>
+    <button id="addHereBtn" onclick="addCurrentLocationAsStop()" style="background:var(--sur);border:1px solid var(--acc);color:var(--acc);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">📍 ADD HERE</button>
   </div>
   <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10;">
-    <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:11px;font-weight:500;padding:6px 10px;border-radius:4px;cursor:pointer;">MON</button>
-    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">TUE</button>
-    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">WED</button>
-    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">THU</button>
-    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:var(--sur);border:1px solid var(--bdr);color:var(--mut);font-family:var(--fm);font-size:11px;padding:6px 10px;border-radius:4px;cursor:pointer;">FRI</button>
+    <button onclick="selectMapDay('MON')" id="mapday-MON" style="background:var(--acc);border:none;color:#000;font-family:var(--fm);font-size:12px;font-weight:700;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7), 0 0 12px rgba(255,122,61,0.5);">MON</button>
+    <button onclick="selectMapDay('TUE')" id="mapday-TUE" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">TUE</button>
+    <button onclick="selectMapDay('WED')" id="mapday-WED" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">WED</button>
+    <button onclick="selectMapDay('THU')" id="mapday-THU" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">THU</button>
+    <button onclick="selectMapDay('FRI')" id="mapday-FRI" style="background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:var(--fm);font-size:12px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.7);">FRI</button>
   </div>
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
 
-<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4);">🏙️</button>
+<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏙️</button>
 <button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
 
   <!-- NAVIGATION HUD (shown during navigation) -->
@@ -3269,12 +3269,18 @@ function selectMapDay(day) {
       btn.style.background = 'var(--acc)';
       btn.style.border = 'none';
       btn.style.color = '#000';
-      btn.style.fontWeight = '500';
+      btn.style.fontWeight = '700';
+      btn.style.fontSize = '12px';
+      btn.style.padding = '7px 12px';
+      btn.style.boxShadow = '0 3px 10px rgba(0,0,0,0.7), 0 0 12px rgba(255,122,61,0.5)';
     } else {
-      btn.style.background = 'var(--sur)';
-      btn.style.border = '1px solid var(--bdr)';
-      btn.style.color = 'var(--mut)';
-      btn.style.fontWeight = 'normal';
+      btn.style.background = 'rgba(0,0,0,0.55)';
+      btn.style.border = '1px solid rgba(255,255,255,0.25)';
+      btn.style.color = '#fff';
+      btn.style.fontWeight = '600';
+      btn.style.fontSize = '12px';
+      btn.style.padding = '7px 12px';
+      btn.style.boxShadow = '0 3px 10px rgba(0,0,0,0.7)';
     }
   });
   activeStopIdx = null;
@@ -7089,6 +7095,37 @@ function rehydrateCompletionOrderForDay(day) {
     };
   }
   hookSelectDay();
+})();
+
+// =====================================================================
+// CLEAR LEG POLYLINES WHEN MAP DAY SWITCHES
+// =====================================================================
+// Tapping MON/TUE/WED/THU/FRI on the map tab should clear the drawn leg
+// trails — those are tied to a specific calendar date, not to a weekday.
+// User accesses past-day trails via the 'Pick date' dropdown at the bottom.
+(function() {
+  function hookSelectMapDay() {
+    if (typeof window.selectMapDay !== 'function') { setTimeout(hookSelectMapDay, 200); return; }
+    var orig = window.selectMapDay;
+    window.selectMapDay = function(day) {
+      var result = orig.apply(this, arguments);
+      try {
+        if (typeof mtClearTrailPolylines === 'function') mtClearTrailPolylines();
+        // Reset trail-control stats
+        var milesEl = document.getElementById('trailMiles');
+        var legsEl = document.getElementById('trailLegs');
+        var costEl = document.getElementById('trailCost');
+        if (milesEl) milesEl.textContent = '0.0';
+        if (legsEl) legsEl.textContent = '0';
+        if (costEl) costEl.textContent = '$0';
+        // Reset the date picker selection (so user can re-pick a date)
+        var sel = document.getElementById('trailDateSel');
+        if (sel) sel.value = '';
+      } catch (e) { console.error('[MT] map day clear err:', e); }
+      return result;
+    };
+  }
+  hookSelectMapDay();
 })();
 
 console.log('[MT] Mileage tracking module loaded');

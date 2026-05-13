@@ -496,7 +496,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div class="tabs">
   <div class="tab active" id="tab-route" onclick="switchTab('route')">ROUTE</div>
   <div class="tab" id="tab-manage" onclick="switchTab('manage')">STOPS</div>
-  <div class="tab" id="tab-history" onclick="switchTab('history')">📊 HISTORY</div>
   <div class="tab" id="tab-map" onclick="switchTab('map')">🗺️ MAP</div>
 </div>
 
@@ -647,7 +646,10 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
   <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
     <span>Current Stops — <span id="manageDayLabel">MON</span></span>
-    <button id="bulkSelectToggleBtn" onclick="toggleBulkSelectMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">☑ Select</button>
+    <div style="display:flex;gap:6px;">
+      <button id="reorderToggleBtn" onclick="toggleReorderMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">🔀 Reorder</button>
+      <button id="bulkSelectToggleBtn" onclick="toggleBulkSelectMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">☑ Select</button>
+    </div>
   </div>
   <div class="bulk-toolbar" id="bulkToolbar" style="display:none;">
     <button class="bulk-toolbar-btn" onclick="bulkSelectAll()">Select All</button>
@@ -675,51 +677,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 </div>
 
-<!-- ===== HISTORY TAB ===== -->
-
-<div id="historyTab" style="display:none;padding:12px 16px 80px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div>
-      <div style="font-family:var(--fd);font-size:24px;color:var(--acc);letter-spacing:1px;">HISTORY</div>
-      <div style="font-family:var(--fm);font-size:11px;color:var(--mut);margin-top:2px;">Past days &amp; route data</div>
-    </div>
-    <button onclick="mtRefreshHistory()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:6px;cursor:pointer;">↻ REFRESH</button>
-  </div>
-
-  <!-- AGGREGATE STATS -->
-
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;">
-    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
-      <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalDays">0</div>
-      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Days Tracked</div>
-    </div>
-    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
-      <div style="font-family:var(--fd);font-size:22px;color:var(--acc);line-height:1;" id="histTotalMiles">0</div>
-      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Miles</div>
-    </div>
-    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;">
-      <div style="font-family:var(--fd);font-size:22px;color:var(--grn);line-height:1;" id="histTotalCost">$0</div>
-      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px;">Total Fuel</div>
-    </div>
-  </div>
-
-  <!-- DAY-OF-WEEK FILTER -->
-
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-    <button class="filter-pill active" data-histfilter="all" onclick="mtSetHistoryFilter('all')">All</button>
-    <button class="filter-pill" data-histfilter="MON" onclick="mtSetHistoryFilter('MON')">MON</button>
-    <button class="filter-pill" data-histfilter="TUE" onclick="mtSetHistoryFilter('TUE')">TUE</button>
-    <button class="filter-pill" data-histfilter="WED" onclick="mtSetHistoryFilter('WED')">WED</button>
-    <button class="filter-pill" data-histfilter="THU" onclick="mtSetHistoryFilter('THU')">THU</button>
-    <button class="filter-pill" data-histfilter="FRI" onclick="mtSetHistoryFilter('FRI')">FRI</button>
-  </div>
-
-  <!-- DAY LIST -->
-
-  <div id="historyList">
-    <div style="text-align:center;padding:40px 16px;color:var(--mut);font-family:var(--fm);font-size:12px;">Loading history...</div>
-  </div>
-</div>
+<!-- ===== HISTORY TAB REMOVED — tab nav hidden; underlying functions kept as orphans ===== -->
 
 <!-- ===== MAP TAB ===== -->
 
@@ -5973,24 +5931,14 @@ function saveFuelData() {
       // handle the tab visibility manually since the original would leave
       // the previously-active tab visible.
       if (tab === 'history') {
-        // Hide all other tabs first
-        ['route','manage','map'].forEach(function(t) {
-          var el = document.getElementById(t + 'Tab');
-          if (el) el.style.display = 'none';
-          var tabEl = document.getElementById('tab-' + t);
-          if (tabEl) tabEl.classList.remove('active');
-        });
-        document.getElementById('historyTab').style.display = 'block';
-        var tabEl = document.getElementById('tab-history');
-        if (tabEl) tabEl.classList.add('active');
-        // Trail controls only show on map tab
-        document.getElementById('trailControls').classList.remove('show');
-        mtRefreshHistory();
-        mtMaybeShowBadge();
+        // History tab was removed from the UI but defensively handle attempts
+        // to switch to it — just no-op (fall through to nothing).
+        console.log('[MT] switchTab(history) ignored — history tab removed');
         return;
       }
-      // For non-history tabs, also ensure historyTab is hidden and its tab indicator off
-      document.getElementById('historyTab').style.display = 'none';
+      // Defensive: ensure historyTab (if it existed) is hidden
+      var histTabEl = document.getElementById('historyTab');
+      if (histTabEl) histTabEl.style.display = 'none';
       var hTab = document.getElementById('tab-history');
       if (hTab) hTab.classList.remove('active');
 
@@ -7202,6 +7150,388 @@ function rehydrateCompletionOrderForDay(day) {
     };
   }
   hookSelectMapDay();
+})();
+
+// =====================================================================
+// STOPS TAB — DRAG-TO-REORDER
+// =====================================================================
+// Lets the user drag stop cards into a new order on the STOPS tab.
+// Works on both desktop (HTML5 drag API) and mobile (touch events).
+// Saves the new order via the existing saveStopsForDay flow.
+
+var reorderMode = false;
+var reorderDraggedIdx = null;
+var reorderTouchState = null; // { startY, currentY, draggedEl, placeholder, draggedIdx }
+
+// CSS injected once (using a style tag so we can toggle classes)
+(function() {
+  var styleEl = document.createElement('style');
+  styleEl.id = 'reorderModeStyle';
+  styleEl.textContent = `
+    .manage-card.reorderable {
+      cursor: grab;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .manage-card.reorderable:active { cursor: grabbing; }
+    .manage-card.reorderable .manage-actions { opacity: 0.25; pointer-events: none; }
+    .manage-card.reorderable .reorder-handle {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 44px;
+      margin-right: 4px;
+      font-size: 22px;
+      color: var(--acc);
+      flex-shrink: 0;
+    }
+    .reorder-handle { display: none; }
+    .manage-card.reorder-dragging {
+      opacity: 0.4;
+      transform: scale(0.98);
+    }
+    .manage-card.reorder-over-top {
+      box-shadow: 0 -3px 0 var(--acc) inset, 0 0 0 1px var(--bdr);
+    }
+    .manage-card.reorder-over-bottom {
+      box-shadow: 0 3px 0 var(--acc) inset, 0 0 0 1px var(--bdr);
+    }
+    .reorder-floating {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 0 2px var(--acc);
+      transform: scale(1.02);
+      opacity: 0.95;
+    }
+  `;
+  document.head.appendChild(styleEl);
+})();
+
+function toggleReorderMode() {
+  // Can't be in reorder mode at the same time as bulk select
+  if (typeof bulkSelectMode !== 'undefined' && bulkSelectMode) {
+    if (typeof exitBulkSelectMode === 'function') exitBulkSelectMode();
+  }
+  reorderMode = !reorderMode;
+  var btn = document.getElementById('reorderToggleBtn');
+  if (btn) {
+    if (reorderMode) {
+      btn.textContent = '✓ DONE';
+      btn.style.background = 'var(--acc)';
+      btn.style.color = '#000';
+      btn.style.border = '2px solid #fff';
+      btn.style.fontWeight = 'bold';
+    } else {
+      btn.textContent = '🔀 Reorder';
+      btn.style.background = 'var(--sur2)';
+      btn.style.color = 'var(--txt)';
+      btn.style.border = '1px solid var(--bdr)';
+      btn.style.fontWeight = 'normal';
+    }
+  }
+  applyReorderModeToCards();
+}
+
+function applyReorderModeToCards() {
+  var cards = document.querySelectorAll('#manageList .manage-card');
+  cards.forEach(function(card, idx) {
+    if (reorderMode) {
+      card.classList.add('reorderable');
+      card.setAttribute('draggable', 'true');
+      // Add a drag handle if not already present
+      if (!card.querySelector('.reorder-handle')) {
+        var handle = document.createElement('div');
+        handle.className = 'reorder-handle';
+        handle.innerHTML = '≡';
+        card.insertBefore(handle, card.firstChild);
+      }
+      attachReorderHandlers(card, idx);
+    } else {
+      card.classList.remove('reorderable', 'reorder-dragging', 'reorder-over-top', 'reorder-over-bottom');
+      card.removeAttribute('draggable');
+      var handle = card.querySelector('.reorder-handle');
+      if (handle) handle.remove();
+      detachReorderHandlers(card);
+    }
+  });
+}
+
+// =====================================================================
+// HTML5 DRAG EVENTS (desktop)
+// =====================================================================
+function attachReorderHandlers(card, idx) {
+  // Skip if handlers already attached
+  if (card._reorderAttached) return;
+  card._reorderAttached = true;
+  card._reorderIdx = idx;
+
+  card.addEventListener('dragstart', onReorderDragStart);
+  card.addEventListener('dragover', onReorderDragOver);
+  card.addEventListener('dragleave', onReorderDragLeave);
+  card.addEventListener('drop', onReorderDrop);
+  card.addEventListener('dragend', onReorderDragEnd);
+
+  // Touch (mobile) — only initiate when touching the handle
+  card.addEventListener('touchstart', onReorderTouchStart, { passive: false });
+}
+
+function detachReorderHandlers(card) {
+  if (!card._reorderAttached) return;
+  card._reorderAttached = false;
+  card.removeEventListener('dragstart', onReorderDragStart);
+  card.removeEventListener('dragover', onReorderDragOver);
+  card.removeEventListener('dragleave', onReorderDragLeave);
+  card.removeEventListener('drop', onReorderDrop);
+  card.removeEventListener('dragend', onReorderDragEnd);
+  card.removeEventListener('touchstart', onReorderTouchStart);
+}
+
+function onReorderDragStart(e) {
+  reorderDraggedIdx = this._reorderIdx;
+  this.classList.add('reorder-dragging');
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', String(this._reorderIdx)); } catch (err) {}
+  }
+}
+
+function onReorderDragOver(e) {
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  if (this._reorderIdx === reorderDraggedIdx) return;
+  // Show drop indicator on top/bottom edge based on cursor Y
+  var rect = this.getBoundingClientRect();
+  var midpoint = rect.top + rect.height / 2;
+  this.classList.toggle('reorder-over-top', e.clientY < midpoint);
+  this.classList.toggle('reorder-over-bottom', e.clientY >= midpoint);
+}
+
+function onReorderDragLeave() {
+  this.classList.remove('reorder-over-top', 'reorder-over-bottom');
+}
+
+function onReorderDrop(e) {
+  e.preventDefault();
+  this.classList.remove('reorder-over-top', 'reorder-over-bottom');
+  if (reorderDraggedIdx === null || reorderDraggedIdx === this._reorderIdx) return;
+  var rect = this.getBoundingClientRect();
+  var dropBefore = e.clientY < rect.top + rect.height / 2;
+  performReorder(reorderDraggedIdx, this._reorderIdx, dropBefore);
+}
+
+function onReorderDragEnd() {
+  this.classList.remove('reorder-dragging');
+  document.querySelectorAll('.manage-card.reorder-over-top, .manage-card.reorder-over-bottom').forEach(function(c) {
+    c.classList.remove('reorder-over-top', 'reorder-over-bottom');
+  });
+  reorderDraggedIdx = null;
+}
+
+// =====================================================================
+// TOUCH EVENTS (mobile)
+// =====================================================================
+function onReorderTouchStart(e) {
+  // Only start dragging when the touch begins on the handle
+  var target = e.target;
+  if (!target.classList || !target.classList.contains('reorder-handle')) {
+    // Allow walking up briefly in case the user tapped the ≡ glyph
+    if (!(target.parentElement && target.parentElement.classList.contains('reorder-handle'))) {
+      return;
+    }
+  }
+  e.preventDefault();
+  var card = this;
+  var touch = e.touches[0];
+  var rect = card.getBoundingClientRect();
+
+  // Build a floating clone that follows the finger
+  var clone = card.cloneNode(true);
+  clone.classList.add('reorder-floating');
+  clone.style.width = rect.width + 'px';
+  clone.style.left = rect.left + 'px';
+  clone.style.top = rect.top + 'px';
+  document.body.appendChild(clone);
+
+  card.classList.add('reorder-dragging');
+
+  reorderTouchState = {
+    startY: touch.clientY,
+    offsetY: touch.clientY - rect.top,
+    draggedEl: card,
+    cloneEl: clone,
+    draggedIdx: card._reorderIdx
+  };
+
+  document.addEventListener('touchmove', onReorderTouchMove, { passive: false });
+  document.addEventListener('touchend', onReorderTouchEnd, { passive: false });
+  document.addEventListener('touchcancel', onReorderTouchEnd, { passive: false });
+}
+
+function onReorderTouchMove(e) {
+  if (!reorderTouchState) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  var st = reorderTouchState;
+  // Move the floating clone with the finger
+  st.cloneEl.style.top = (touch.clientY - st.offsetY) + 'px';
+
+  // Detect which card we're hovering over
+  // Use elementsFromPoint to ignore the floating clone
+  var els = document.elementsFromPoint(touch.clientX, touch.clientY);
+  var overCard = null;
+  for (var i = 0; i < els.length; i++) {
+    if (els[i].classList && els[i].classList.contains('manage-card') && !els[i].classList.contains('reorder-floating')) {
+      overCard = els[i];
+      break;
+    }
+  }
+  // Clear previous over indicators
+  document.querySelectorAll('.manage-card.reorder-over-top, .manage-card.reorder-over-bottom').forEach(function(c) {
+    if (c !== overCard) c.classList.remove('reorder-over-top', 'reorder-over-bottom');
+  });
+  if (overCard && overCard !== st.draggedEl) {
+    var rect = overCard.getBoundingClientRect();
+    var dropBefore = touch.clientY < rect.top + rect.height / 2;
+    overCard.classList.toggle('reorder-over-top', dropBefore);
+    overCard.classList.toggle('reorder-over-bottom', !dropBefore);
+  }
+}
+
+function onReorderTouchEnd(e) {
+  if (!reorderTouchState) return;
+  var st = reorderTouchState;
+  // Determine drop target from the last hover indicator
+  var overCard = document.querySelector('.manage-card.reorder-over-top, .manage-card.reorder-over-bottom');
+  var targetIdx = null;
+  var dropBefore = false;
+  if (overCard && typeof overCard._reorderIdx === 'number') {
+    targetIdx = overCard._reorderIdx;
+    dropBefore = overCard.classList.contains('reorder-over-top');
+    overCard.classList.remove('reorder-over-top', 'reorder-over-bottom');
+  }
+  // Clean up
+  st.draggedEl.classList.remove('reorder-dragging');
+  if (st.cloneEl && st.cloneEl.parentNode) st.cloneEl.parentNode.removeChild(st.cloneEl);
+  document.removeEventListener('touchmove', onReorderTouchMove);
+  document.removeEventListener('touchend', onReorderTouchEnd);
+  document.removeEventListener('touchcancel', onReorderTouchEnd);
+  var draggedIdx = st.draggedIdx;
+  reorderTouchState = null;
+  if (targetIdx !== null && targetIdx !== draggedIdx) {
+    performReorder(draggedIdx, targetIdx, dropBefore);
+  }
+}
+
+// =====================================================================
+// REORDER + SAVE
+// =====================================================================
+function performReorder(fromIdx, toIdx, dropBefore) {
+  if (typeof stops === 'undefined' || !stops[currentManageDay]) return;
+  var dayStops = stops[currentManageDay];
+  var dayData = (typeof stopData !== 'undefined' && stopData[currentManageDay]) ? stopData[currentManageDay] : null;
+  if (fromIdx < 0 || fromIdx >= dayStops.length) return;
+
+  // Compute the destination index after removal
+  var insertAt = toIdx;
+  if (dropBefore) {
+    // Insert before the target
+    insertAt = toIdx;
+  } else {
+    // Insert after the target
+    insertAt = toIdx + 1;
+  }
+  // Adjust if moving down past the from position
+  if (fromIdx < insertAt) insertAt--;
+  if (insertAt < 0) insertAt = 0;
+  if (insertAt > dayStops.length - 1) insertAt = dayStops.length - 1;
+  if (insertAt === fromIdx) return; // no change
+
+  // Splice the stops array
+  var movedStop = dayStops.splice(fromIdx, 1)[0];
+  dayStops.splice(insertAt, 0, movedStop);
+  // Keep stopData parallel
+  if (dayData && dayData.length === dayStops.length + 1) {
+    // Length increased by 1 since we already pushed to stops above? No — splice ran on dayStops.
+    // Actually dayData was untouched so it's still len(N). We need to also splice its index N-1 → insertAt
+    var movedData = dayData.splice(fromIdx, 1)[0];
+    dayData.splice(insertAt, 0, movedData);
+  } else if (dayData) {
+    var movedData = dayData.splice(fromIdx, 1)[0];
+    dayData.splice(insertAt, 0, movedData);
+  }
+
+  console.log('[REORDER] Moved stop from index ' + fromIdx + ' → ' + insertAt + ' (' + movedStop.name + ')');
+
+  // Persist to Firebase
+  try {
+    if (typeof saveStopsForDay === 'function') {
+      saveStopsForDay(currentManageDay);
+    } else if (typeof fbSave === 'function') {
+      fbSave('stops/' + currentManageDay, dayStops);
+    }
+    if (typeof fbSave === 'function' && dayData) {
+      fbSave('stopData/' + currentManageDay, dayData);
+    }
+  } catch (e) { console.error('[REORDER] save err:', e); }
+
+  // Re-render everything that shows the stop order
+  if (typeof renderManageList === 'function') renderManageList();
+  if (typeof renderRoute === 'function') renderRoute();
+  if (typeof renderMapMarkers === 'function' && typeof mapView !== 'undefined' && mapView) renderMapMarkers();
+
+  // Re-apply reorder mode UI since we just re-rendered the cards
+  applyReorderModeToCards();
+}
+
+// =====================================================================
+// HOOK: re-apply reorder UI after renderManageList re-renders
+// =====================================================================
+(function() {
+  function hook() {
+    if (typeof window.renderManageList !== 'function') { setTimeout(hook, 200); return; }
+    var orig = window.renderManageList;
+    window.renderManageList = function() {
+      var result = orig.apply(this, arguments);
+      // After re-render, the new card DOM elements need their reorder handlers
+      // back if we're in reorder mode.
+      if (reorderMode) {
+        try { applyReorderModeToCards(); } catch (e) {}
+      }
+      return result;
+    };
+  }
+  hook();
+})();
+
+// =====================================================================
+// HOOK: exit reorder mode when switching days or tabs
+// =====================================================================
+(function() {
+  ['selectManageDay', 'switchTab'].forEach(function(fnName) {
+    function hookFn() {
+      if (typeof window[fnName] !== 'function') { setTimeout(hookFn, 200); return; }
+      var orig = window[fnName];
+      window[fnName] = function() {
+        if (reorderMode) {
+          reorderMode = false;
+          var btn = document.getElementById('reorderToggleBtn');
+          if (btn) {
+            btn.textContent = '🔀 Reorder';
+            btn.style.background = 'var(--sur2)';
+            btn.style.color = 'var(--txt)';
+            btn.style.border = '1px solid var(--bdr)';
+            btn.style.fontWeight = 'normal';
+          }
+        }
+        return orig.apply(this, arguments);
+      };
+    }
+    hookFn();
+  });
 })();
 
 console.log('[MT] Mileage tracking module loaded');

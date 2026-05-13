@@ -2003,6 +2003,16 @@ function renderRoute() {
   const nextStopIdx = getNextStopIdx(filtered);
 
   list.innerHTML = filtered.map(({ stop, origIdx }, displayIdx) => {
+    // Defensive: skip stops with missing critical data rather than crashing the whole render
+    if (!stop) {
+      console.warn('[renderRoute] Skipped null stop at origIdx', origIdx);
+      return '';
+    }
+    var safeName = stop.name || '(unnamed stop)';
+    var safeAddr = (stop.addr || stop.address || '').toString();
+    var safeAddrFirst = safeAddr ? safeAddr.split(',')[0] : '(no address)';
+    var safeOpens = stop.opens || 'TBD';
+    var safeNote = stop.note || '';
     const d = dayData[origIdx] || blankStopData();
     const isActive = activeStopIdx === origIdx;
     const isDone = d.status === 'done';
@@ -2011,8 +2021,10 @@ function renderRoute() {
     if (isNext) cardClass += ' next-stop';
     const statusClass = isDone ? 's-done' : isActive ? 's-active' : 's-pending';
     const statusText = isDone ? 'done' : isActive ? 'active' : 'pending';
-    const driveTime = displayIdx > 0 && dayData[filtered[displayIdx-1].origIdx] && dayData[filtered[displayIdx-1].origIdx].departureTime && d.arrivalTime
-      ? ' · Drive: ' + minutesDiff(dayData[filtered[displayIdx-1].origIdx].departureTime, d.arrivalTime) + 'min'
+    var prevItem = displayIdx > 0 ? filtered[displayIdx-1] : null;
+    var prevData = prevItem ? dayData[prevItem.origIdx] : null;
+    const driveTime = (prevData && prevData.departureTime && d.arrivalTime)
+      ? ' · Drive: ' + minutesDiff(prevData.departureTime, d.arrivalTime) + 'min'
       : '';
 
     return `
@@ -2021,10 +2033,10 @@ function renderRoute() {
         <div class="stop-header" onclick="toggleStop(${origIdx})">
           <div class="stop-num">${String(displayIdx+1).padStart(2,'0')}</div>
           <div class="stop-info">
-            <div class="stop-name">${stop.name}${getFreqTag(stop)}${stop.note ? '<span class="note-tag">!</span>' : ''}</div>
-            <div class="stop-meta">${stop.opens} · ${stop.addr.split(',')[0]}${driveTime}</div>
-            ${(function(){ var svc = getServiceStatus(stop); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; })()}
-            ${stop.note ? '<div class="stop-note">' + stop.note + '</div>' : ''}
+            <div class="stop-name">${safeName}${getFreqTag(stop)}${safeNote ? '<span class="note-tag">!</span>' : ''}</div>
+            <div class="stop-meta">${safeOpens} · ${safeAddrFirst}${driveTime}</div>
+            ${(function(){ try { var svc = getServiceStatus(stop); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; } catch(e) { return ''; } })()}
+            ${safeNote ? '<div class="stop-note">' + safeNote + '</div>' : ''}
             <div class="stop-dist" id="dist-${origIdx}">📍 --</div>
           </div>
           <div class="stop-status ${statusClass}">${statusText}</div>
@@ -2037,7 +2049,20 @@ function renderRoute() {
   updateFilterStatus();
   // Update distances after render
   setTimeout(updateStopDistances, 100);
-  } catch(e) { console.error('renderRoute error:', e); }
+  } catch(e) {
+    console.error('[renderRoute] CRITICAL render error — list will be empty:', e);
+    console.error('[renderRoute] currentDay:', currentDay, 'stops count:', (stops[currentDay] || []).length, 'stopData count:', (stopData[currentDay] || []).length);
+    // Show error message instead of silent empty list
+    var listEl = document.getElementById('stopList');
+    if (listEl) {
+      listEl.innerHTML = '<div class="empty-state" style="color:var(--red);padding:20px;">' +
+        '<div style="font-family:var(--fd);font-size:18px;margin-bottom:8px;">⚠ Render error</div>' +
+        '<div style="font-size:12px;">' + (e.message || e) + '</div>' +
+        '<div style="font-size:11px;margin-top:8px;color:var(--mut);">Check console for details. Your data is safe in Firebase.</div>' +
+        '<button onclick="renderRoute()" style="margin-top:12px;background:var(--acc);color:#000;border:none;padding:8px 16px;border-radius:6px;font-family:var(--fd);cursor:pointer;">RETRY</button>' +
+        '</div>';
+    }
+  }
 }
 
 // ============================================================
@@ -4541,11 +4566,35 @@ function updateFilterStatus() {
     if (routeFreqFilter !== 'all') {
       msg += ' · ' + routeFreqFilter + ' only';
     }
-    statusEl.textContent = msg;
+    // If filters are hiding all stops, make the banner alarming + clickable to reset
+    if (total > 0 && visible === 0) {
+      statusEl.innerHTML = '<span style="color:var(--red);font-weight:700;">⚠ ' + msg + ' — filters hiding all stops</span>' +
+        ' <button onclick="clearAllRouteFilters()" style="margin-left:8px;background:var(--acc);color:#000;border:none;padding:4px 10px;border-radius:4px;font-family:var(--fm);font-size:10px;cursor:pointer;font-weight:bold;">CLEAR FILTERS</button>';
+    } else {
+      statusEl.innerHTML = msg + ' <button onclick="clearAllRouteFilters()" style="margin-left:8px;background:var(--sur2);color:var(--mut);border:1px solid var(--bdr);padding:3px 8px;border-radius:4px;font-family:var(--fm);font-size:10px;cursor:pointer;">CLEAR</button>';
+    }
     statusEl.style.display = 'block';
   } else {
     statusEl.style.display = 'none';
   }
+}
+
+// Reset all route-tab filters at once
+function clearAllRouteFilters() {
+  routeSearchQuery = '';
+  routeFilter = 'all';
+  routeFreqFilter = 'all';
+  var searchInput = document.getElementById('routeSearchInput');
+  if (searchInput) searchInput.value = '';
+  var clearBtn = document.getElementById('routeSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  document.querySelectorAll('.filter-pill[data-filter]').forEach(function(p) {
+    p.classList.toggle('active', p.dataset.filter === 'all');
+  });
+  document.querySelectorAll('.filter-pill[data-freqfilter]').forEach(function(p) {
+    p.classList.toggle('active', p.dataset.freqfilter === 'all');
+  });
+  renderRoute();
 }
 
 // ============================================================
@@ -5266,6 +5315,22 @@ function closeMeasureResult() { /* measure feature removed */ }
 
   </div>
 </div>
+
+<!-- === DIAGNOSTIC PANEL (tap PROJECT Z title 5 times to open) === -->
+
+<div id="diagOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10001;padding:20px;overflow-y:auto;">
+  <div style="max-width:600px;margin:0 auto;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div>
+        <div style="font-family:var(--fd);font-size:22px;color:var(--acc);letter-spacing:1px;">🔧 DIAGNOSTIC</div>
+        <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Firebase data inspector</div>
+      </div>
+      <button onclick="closeDiagnosticPanel()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+    <div id="diagBody"></div>
+  </div>
+</div>
+<style>#diagOverlay.show { display: block !important; }</style>
 
 <!-- === SAVE ORDER PROMPT (after Complete Day) === -->
 
@@ -7704,6 +7769,222 @@ function performReorder(fromIdx, toIdx, dropBefore) {
 })();
 
 console.log('[MT] Mileage tracking module loaded');
+
+// =====================================================================
+// DIAGNOSTIC TOOL — tap PROJECT Z title 5 times to open
+// =====================================================================
+// Inspects Firebase data for stops/{day} to detect duplicates or corruption.
+// Provides safe recovery if data has been overwritten incorrectly.
+
+(function() {
+  var diagTapCount = 0;
+  var diagTapTimer = null;
+
+  function setupDiagnosticTrigger() {
+    var titleEl = document.querySelector('.hdr h1, .hdr-title, #appTitle');
+    if (!titleEl) {
+      // Fallback: look for any element with text 'PROJECT Z'
+      var headers = document.querySelectorAll('.hdr, h1, h2');
+      for (var i = 0; i < headers.length; i++) {
+        if (headers[i].textContent && headers[i].textContent.indexOf('PROJECT Z') !== -1) {
+          titleEl = headers[i];
+          break;
+        }
+      }
+    }
+    if (!titleEl) { setTimeout(setupDiagnosticTrigger, 500); return; }
+    titleEl.style.cursor = 'pointer';
+    titleEl.addEventListener('click', function() {
+      diagTapCount++;
+      if (diagTapTimer) clearTimeout(diagTapTimer);
+      diagTapTimer = setTimeout(function() { diagTapCount = 0; }, 1500);
+      if (diagTapCount >= 5) {
+        diagTapCount = 0;
+        openDiagnosticPanel();
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupDiagnosticTrigger);
+  } else {
+    setTimeout(setupDiagnosticTrigger, 500);
+  }
+})();
+
+async function openDiagnosticPanel() {
+  var overlay = document.getElementById('diagOverlay');
+  if (!overlay) return;
+  overlay.classList.add('show');
+  var body = document.getElementById('diagBody');
+  body.innerHTML = '<div style="text-align:center;color:var(--mut);padding:30px;font-family:var(--fm);">Loading Firebase data...</div>';
+
+  try {
+    var fbStops = await fbLoad('stops');
+    var fbClearedDays = await fbLoad('clearedDays') || {};
+    var html = '';
+
+    // Show each day's snapshot
+    var days = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+    var daySnapshots = {};
+
+    days.forEach(function(day) {
+      var raw = fbStops ? fbStops[day] : null;
+      var arr = [];
+      if (Array.isArray(raw)) {
+        arr = raw;
+      } else if (raw && typeof raw === 'object') {
+        Object.keys(raw).forEach(function(k) {
+          var idx = parseInt(k, 10);
+          if (!isNaN(idx)) arr[idx] = raw[k];
+        });
+        arr = arr.filter(function(x) { return x; });
+      }
+      daySnapshots[day] = arr;
+    });
+
+    // Build duplicate detection signature: first 3 stop names + length
+    var signatures = {};
+    days.forEach(function(day) {
+      var arr = daySnapshots[day];
+      if (arr.length === 0) {
+        signatures[day] = 'EMPTY';
+      } else {
+        var sig = arr.length + '|' + arr.slice(0, 3).map(function(s) { return (s && s.name) ? s.name : '?'; }).join('|');
+        signatures[day] = sig;
+      }
+    });
+
+    // Detect duplicate days
+    var duplicates = {};
+    var seenSigs = {};
+    days.forEach(function(day) {
+      var sig = signatures[day];
+      if (sig === 'EMPTY') return;
+      if (seenSigs[sig]) {
+        if (!duplicates[sig]) duplicates[sig] = [seenSigs[sig]];
+        duplicates[sig].push(day);
+      } else {
+        seenSigs[sig] = day;
+      }
+    });
+
+    // Build the panel HTML
+    if (Object.keys(duplicates).length > 0) {
+      html += '<div style="background:#5a1a2e;border:2px solid var(--red);border-radius:8px;padding:14px;margin-bottom:12px;">';
+      html += '<div style="font-family:var(--fd);color:var(--red);font-size:18px;letter-spacing:1px;margin-bottom:6px;">⚠ DUPLICATE DAYS DETECTED</div>';
+      html += '<div style="font-family:var(--fb);font-size:13px;color:#fff;">';
+      Object.keys(duplicates).forEach(function(sig) {
+        html += 'These days have identical data: <strong style="color:var(--acc);">' + duplicates[sig].join(' = ') + '</strong><br>';
+      });
+      html += '</div></div>';
+    } else {
+      html += '<div style="background:#064c3a;border:2px solid var(--grn);border-radius:8px;padding:12px;margin-bottom:12px;font-family:var(--fb);font-size:13px;color:#fff;">✓ No duplicate days detected. Each day has unique data.</div>';
+    }
+
+    // Day-by-day snapshot
+    html += '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;margin:14px 0 6px;">DATA IN FIREBASE</div>';
+    days.forEach(function(day) {
+      var arr = daySnapshots[day];
+      var isCleared = fbClearedDays[day] === true;
+      var color = arr.length === 0 ? 'var(--mut)' : 'var(--txt)';
+      html += '<div style="background:#0e1830;border:1px solid var(--bdr);border-radius:6px;padding:10px 12px;margin-bottom:6px;font-family:var(--fb);font-size:12px;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '<div><strong style="color:var(--acc);font-family:var(--fm);">' + day + '</strong> <span style="color:' + color + ';">— ' + arr.length + ' stops</span>';
+      if (isCleared) html += ' <span style="color:var(--red);font-family:var(--fm);font-size:10px;">[CLEARED]</span>';
+      html += '</div>';
+      html += '<button onclick="diagExpandDay(\'' + day + '\')" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:var(--fm);font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;">VIEW STOPS</button>';
+      html += '</div>';
+      if (arr.length > 0) {
+        html += '<div style="color:var(--mut);margin-top:4px;font-size:11px;">First: ' + (arr[0].name || '?') + ' · Last: ' + (arr[arr.length-1].name || '?') + '</div>';
+      }
+      html += '<div id="diagDay_' + day + '" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);"></div>';
+      html += '</div>';
+    });
+
+    // Recovery actions
+    if (Object.keys(duplicates).length > 0) {
+      html += '<div style="margin-top:14px;padding:12px;background:#0e1830;border:1px solid var(--acc);border-radius:8px;">';
+      html += '<div style="font-family:var(--fd);color:var(--acc);font-size:14px;margin-bottom:8px;">RECOVERY OPTIONS</div>';
+      html += '<div style="font-family:var(--fb);font-size:12px;color:var(--mut);margin-bottom:10px;">If a day has the wrong data, you can restore it from the code defaults (only MON, TUE, THU have defaults).</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+      html += '<button onclick="diagRestoreDefault(\'TUE\')" style="background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fd);font-size:13px;padding:10px;border-radius:6px;cursor:pointer;font-weight:bold;">RESTORE TUE TO DEFAULTS</button>';
+      html += '<button onclick="diagRestoreDefault(\'WED\')" style="background:var(--sur2);color:var(--txt);border:1px solid var(--bdr);font-family:var(--fd);font-size:13px;padding:10px;border-radius:6px;cursor:pointer;">CLEAR WED (no defaults — empty)</button>';
+      html += '</div></div>';
+    }
+
+    // Save daySnapshots globally for the expand handler
+    window._diagSnapshots = daySnapshots;
+
+    body.innerHTML = html;
+
+  } catch (e) {
+    body.innerHTML = '<div style="color:var(--red);padding:20px;font-family:var(--fb);">Error loading: ' + (e.message || e) + '</div>';
+  }
+}
+
+function closeDiagnosticPanel() {
+  var overlay = document.getElementById('diagOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+function diagExpandDay(day) {
+  var el = document.getElementById('diagDay_' + day);
+  if (!el) return;
+  if (el.style.display === 'none') {
+    var arr = (window._diagSnapshots || {})[day] || [];
+    var html = '<div style="max-height:240px;overflow-y:auto;font-family:var(--fm);font-size:10px;color:var(--mut);">';
+    arr.forEach(function(s, i) {
+      var name = s.name || '(unnamed)';
+      var addr = s.addr || s.address || '';
+      html += '<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
+              '<span style="color:var(--acc);font-weight:700;">' + String(i+1).padStart(2,'0') + '</span> ' +
+              '<span style="color:#fff;">' + name + '</span>' +
+              (addr ? ' <span style="color:var(--mut);">· ' + addr.split(',')[0] + '</span>' : '') +
+              '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function diagRestoreDefault(day) {
+  var defaults = {
+    'MON': typeof DEFAULT_MON_STOPS !== 'undefined' ? DEFAULT_MON_STOPS : null,
+    'TUE': typeof DEFAULT_TUE_STOPS !== 'undefined' ? DEFAULT_TUE_STOPS : null,
+    'WED': null,
+    'THU': typeof DEFAULT_THU_STOPS !== 'undefined' ? DEFAULT_THU_STOPS : null,
+    'FRI': null
+  };
+  var defaultList = defaults[day];
+  if (day === 'WED' || day === 'FRI') {
+    if (!confirm('Clear ' + day + ' to empty? (No default stops exist for ' + day + '.) This will mark the day as cleared in Firebase.')) return;
+    try {
+      stops[day] = [];
+      stopData[day] = [];
+      await fbSave('stops/' + day, null);
+      await fbSave('clearedDays/' + day, true);
+      await fbSave('stopData/' + day, null);
+      alert('✓ ' + day + ' cleared. Reload the app to see changes.');
+    } catch (e) { alert('Error: ' + e.message); }
+    return;
+  }
+  if (!defaultList) { alert('No defaults available for ' + day); return; }
+  if (!confirm('Restore ' + day + ' to ' + defaultList.length + ' default stops?\n\nThis OVERWRITES Firebase data for ' + day + '.\n\nWarning: any custom stops you added to ' + day + ' will be lost.')) return;
+  try {
+    var fresh = JSON.parse(JSON.stringify(defaultList));
+    stops[day] = fresh;
+    stopData[day] = fresh.map(function() { return blankStopData(); });
+    await fbSave('clearedDays/' + day, null); // remove cleared marker if present
+    await fbSave('stops/' + day, fresh);
+    await fbSave('stopData/' + day, stopData[day]);
+    alert('✓ ' + day + ' restored to ' + fresh.length + ' default stops.\n\nReload the app to refresh all views.');
+  } catch (e) {
+    alert('Error: ' + (e.message || e));
+  }
+}
 </script>
 
 <!-- ===================================================================== -->

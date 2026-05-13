@@ -2326,47 +2326,69 @@ function openNav(i, app) {
 // ============================================================
 function renderManageList() {
   const list = document.getElementById('manageList');
-  const dayStops = stops[currentManageDay] || [];
-  if (dayStops.length === 0) {
-    list.innerHTML = '<div class="empty-state">No stops yet.<br>Add stops above.</div>';
-    return;
+  if (!list) return;
+  try {
+    const dayStops = stops[currentManageDay] || [];
+    if (dayStops.length === 0) {
+      list.innerHTML = '<div class="empty-state">No stops yet.<br>Add stops above.</div>';
+      return;
+    }
+    var inSelectMode = bulkSelectMode;
+    var selectedSet = bulkSelectedIdx;
+    list.innerHTML = dayStops.map((s, i) => {
+      // Defensive: skip null stops, fall back gracefully on missing fields
+      if (!s) {
+        console.warn('[renderManageList] Null stop at idx', i, 'day', currentManageDay);
+        return '';
+      }
+      var safeName = s.name || '(unnamed stop)';
+      var safeAddr = (s.addr || s.address || '').toString();
+      var safeAddrFirst = safeAddr ? safeAddr.split(',')[0] : '(no address)';
+      var safeOpens = s.opens || 'TBD';
+      var safeNote = s.note || '';
+      const freq = s.frequency || 'weekly';
+      var isSelected = inSelectMode && selectedSet[i];
+      var cardClasses = 'manage-card';
+      if (inSelectMode) cardClasses += ' selectable';
+      if (isSelected) cardClasses += ' selected';
+      var clickHandler = inSelectMode ? `onclick="toggleBulkSelect(${i}, event)"` : '';
+      return `
+      <div class="${cardClasses}" id="mc-${i}" ${clickHandler}>
+        <div class="manage-checkbox">${isSelected ? '✓' : ''}</div>
+        <div class="manage-num" style="font-family:var(--fd);font-size:20px;color:var(--mut);">${String(i+1).padStart(2,'0')}</div>
+        <div class="manage-info">
+          <div class="manage-name">${safeName} <span class="freq-tag freq-${freq}">${freq}</span>${s.notes && s.notes.length > 0 ? '<span class="freq-tag" style="background:var(--acc2);color:#000;">📝 ' + s.notes.length + '</span>' : ''}</div>
+          <div class="manage-meta">${safeOpens} · ${safeAddrFirst}${safeNote ? ' · ' + safeNote : ''}</div>
+          ${(function(){ try { var svc = getServiceStatus(s); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; } catch(e) { return ''; } })()}
+        </div>
+        <div class="manage-actions">
+          <button class="manage-btn edit" onclick="editStop('${currentManageDay}', ${i})">EDIT</button>
+          <button class="manage-btn del" onclick="removeStop('${currentManageDay}', ${i})">DEL</button>
+          <button class="dots-btn" onclick="toggleFreqMenu(${i}, event)">⋯</button>
+        </div>
+        <div class="freq-menu" id="fmenu-${i}">
+          <div class="freq-menu-item ${freq==='weekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'weekly')">
+            <div class="freq-dot" style="background:var(--grn)"></div>Weekly
+          </div>
+          <div class="freq-menu-item ${freq==='biweekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'biweekly')">
+            <div class="freq-dot" style="background:var(--acc2)"></div>Biweekly
+          </div>
+          <div class="freq-menu-item ${freq==='monthly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'monthly')">
+            <div class="freq-dot" style="background:var(--pur)"></div>Monthly
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('[renderManageList] CRITICAL render error:', e);
+    console.error('[renderManageList] currentManageDay:', currentManageDay, 'stops count:', (stops[currentManageDay] || []).length);
+    list.innerHTML = '<div class="empty-state" style="color:var(--red);padding:20px;">' +
+      '<div style="font-family:var(--fd);font-size:18px;margin-bottom:8px;">⚠ Stops list render error</div>' +
+      '<div style="font-size:12px;">' + (e.message || e) + '</div>' +
+      '<div style="font-size:11px;margin-top:8px;color:var(--mut);">Check console for details. Try tapping PROJECT Z 5x to open Diagnostic.</div>' +
+      '<button onclick="renderManageList()" style="margin-top:12px;background:var(--acc);color:#000;border:none;padding:8px 16px;border-radius:6px;font-family:var(--fd);cursor:pointer;">RETRY</button>' +
+      '</div>';
   }
-  var inSelectMode = bulkSelectMode;
-  var selectedSet = bulkSelectedIdx;
-  list.innerHTML = dayStops.map((s, i) => {
-    const freq = s.frequency || 'weekly';
-    var isSelected = inSelectMode && selectedSet[i];
-    var cardClasses = 'manage-card';
-    if (inSelectMode) cardClasses += ' selectable';
-    if (isSelected) cardClasses += ' selected';
-    var clickHandler = inSelectMode ? `onclick="toggleBulkSelect(${i}, event)"` : '';
-    return `
-    <div class="${cardClasses}" id="mc-${i}" ${clickHandler}>
-      <div class="manage-checkbox">${isSelected ? '✓' : ''}</div>
-      <div class="manage-num" style="font-family:var(--fd);font-size:20px;color:var(--mut);">${String(i+1).padStart(2,'0')}</div>
-      <div class="manage-info">
-        <div class="manage-name">${s.name} <span class="freq-tag freq-${freq}">${freq}</span>${s.notes && s.notes.length > 0 ? '<span class="freq-tag" style="background:var(--acc2);color:#000;">📝 ' + s.notes.length + '</span>' : ''}</div>
-        <div class="manage-meta">${s.opens} · ${s.addr.split(',')[0]}${s.note ? ' · ' + s.note : ''}</div>
-        ${(function(){ var svc = getServiceStatus(s); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; })()}
-      </div>
-      <div class="manage-actions">
-        <button class="manage-btn edit" onclick="editStop('${currentManageDay}', ${i})">EDIT</button>
-        <button class="manage-btn del" onclick="removeStop('${currentManageDay}', ${i})">DEL</button>
-        <button class="dots-btn" onclick="toggleFreqMenu(${i}, event)">⋯</button>
-      </div>
-      <div class="freq-menu" id="fmenu-${i}">
-        <div class="freq-menu-item ${freq==='weekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'weekly')">
-          <div class="freq-dot" style="background:var(--grn)"></div>Weekly
-        </div>
-        <div class="freq-menu-item ${freq==='biweekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'biweekly')">
-          <div class="freq-dot" style="background:var(--acc2)"></div>Biweekly
-        </div>
-        <div class="freq-menu-item ${freq==='monthly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'monthly')">
-          <div class="freq-dot" style="background:var(--pur)"></div>Monthly
-        </div>
-      </div>
-    </div>`;
-  }).join('');
 }
 
 // ============================================================

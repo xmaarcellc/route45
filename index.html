@@ -5267,6 +5267,32 @@ function closeMeasureResult() { /* measure feature removed */ }
   </div>
 </div>
 
+<!-- === SAVE ORDER PROMPT (after Complete Day) === -->
+
+<div class="fuel-modal-overlay" id="saveOrderOverlay">
+  <div class="fuel-modal">
+    <div class="fuel-modal-title">📋 SAVE ROUTE ORDER?</div>
+    <div class="fuel-modal-sub">You completed <span id="saveOrderCount">0</span> stops on <span id="saveOrderDayLabel">--</span> today.</div>
+
+```
+<div style="background:#0e1830;border:1px solid var(--bdr);border-radius:8px;padding:12px;margin:14px 0;">
+  <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Today's completion order</div>
+  <div id="saveOrderPreview"></div>
+</div>
+
+<div style="font-family:var(--fb);font-size:13px;color:var(--mut);line-height:1.4;margin-bottom:14px;">
+  Save this as your new permanent <span id="saveOrderDayLabel2" style="display:none;">--</span>route order? This will reorder the stops in both the Route list and the Stops tab.
+</div>
+
+<div class="fuel-btn-row">
+  <button class="fuel-btn fuel-btn-cancel" onclick="dismissSaveOrderPrompt()">NO, KEEP CURRENT</button>
+  <button class="fuel-btn fuel-btn-save" onclick="confirmSaveOrderAsNewRoute()">✓ SAVE NEW ORDER</button>
+</div>
+```
+
+  </div>
+</div>
+
 <!-- === EDIT FUEL MODAL (for historical days) === -->
 
 <div class="fuel-modal-overlay" id="editFuelOverlay">
@@ -6893,8 +6919,15 @@ function saveCompletionOrderToFirebase() {
     if (typeof window.saveFuelData === 'function') {
       var orig = window.saveFuelData;
       window.saveFuelData = function() {
+        // Capture before any reset
+        var capturedOrder = todayCompletionOrder.slice();
+        var capturedDay = currentDay;
         try { saveCompletionOrderToFirebase(); } catch (e) {}
         var r = orig.apply(this, arguments);
+        // Defer the prompt slightly so the fuel modal close animation finishes first
+        if (capturedOrder.length >= 2) {
+          setTimeout(function() { showSaveOrderPrompt(capturedOrder, capturedDay); }, 400);
+        }
         // Reset for the next day
         todayCompletionOrder = [];
         return r;
@@ -6903,8 +6936,13 @@ function saveCompletionOrderToFirebase() {
     if (typeof window.closeFuelModal === 'function') {
       var orig2 = window.closeFuelModal;
       window.closeFuelModal = function() {
+        var capturedOrder = todayCompletionOrder.slice();
+        var capturedDay = currentDay;
         try { saveCompletionOrderToFirebase(); } catch (e) {}
         var r = orig2.apply(this, arguments);
+        if (capturedOrder.length >= 2) {
+          setTimeout(function() { showSaveOrderPrompt(capturedOrder, capturedDay); }, 400);
+        }
         todayCompletionOrder = [];
         return r;
       };
@@ -6913,6 +6951,137 @@ function saveCompletionOrderToFirebase() {
   // Wait until our other wraps have applied
   setTimeout(hookSave, 1500);
 })();
+
+// =====================================================================
+// SAVE-AS-NEW-ORDER PROMPT (end of day)
+// =====================================================================
+// Shown after Complete Day. Asks if user wants to make today's actual
+// completion order the new permanent route order for this weekday.
+
+function showSaveOrderPrompt(completionOrder, day) {
+  if (!completionOrder || completionOrder.length < 2) return;
+  var overlay = document.getElementById('saveOrderOverlay');
+  if (!overlay) return;
+  // Stash on the overlay so the YES handler can read it
+  overlay._pendingOrder = completionOrder;
+  overlay._pendingDay = day;
+  // Populate preview
+  var labelEl = document.getElementById('saveOrderDayLabel');
+  if (labelEl) labelEl.textContent = day;
+  var countEl = document.getElementById('saveOrderCount');
+  if (countEl) countEl.textContent = completionOrder.length;
+  // Build a short preview list (first 3 + last 1)
+  var listEl = document.getElementById('saveOrderPreview');
+  if (listEl) {
+    var preview = '';
+    var shown = Math.min(3, completionOrder.length);
+    for (var i = 0; i < shown; i++) {
+      preview += '<div style="font-family:var(--fb);font-size:12px;color:#fff;padding:3px 0;">' +
+                 '<span style="color:var(--acc);font-weight:700;margin-right:8px;">' + (i+1).toString().padStart(2,'0') + '</span>' +
+                 (completionOrder[i].name || 'Unnamed stop') + '</div>';
+    }
+    if (completionOrder.length > 4) {
+      preview += '<div style="font-family:var(--fm);font-size:10px;color:var(--mut);padding:3px 0;letter-spacing:.5px;">... ' + (completionOrder.length - 4) + ' more ...</div>';
+    }
+    if (completionOrder.length > 3) {
+      var last = completionOrder[completionOrder.length - 1];
+      preview += '<div style="font-family:var(--fb);font-size:12px;color:#fff;padding:3px 0;">' +
+                 '<span style="color:var(--acc);font-weight:700;margin-right:8px;">' + completionOrder.length.toString().padStart(2,'0') + '</span>' +
+                 (last.name || 'Unnamed stop') + '</div>';
+    }
+    listEl.innerHTML = preview;
+  }
+  overlay.classList.add('show');
+}
+
+function dismissSaveOrderPrompt() {
+  var overlay = document.getElementById('saveOrderOverlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    overlay._pendingOrder = null;
+    overlay._pendingDay = null;
+  }
+}
+
+function confirmSaveOrderAsNewRoute() {
+  var overlay = document.getElementById('saveOrderOverlay');
+  if (!overlay) return;
+  var order = overlay._pendingOrder;
+  var day = overlay._pendingDay;
+  if (!order || !day) { dismissSaveOrderPrompt(); return; }
+  applyCompletionOrderToDay(order, day);
+  dismissSaveOrderPrompt();
+}
+
+// =====================================================================
+// APPLY: reorder stops[day] + stopData[day] to match completionOrder
+// =====================================================================
+function applyCompletionOrderToDay(completionOrder, day) {
+  if (typeof stops === 'undefined' || !stops[day]) {
+    alert('Day data not loaded.');
+    return;
+  }
+  var dayStops = stops[day];
+  var dayData = (typeof stopData !== 'undefined' && stopData[day]) ? stopData[day] : null;
+
+  // Build a map of stopMatchKey -> currentIdx in today's stops
+  var keyToIdx = {};
+  dayStops.forEach(function(s, i) {
+    var k = stopMatchKey(s);
+    if (k) keyToIdx[k] = i;
+  });
+
+  // Build new order: walk through completion order, place matching stops first
+  var newOrderIdxs = [];
+  var placed = {};
+  completionOrder.forEach(function(pastStop) {
+    var k = stopMatchKey(pastStop);
+    if (keyToIdx.hasOwnProperty(k) && !placed[keyToIdx[k]]) {
+      newOrderIdxs.push(keyToIdx[k]);
+      placed[keyToIdx[k]] = true;
+    }
+  });
+  // Append any stops that weren't completed today at the end (preserve them)
+  dayStops.forEach(function(s, i) {
+    if (!placed[i]) newOrderIdxs.push(i);
+  });
+
+  // Materialize the new arrays
+  var newStops = newOrderIdxs.map(function(i) { return dayStops[i]; });
+  var newData = dayData ? newOrderIdxs.map(function(i) { return dayData[i]; }) : null;
+  stops[day] = newStops;
+  if (newData) stopData[day] = newData;
+
+  // Persist to Firebase
+  try {
+    if (typeof saveStopsForDay === 'function') {
+      saveStopsForDay(day);
+    } else if (typeof fbSave === 'function') {
+      fbSave('stops/' + day, stops[day]);
+    }
+    if (typeof fbSave === 'function' && dayData) {
+      fbSave('stopData/' + day, stopData[day]);
+    }
+    console.log('[SAVE-ORDER] Saved new route order for ' + day + ' (' + newStops.length + ' stops, ' + completionOrder.length + ' from today)');
+  } catch (e) {
+    console.error('[SAVE-ORDER] persist err:', e);
+    alert('Save failed: ' + (e.message || e));
+    return;
+  }
+
+  // Re-render everything
+  try {
+    if (typeof renderRoute === 'function') renderRoute();
+    if (typeof renderManageList === 'function') renderManageList();
+    if (typeof renderMapMarkers === 'function' && typeof mapView !== 'undefined' && mapView) renderMapMarkers();
+  } catch (e) { console.error('[SAVE-ORDER] render err:', e); }
+
+  // Brief confirmation banner
+  setTimeout(function() {
+    var msg = '✓ ' + day + ' route updated\n\nYour stops are now in the order you completed them today.';
+    alert(msg);
+  }, 200);
+}
 
 // --- Date math: get the date 7 days before today ---
 function dateKey7DaysAgo() {

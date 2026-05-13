@@ -8335,6 +8335,51 @@ function adtCheckLeftArrivedStop(lat, lng) {
   }
 }
 
+// =====================================================================
+// HANDOFF: arm auto-depart whenever logArrival fires (manual OR auto)
+// =====================================================================
+// So that tapping the manual ARRIVED button also lets the leave-radius
+// detector finish the stop automatically when you drive away.
+// Gated by route-active state so we don't accidentally arm during edits.
+(function() {
+  function hookLogArrival() {
+    if (typeof window.logArrival !== 'function') { setTimeout(hookLogArrival, 200); return; }
+    var orig = window.logArrival;
+    window.logArrival = function(i) {
+      var result = orig.apply(this, arguments);
+      try {
+        // Only arm auto-depart while route is active. If the route hasn't been
+        // started, the user is likely doing admin/cleanup, not actually on the road.
+        var routeActive = (typeof isRouteActive === 'function') ? isRouteActive() : true;
+        if (!routeActive) return result;
+        // If adtArrivedStop is already set to THIS stop (because adtSilentArrive
+        // just ran and then called logArrival), don't overwrite — silent flow
+        // already handles UNDO banner via adtSilentArrive.
+        if (adtArrivedStop && adtArrivedStop.stopIdx === i) return result;
+        var s = (typeof stops !== 'undefined' && stops[currentDay] && stops[currentDay][i]) ? stops[currentDay][i] : null;
+        if (!s || !s.lat || !s.lng) {
+          console.log('[ADT] logArrival hook skipped — stop missing coords');
+          return result;
+        }
+        adtArrivedStop = {
+          stopIdx: i,
+          stopLat: s.lat,
+          stopLng: s.lng,
+          arrivedAt: Date.now(),
+          arrivedName: s.name || ('Stop ' + (i + 1))
+        };
+        console.log('[ADT] Manual arrival armed auto-depart for stop #' + (i+1) + ' "' + s.name + '" — will fire when you leave ' + adtSettings.leaveRadiusFt + 'ft radius');
+        // Show the UNDO banner so user sees the system armed for departure
+        if (typeof adtShowUndoBanner === 'function') {
+          adtShowUndoBanner('arrive', i, s.name || ('Stop ' + (i + 1)));
+        }
+      } catch (e) { console.error('[ADT] logArrival hook err:', e); }
+      return result;
+    };
+  }
+  hookLogArrival();
+})();
+
 function adtCheckDwell() {
   if (adtPositionBuffer.length < 3) return;
   // Compute centroid of last N points

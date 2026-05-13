@@ -47,7 +47,7 @@ color-scheme: dark only;
   }
 
 /* HEADER */
-.hdr { background: var(–sur); border-bottom: 1px solid var(–bdr); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.hdr { background: #1a2540; border-bottom: 2px solid var(–acc); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
 .hdr-title { font-family: var(–fd); font-size: 28px; letter-spacing: 2px; color: var(–acc); }
 .hdr-sub { font-family: var(–fm); font-size: 11px; color: var(–mut); margin-top: 2px; }
 .hdr-right { display: flex; align-items: center; gap: 8px; }
@@ -60,20 +60,20 @@ color-scheme: dark only;
 .day-badge { background: var(–acc); color: #000; font-family: var(–fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* TABS */
-.tabs { display: flex; background: var(–sur); border-bottom: 1px solid var(–bdr); position: sticky; top: 53px; z-index: 99; }
-.tab { flex: 1; padding: 12px; text-align: center; font-family: var(–fm); font-size: 11px; color: var(–mut); cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
-.tab.active { color: var(–acc); border-bottom-color: var(–acc); }
+.tabs { display: flex; background: #1a2540; border-bottom: 2px solid var(–acc); position: sticky; top: 53px; z-index: 99; }
+.tab { flex: 1; padding: 14px 12px; text-align: center; font-family: var(–fm); font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; border-bottom: 3px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
+.tab.active { color: var(–acc); border-bottom-color: var(–acc); background: rgba(255,122,61,0.08); }
 .badge { display: inline-block; background: var(–acc); color: #000; font-family: var(–fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
 
 /* DAY SELECTOR */
-.day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: var(–sur); border-bottom: 1px solid var(–bdr); scrollbar-width: none; }
+.day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: #1a2540; border-bottom: 2px solid var(–acc); scrollbar-width: none; }
 .day-sel::-webkit-scrollbar { display: none; }
-.day-btn { flex-shrink: 0; background: var(–sur); border: 2px solid #c4cad3; color: #fff; font-family: var(–fm); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 5px; cursor: pointer; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-.day-btn.active { background: var(–acc); border-color: #c4cad3; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.5), 0 0 0 2px #c4cad3; }
+.day-btn { flex-shrink: 0; background: #0e1830; border: 2px solid var(–acc); color: #fff; font-family: var(–fm); font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 5px; cursor: pointer; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.day-btn.active { background: var(–acc); border-color: #fff; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.6), 0 0 0 2px var(–acc); }
 
 /* STATS BAR */
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1a2a3a; border-bottom: 1px solid var(–bdr); }
-.stat { background: var(–sur); padding: 10px 8px; text-align: center; }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(–acc); border-bottom: 2px solid var(–acc); }
+.stat { background: #1a2540; padding: 12px 8px; text-align: center; }
 .stat-val { font-family: var(–fd); font-size: 22px; color: var(–acc); line-height: 1; }
 .stat-lbl { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
@@ -102,14 +102,14 @@ transform: scale(0.95);
 
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
-.stop-card { background: var(–sur); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; }
-.stop-card.active { border-color: var(–acc); box-shadow: 0 0 0 1px var(–acc); }
+.stop-card { background: #1a2540; border: 2px solid var(–acc); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.stop-card.active { border-color: var(–acc); border-width: 3px; box-shadow: 0 0 0 2px var(–acc), 0 0 24px rgba(255,122,61,0.5), 0 4px 16px rgba(0,0,0,0.6); }
 /* Done stops get a clear green highlight (no fading) so they stand out as completed */
 .stop-card.done {
 border-color: var(–grn);
 border-width: 2px;
-background: linear-gradient(90deg, rgba(16,185,129,0.18), rgba(16,185,129,0.06));
-box-shadow: 0 0 0 1px var(–grn), 0 2px 8px rgba(16,185,129,0.18);
+background: #0e2e26;
+box-shadow: 0 0 0 1px var(–grn), 0 4px 12px rgba(16,185,129,0.35);
 }
 .stop-header { display: flex; align-items: center; padding: 14px 12px; gap: 12px; cursor: pointer; user-select: none; }
 .stop-num { font-family: var(–fd); font-size: 26px; color: var(–mut); min-width: 34px; line-height: 1; }
@@ -120,12 +120,12 @@ box-shadow: 0 0 0 1px var(–grn), 0 2px 8px rgba(16,185,129,0.18);
 .stop-meta { font-family: var(–fm); font-size: 10px; color: var(–mut); margin-top: 3px; }
 .stop-note { font-family: var(–fm); font-size: 10px; color: var(–acc2); margin-top: 2px; }
 .stop-status { font-family: var(–fm); font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
-.s-pending { background: var(–sur2); color: var(–mut); }
+.s-pending { background: #0e1830; color: #fff; border: 1px solid var(–acc); font-weight: 600; }
 .s-active { background: var(–acc); color: #000; }
 .s-done { background: var(–grn); color: #000; }
 
 /* STOP PANEL */
-.stop-panel { border-top: 1px solid var(–bdr); padding: 16px; display: none; }
+.stop-panel { border-top: 2px solid var(–acc); padding: 16px; display: none; background: #0e1830; }
 .stop-card.active .stop-panel { display: block; }
 
 /* NAVIGATION BUTTONS */

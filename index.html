@@ -8491,9 +8491,10 @@ async function diagRestoreDefault(day) {
 <div class="adt-slider-row">
   <div class="adt-slider-top">
     <div class="adt-setting-label">Leave radius (auto-DONE distance)</div>
-    <div class="adt-slider-val"><span id="adtLeaveRadiusVal">500</span> ft</div>
+    <div class="adt-slider-val"><span id="adtLeaveRadiusVal">2112</span> ft <span style="font-size:10px;color:var(--mut);">(0.4 mi)</span></div>
   </div>
-  <input class="adt-slider" id="adtLeaveRadiusSlider" type="range" min="200" max="1000" step="50" value="500" oninput="adtSliderChange('leaveRadiusFt', this.value)">
+  <input class="adt-slider" id="adtLeaveRadiusSlider" type="range" min="2112" max="2112" step="1" value="2112" disabled style="opacity:0.5;cursor:not-allowed;">
+  <div style="font-family:var(--fm);font-size:9px;color:var(--mut);margin-top:4px;letter-spacing:.5px;">🔒 LOCKED AT 0.4 MILES</div>
 </div>
 
 <button class="adt-settings-close" onclick="adtHideSettings()">DONE</button>
@@ -8569,7 +8570,7 @@ var adtSettings = {
   manualButtons: true,      // manual ARRIVED/DEPARTED buttons stay visible by default
   dwellMinutes: 2,          // minutes stationary before silent-arriving (NEW default: 2)
   matchRadiusFt: 250,       // ft within a known stop to consider it a match
-  leaveRadiusFt: 500        // ft AWAY from arrived stop to auto-mark DONE
+  leaveRadiusFt: 2112       // HARD-CODED to 0.4 miles (2112 ft) AWAY from arrived stop to auto-mark DONE
 };
 
 var ADT_LS_KEY = 'adt_settings_v1';
@@ -8631,7 +8632,8 @@ function adtCheckLeftArrivedStop(lat, lng) {
   if (!adtArrivedStop) return;
   var meters = mtHaversineMeters(lat, lng, adtArrivedStop.stopLat, adtArrivedStop.stopLng);
   var feet = meters * 3.28084;
-  if (feet >= adtSettings.leaveRadiusFt) {
+  // Hard-coded leave radius: 2112 ft = 0.4 mi (ignores settings)
+  if (feet >= 2112) {
     // User has left the stop — silently mark it DONE
     adtSilentDepart(adtArrivedStop);
     adtArrivedStop = null;
@@ -8671,7 +8673,7 @@ function adtCheckLeftArrivedStop(lat, lng) {
           arrivedAt: Date.now(),
           arrivedName: s.name || ('Stop ' + (i + 1))
         };
-        console.log('[ADT] Manual arrival armed auto-depart for stop #' + (i+1) + ' "' + s.name + '" — will fire when you leave ' + adtSettings.leaveRadiusFt + 'ft radius');
+        console.log('[ADT] Manual arrival armed auto-depart for stop #' + (i+1) + ' "' + s.name + '" — will fire when you leave 2112ft (0.4 mi) radius');
         // Show the UNDO banner so user sees the system armed for departure
         if (typeof adtShowUndoBanner === 'function') {
           adtShowUndoBanner('arrive', i, s.name || ('Stop ' + (i + 1)));

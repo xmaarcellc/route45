@@ -263,19 +263,96 @@ box-shadow: 0 0 0 1px var(–grn), 0 2px 8px rgba(16,185,129,0.18);
 .stop-dist { font-family: var(–fm); font-size: 10px; color: var(–acc); margin-top: 2px; }
 
 /* MAP STOP POPUP */
-.map-stop-popup { position: absolute; bottom: 80px; left: 12px; right: 12px; background: var(–sur); border: 1px solid var(–acc); border-radius: 12px; padding: 14px 16px; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,.6); display: none; }
-.map-stop-popup.show { display: block; }
-.map-popup-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(–mut); font-size: 18px; cursor: pointer; }
-.map-popup-name { font-family: var(–fd); font-size: 22px; color: var(–acc); letter-spacing: 1px; padding-right: 24px; }
-.map-popup-addr { font-family: var(–fm); font-size: 11px; color: var(–mut); margin-top: 3px; }
-.map-popup-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-.map-popup-tag { font-family: var(–fm); font-size: 10px; color: var(–txt); background: var(–sur2); border: 1px solid var(–bdr); padding: 3px 8px; border-radius: 4px; }
-.map-popup-tag.done { border-color: var(–grn); color: var(–grn); }
-.map-popup-tag.overdue { border-color: var(–red); color: var(–red); }
-.map-popup-btns { display: flex; gap: 8px; margin-top: 12px; }
-.map-nav-btn { flex: 1; padding: 11px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
-.map-nav-start { background: var(–acc); color: #000; }
-.map-nav-gmaps { background: #4285f4; color: #fff; }
+/* MAP STOP POPUP — enhanced card look */
+.map-stop-popup {
+position: absolute;
+bottom: 24px;
+left: 12px;
+right: 12px;
+background: linear-gradient(135deg, var(–sur) 0%, var(–sur2) 100%);
+border: 2px solid var(–acc);
+border-radius: 14px;
+padding: 16px 18px 14px;
+z-index: 20;
+box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 24px rgba(255,122,61,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+display: none;
+}
+.map-stop-popup.show { display: block; animation: stop-popup-rise 0.25s ease-out; }
+@keyframes stop-popup-rise {
+from { transform: translateY(20px); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+.map-popup-close {
+position: absolute;
+top: 8px;
+right: 10px;
+background: rgba(0,0,0,0.3);
+border: none;
+color: var(–txt);
+font-size: 16px;
+cursor: pointer;
+width: 26px;
+height: 26px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+line-height: 1;
+}
+.map-popup-name {
+font-family: var(–fb);
+font-weight: 700;
+font-size: 20px;
+color: #fff;
+letter-spacing: 0;
+padding-right: 32px;
+line-height: 1.15;
+text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.map-popup-addr {
+font-family: var(–fb);
+font-size: 13px;
+color: var(–mut);
+margin-top: 6px;
+font-weight: 500;
+}
+.map-popup-meta { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.map-popup-tag {
+font-family: var(–fm);
+font-size: 10px;
+font-weight: 600;
+color: #fff;
+background: rgba(0,0,0,0.35);
+border: 1px solid rgba(255,255,255,0.2);
+padding: 4px 9px;
+border-radius: 12px;
+letter-spacing: 0.3px;
+}
+.map-popup-tag.done {
+background: rgba(16,185,129,0.2);
+border-color: var(–grn);
+color: var(–grn);
+}
+.map-popup-tag.overdue {
+background: rgba(239,71,111,0.2);
+border-color: var(–red);
+color: var(–red);
+}
+.map-popup-btns { display: flex; gap: 8px; margin-top: 14px; }
+.map-nav-btn {
+flex: 1;
+padding: 12px;
+border: none;
+border-radius: 8px;
+font-family: var(–fd);
+font-size: 15px;
+font-weight: 700;
+letter-spacing: 1.5px;
+cursor: pointer;
+box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.map-nav-start { background: var(–acc); color: #000; border: 2px solid #fff; }
+.map-nav-gmaps { background: #4285f4; color: #fff; border: 2px solid #fff; }
 
 /* NAVIGATION HUD */
 .nav-hud { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 2px solid var(–acc); padding: 14px 16px; z-index: 25; display: none; }
@@ -5268,19 +5345,17 @@ function closeMeasureResult() { /* measure feature removed */ }
   </div>
 </div>
 
-<!-- === TRAIL OVERLAY CONTROLS (added to map tab) === -->
+<!-- === TRAIL OVERLAY CONTROLS REMOVED — historic trail access is via HISTORY tab === -->
 
-<div class="trail-controls" id="trailControls">
-  <div class="trail-controls-row">
-    <div class="trail-controls-stats">
-      <div class="trail-stat"><div class="trail-stat-val" id="trailMiles">0.0</div><div class="trail-stat-lbl">Miles</div></div>
-      <div class="trail-stat"><div class="trail-stat-val" id="trailLegs">0</div><div class="trail-stat-lbl">Legs</div></div>
-      <div class="trail-stat"><div class="trail-stat-val" id="trailCost">$0</div><div class="trail-stat-lbl">Fuel</div></div>
-    </div>
-    <select class="trail-date-sel" id="trailDateSel" onchange="loadTrailForDate(this.value)">
-      <option value="">Pick date...</option>
-    </select>
-  </div>
+<div class="trail-controls" id="trailControls" style="display:none !important;">
+  <!-- Hidden but kept in DOM so JS references don't error. Date select is preserved
+       (hidden) so loadTrailForDate's existing wiring still works from History tab. -->
+  <select class="trail-date-sel" id="trailDateSel" onchange="loadTrailForDate(this.value)" style="display:none;">
+    <option value="">Pick date...</option>
+  </select>
+  <span id="trailMiles" style="display:none;">0.0</span>
+  <span id="trailLegs" style="display:none;">0</span>
+  <span id="trailCost" style="display:none;">$0</span>
 </div>
 
 <script>

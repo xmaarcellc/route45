@@ -5329,6 +5329,23 @@ function closeMeasureResult() { /* measure feature removed */ }
 </div>
 <style>#insertPositionOverlay.show { display: block !important; }</style>
 
+<!-- === ON-SCREEN DEBUG CONSOLE (tap PROJECT Z title 3 times) === -->
+<div id="debugConsoleOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10003;padding:0;flex-direction:column;">
+  <div style="background:#1a2540;border-bottom:2px solid var(--acc);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+    <div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;">🐛 CONSOLE</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Captured logs · oldest first</div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="copyDebugConsoleToClipboard()" style="background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;font-weight:bold;">COPY</button>
+      <button onclick="clearDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">CLEAR</button>
+      <button onclick="closeDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+  </div>
+  <div id="debugConsoleBody" style="flex:1;overflow-y:auto;background:#0a1228;padding:0;"></div>
+</div>
+<style>#debugConsoleOverlay.show { display: flex !important; }</style>
+
 <!-- === DIAGNOSTIC PANEL (tap PROJECT Z title 5 times to open) === -->
 <div id="diagOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10001;padding:20px;overflow-y:auto;">
   <div style="max-width:600px;margin:0 auto;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:18px;">
@@ -6691,32 +6708,50 @@ function renderBusinessesList(results, lat, lng) {
     return;
   }
 
-  var html = '';
+  list.innerHTML = '';
+
+  function escapeText(str) {
+    var d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
+  }
+
   filtered.forEach(function(p, i) {
     var distFt = Math.round(p._distMeters * 3.28084);
-    var name = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    var addr = (p.vicinity || p.formatted_address || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    var name = p.name || '';
+    var addr = p.vicinity || p.formatted_address || '';
     var lat2 = p.geometry.location.lat();
     var lng2 = p.geometry.location.lng();
-    html += '<div onclick="selectNearbyBusiness(\'' + encodeURIComponent(name) + '\', \'' + encodeURIComponent(addr) + '\', ' + lat2 + ', ' + lng2 + ')" ' +
-            'style="background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;">' +
-            '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
-              '<div style="flex:1;min-width:0;">' +
-                '<div style="font-family:var(--fb);font-weight:700;font-size:15px;color:#fff;margin-bottom:3px;">' + name + '</div>' +
-                '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);">' + addr + '</div>' +
-              '</div>' +
-              '<div style="font-family:var(--fm);font-size:10px;color:var(--acc);font-weight:700;white-space:nowrap;">' + distFt + ' ft</div>' +
-            '</div>' +
-            '</div>';
+    // Build the option element with addEventListener — keeps name/addr as
+    // closure variables, fully decoupled from any HTML encoding.
+    var optEl = document.createElement('div');
+    optEl.style.cssText = 'background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;';
+    optEl.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:var(--fb);font-weight:700;font-size:15px;color:#fff;margin-bottom:3px;">' + escapeText(name) + '</div>' +
+          '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);">' + escapeText(addr) + '</div>' +
+        '</div>' +
+        '<div style="font-family:var(--fm);font-size:10px;color:var(--acc);font-weight:700;white-space:nowrap;">' + distFt + ' ft</div>' +
+      '</div>';
+    (function(n, a, la, ln) {
+      optEl.addEventListener('click', function() {
+        console.log('[NEARBY] User selected:', n);
+        closeNearbyPicker();
+        openInsertPositionPicker({ name: n, addr: a, lat: la, lng: ln });
+      });
+    })(name, addr, lat2, lng2);
+    list.appendChild(optEl);
   });
 
   // Fallback manual-entry option at the bottom
-  html += '<div onclick="selectManualEntry()" style="background:#0e1830;border:2px dashed var(--acc);border-radius:8px;padding:12px 14px;margin-top:14px;cursor:pointer;text-align:center;">' +
-          '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;">✏️ ENTER NAME MANUALLY</div>' +
-          '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);margin-top:3px;">Don\'t see your stop? Type the name in.</div>' +
-          '</div>';
-
-  list.innerHTML = html;
+  var manualEl = document.createElement('div');
+  manualEl.style.cssText = 'background:#0e1830;border:2px dashed var(--acc);border-radius:8px;padding:12px 14px;margin-top:14px;cursor:pointer;text-align:center;';
+  manualEl.innerHTML =
+    '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;">✏️ ENTER NAME MANUALLY</div>' +
+    '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);margin-top:3px;">Don\'t see your stop? Type the name in.</div>';
+  manualEl.addEventListener('click', function() { selectManualEntry(); });
+  list.appendChild(manualEl);
 }
 
 function renderManualOnlyFallback(reason) {
@@ -6760,22 +6795,22 @@ function selectManualEntry() {
 // =====================================================================
 var pendingNewStopData = null;
 
-function openInsertPositionPicker(stopData) {
-  pendingNewStopData = stopData;
+function openInsertPositionPicker(newStopInfo) {
+  // CRITICAL: use a distinct param name — must NOT shadow global window.stopData.
+  pendingNewStopData = newStopInfo;
   var overlay = document.getElementById('insertPositionOverlay');
   if (!overlay) {
     // Fallback: just append at end if modal missing
-    finalizeNewStop(stopData, -1);
+    finalizeNewStop(newStopInfo, -1);
     return;
   }
+  console.log('[INSERT] Opening picker for:', newStopInfo);
   // Populate header
   var nameEl = document.getElementById('insertPosName');
-  if (nameEl) nameEl.textContent = stopData.name || '(unnamed — will name later)';
+  if (nameEl) nameEl.textContent = newStopInfo.name || '(unnamed — will name later)';
   // Build the list of insertion points
   var listEl = document.getElementById('insertPosList');
   var dayStops = stops[currentDay] || [];
-  var dayData = (typeof stopData !== 'undefined' && stopData[currentDay]) ? stopData[currentDay] : [];
-  // Resolve dayData properly (the param name shadowed the global)
   var stopDataGlobal = (window.stopData && window.stopData[currentDay]) ? window.stopData[currentDay] : [];
 
   // Find the index of the last completed stop (most recent by departureTime)
@@ -6788,52 +6823,101 @@ function openInsertPositionPicker(stopData) {
     }
   });
 
-  var html = '';
-  // Quick options at top
-  if (lastDoneIdx !== -1 && dayStops[lastDoneIdx]) {
-    var afterLastName = (dayStops[lastDoneIdx].name || '').toString();
-    html += '<div onclick="finalizeNewStopByInsertAfter(' + lastDoneIdx + ')" style="background:var(--acc);border:2px solid #fff;border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;text-align:center;">' +
-            '<div style="font-family:var(--fd);font-size:14px;color:#000;letter-spacing:1px;">⚡ AFTER LAST COMPLETED</div>' +
-            '<div style="font-family:var(--fb);font-size:12px;color:#000;margin-top:4px;font-weight:700;">After: ' + afterLastName + '</div>' +
-            '</div>';
+  // Build option elements WITHOUT inline onclick — attach listeners after render
+  // This avoids any HTML-escaping / string-concatenation bugs from inline handlers.
+  listEl.innerHTML = '';
+
+  function escapeText(str) {
+    var d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
   }
-  html += '<div onclick="finalizeNewStopByInsertAfter(-1)" style="background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;cursor:pointer;text-align:center;">' +
-          '<div style="font-family:var(--fd);font-size:13px;color:var(--txt);letter-spacing:1px;">📌 ADD TO END OF ROUTE</div>' +
-          '</div>';
-  // Full list
+  function addOption(html, idx) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    var optionEl = div.firstElementChild;
+    optionEl.addEventListener('click', function() {
+      finalizeNewStopByInsertAfter(idx);
+    });
+    listEl.appendChild(optionEl);
+  }
+
+  // AFTER LAST COMPLETED (top option, highlighted)
+  if (lastDoneIdx !== -1 && dayStops[lastDoneIdx]) {
+    var afterLastName = escapeText(dayStops[lastDoneIdx].name || '(unnamed)');
+    addOption(
+      '<div style="background:var(--acc);border:2px solid #fff;border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;text-align:center;">' +
+        '<div style="font-family:var(--fd);font-size:14px;color:#000;letter-spacing:1px;">⚡ AFTER LAST COMPLETED</div>' +
+        '<div style="font-family:var(--fb);font-size:12px;color:#000;margin-top:4px;font-weight:700;">After: ' + afterLastName + '</div>' +
+      '</div>',
+      lastDoneIdx
+    );
+  }
+
+  // ADD TO END OF ROUTE
+  addOption(
+    '<div style="background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;cursor:pointer;text-align:center;">' +
+      '<div style="font-family:var(--fd);font-size:13px;color:var(--txt);letter-spacing:1px;">📌 ADD TO END OF ROUTE</div>' +
+    '</div>',
+    -1
+  );
+
+  // OR INSERT AFTER A SPECIFIC STOP
   if (dayStops.length > 0) {
-    html += '<div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Or insert after a specific stop:</div>';
+    var heading = document.createElement('div');
+    heading.style.cssText = 'font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;';
+    heading.textContent = 'Or insert after a specific stop:';
+    listEl.appendChild(heading);
+
     dayStops.forEach(function(s, i) {
-      var sName = (s && s.name) ? s.name : '(unnamed)';
+      var sName = escapeText((s && s.name) ? s.name : '(unnamed)');
       var doneFlag = (stopDataGlobal[i] && stopDataGlobal[i].status === 'done');
       var bg = doneFlag ? '#0e2e26' : '#0e1830';
-      html += '<div onclick="finalizeNewStopByInsertAfter(' + i + ')" style="background:' + bg + ';border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;margin-bottom:5px;cursor:pointer;display:flex;align-items:center;gap:10px;">' +
-              '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);width:28px;">' + String(i+1).padStart(2,'0') + '</div>' +
-              '<div style="flex:1;font-family:var(--fb);font-size:13px;color:#fff;">' + sName + '</div>' +
-              (doneFlag ? '<div style="font-family:var(--fm);font-size:9px;color:var(--grn);letter-spacing:.5px;">DONE</div>' : '') +
-              '</div>';
+      addOption(
+        '<div style="background:' + bg + ';border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;margin-bottom:5px;cursor:pointer;display:flex;align-items:center;gap:10px;">' +
+          '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);width:28px;">' + String(i+1).padStart(2,'0') + '</div>' +
+          '<div style="flex:1;font-family:var(--fb);font-size:13px;color:#fff;">' + sName + '</div>' +
+          (doneFlag ? '<div style="font-family:var(--fm);font-size:9px;color:var(--grn);letter-spacing:.5px;">DONE</div>' : '') +
+        '</div>',
+        i
+      );
     });
   }
-  listEl.innerHTML = html;
+
   overlay.classList.add('show');
 }
 
 function closeInsertPositionPicker() {
   var overlay = document.getElementById('insertPositionOverlay');
   if (overlay) overlay.classList.remove('show');
-  pendingNewStopData = null;
+  // Note: do NOT null pendingNewStopData here — the caller (finalizeNewStopByInsertAfter)
+  // will null it after the stop is finalized.
 }
 
 function finalizeNewStopByInsertAfter(afterIdx) {
-  if (!pendingNewStopData) { closeInsertPositionPicker(); return; }
+  console.log('[INSERT] finalizeNewStopByInsertAfter called with afterIdx=', afterIdx, 'pendingNewStopData=', pendingNewStopData);
+  if (!pendingNewStopData) {
+    console.warn('[INSERT] No pendingNewStopData — picker likely already closed');
+    closeInsertPositionPicker();
+    return;
+  }
+  // Copy locally BEFORE closing the picker
   var stopInfo = pendingNewStopData;
+  pendingNewStopData = null;
   closeInsertPositionPicker();
   finalizeNewStop(stopInfo, afterIdx);
 }
 
 function finalizeNewStop(stopInfo, afterIdx) {
   // afterIdx === -1 means "append to end". Otherwise insert at afterIdx + 1.
+  console.log('[FINALIZE] called with stopInfo=', stopInfo, 'afterIdx=', afterIdx, 'currentDay=', currentDay);
   var insertAt = (afterIdx === -1) ? -1 : (afterIdx + 1);
+
+  if (!stopInfo || (typeof stopInfo.lat !== 'number') || (typeof stopInfo.lng !== 'number')) {
+    console.error('[FINALIZE] aborting — invalid stopInfo:', stopInfo);
+    alert('Could not add stop — location data was lost. Please try again.');
+    return;
+  }
 
   if (typeof stops === 'undefined' || !stops[currentDay]) {
     if (typeof stops !== 'undefined') stops[currentDay] = [];
@@ -8084,14 +8168,114 @@ console.log('[MT] Mileage tracking module loaded');
 // Inspects Firebase data for stops/{day} to detect duplicates or corruption.
 // Provides safe recovery if data has been overwritten incorrectly.
 
-(function() {
-  var diagTapCount = 0;
-  var diagTapTimer = null;
+// =====================================================================
+// ON-SCREEN CONSOLE — captures console.log/warn/error so you can debug
+// without needing a Mac. Persists across page reloads via sessionStorage.
+// =====================================================================
+var debugConsoleBuffer = []; // [{ ts, level, text }]
+var DEBUG_CONSOLE_MAX = 200;
 
-  function setupDiagnosticTrigger() {
+(function installConsoleCapture() {
+  // Try to restore from previous session (helps catch errors during page init)
+  try {
+    var saved = sessionStorage.getItem('debugConsoleBuffer');
+    if (saved) debugConsoleBuffer = JSON.parse(saved) || [];
+  } catch (e) {}
+
+  function formatArgs(args) {
+    return Array.prototype.slice.call(args).map(function(a) {
+      if (a == null) return String(a);
+      if (typeof a === 'string') return a;
+      if (a instanceof Error) return a.message + (a.stack ? '\n' + a.stack : '');
+      try { return JSON.stringify(a); } catch (e) { return String(a); }
+    }).join(' ');
+  }
+  function capture(level, args) {
+    var entry = {
+      ts: new Date().toISOString().substring(11, 19), // HH:MM:SS
+      level: level,
+      text: formatArgs(args)
+    };
+    debugConsoleBuffer.push(entry);
+    if (debugConsoleBuffer.length > DEBUG_CONSOLE_MAX) {
+      debugConsoleBuffer.splice(0, debugConsoleBuffer.length - DEBUG_CONSOLE_MAX);
+    }
+    // Persist (best effort)
+    try { sessionStorage.setItem('debugConsoleBuffer', JSON.stringify(debugConsoleBuffer.slice(-DEBUG_CONSOLE_MAX))); } catch (e) {}
+    // If panel is open, append the new line
+    if (document.getElementById('debugConsoleOverlay') && document.getElementById('debugConsoleOverlay').classList.contains('show')) {
+      appendDebugConsoleLine(entry);
+    }
+  }
+  ['log', 'info', 'warn', 'error'].forEach(function(lvl) {
+    var orig = console[lvl];
+    console[lvl] = function() {
+      try { capture(lvl, arguments); } catch (e) {}
+      orig.apply(console, arguments);
+    };
+  });
+  // Catch uncaught errors so the console shows them
+  window.addEventListener('error', function(ev) {
+    try { capture('error', [(ev.message || 'error') + ' @ ' + (ev.filename || '') + ':' + (ev.lineno || '')]); } catch (e) {}
+  });
+  window.addEventListener('unhandledrejection', function(ev) {
+    try { capture('error', ['Unhandled rejection: ' + (ev.reason && ev.reason.message ? ev.reason.message : ev.reason)]); } catch (e) {}
+  });
+})();
+
+function appendDebugConsoleLine(entry) {
+  var body = document.getElementById('debugConsoleBody');
+  if (!body) return;
+  var colors = { log: '#cbd5e1', info: '#60a5fa', warn: '#fbbf24', error: '#ef476f' };
+  var line = document.createElement('div');
+  line.style.cssText = 'padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:monospace;font-size:11px;line-height:1.4;white-space:pre-wrap;word-break:break-all;color:' + (colors[entry.level] || '#fff') + ';';
+  line.textContent = '[' + entry.ts + '] ' + entry.text;
+  body.appendChild(line);
+  body.scrollTop = body.scrollHeight;
+}
+
+function openDebugConsole() {
+  var overlay = document.getElementById('debugConsoleOverlay');
+  if (!overlay) return;
+  var body = document.getElementById('debugConsoleBody');
+  body.innerHTML = '';
+  debugConsoleBuffer.forEach(appendDebugConsoleLine);
+  overlay.classList.add('show');
+  // Scroll to bottom
+  setTimeout(function() { body.scrollTop = body.scrollHeight; }, 50);
+}
+
+function closeDebugConsole() {
+  var overlay = document.getElementById('debugConsoleOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+function clearDebugConsole() {
+  debugConsoleBuffer = [];
+  try { sessionStorage.removeItem('debugConsoleBuffer'); } catch (e) {}
+  var body = document.getElementById('debugConsoleBody');
+  if (body) body.innerHTML = '<div style="padding:20px;color:#888;font-family:monospace;font-size:11px;text-align:center;">Console cleared. New logs will appear here.</div>';
+}
+
+function copyDebugConsoleToClipboard() {
+  var text = debugConsoleBuffer.map(function(e) { return '[' + e.ts + '][' + e.level + '] ' + e.text; }).join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      alert('✓ Console copied to clipboard (' + debugConsoleBuffer.length + ' lines)');
+    }).catch(function(e) { alert('Copy failed: ' + e.message); });
+  } else {
+    // Fallback: show text in an alert (user can long-press to copy)
+    alert(text.substring(0, 2000) + (text.length > 2000 ? '\n... [truncated]' : ''));
+  }
+}
+
+(function() {
+  var titleTapCount = 0;
+  var titleTapTimer = null;
+
+  function setupTitleTrigger() {
     var titleEl = document.querySelector('.hdr h1, .hdr-title, #appTitle');
     if (!titleEl) {
-      // Fallback: look for any element with text 'PROJECT Z'
       var headers = document.querySelectorAll('.hdr, h1, h2');
       for (var i = 0; i < headers.length; i++) {
         if (headers[i].textContent && headers[i].textContent.indexOf('PROJECT Z') !== -1) {
@@ -8100,22 +8284,26 @@ console.log('[MT] Mileage tracking module loaded');
         }
       }
     }
-    if (!titleEl) { setTimeout(setupDiagnosticTrigger, 500); return; }
+    if (!titleEl) { setTimeout(setupTitleTrigger, 500); return; }
     titleEl.style.cursor = 'pointer';
     titleEl.addEventListener('click', function() {
-      diagTapCount++;
-      if (diagTapTimer) clearTimeout(diagTapTimer);
-      diagTapTimer = setTimeout(function() { diagTapCount = 0; }, 1500);
-      if (diagTapCount >= 5) {
-        diagTapCount = 0;
-        openDiagnosticPanel();
-      }
+      titleTapCount++;
+      if (titleTapTimer) clearTimeout(titleTapTimer);
+      // After 1.2 sec of no taps, evaluate the count
+      titleTapTimer = setTimeout(function() {
+        if (titleTapCount === 3) {
+          openDebugConsole();
+        } else if (titleTapCount >= 5) {
+          openDiagnosticPanel();
+        }
+        titleTapCount = 0;
+      }, 1200);
     });
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupDiagnosticTrigger);
+    document.addEventListener('DOMContentLoaded', setupTitleTrigger);
   } else {
-    setTimeout(setupDiagnosticTrigger, 500);
+    setTimeout(setupTitleTrigger, 500);
   }
 })();
 
@@ -9288,14 +9476,25 @@ function adtConfirmStop() {
 function adtOpenNewStopModal() {
   if (!adtPendingDetection) return;
   var p = adtPendingDetection;
+  // Close the confirm modal so we can show the nearby-businesses picker
+  document.getElementById('adtConfirmOverlay').classList.remove('show');
+  // Use the unified nearby-businesses picker — same as the "Add Current Location" flow.
+  // This surfaces real business names (Home Depot, Starbucks, etc.) so user can tap
+  // instead of typing.
+  if (typeof openNearbyBusinessesPicker === 'function') {
+    openNearbyBusinessesPicker(p.lat, p.lng);
+    // Clear pending detection — the picker now owns this flow.
+    adtPendingDetection = null;
+    return;
+  }
+  // FALLBACK: if the picker isn't available for some reason, fall back to the old
+  // manual-form modal so the user can still log the stop.
   document.getElementById('adtNewStopCoords').textContent =
     'Coordinates: ' + p.lat.toFixed(5) + ', ' + p.lng.toFixed(5);
   document.getElementById('adtNewStopName').value = '';
   document.getElementById('adtNewStopAddr').value = '';
   document.getElementById('adtNewStopFreq').value = 'WEEKLY';
-  document.getElementById('adtConfirmOverlay').classList.remove('show');
   document.getElementById('adtNewStopOverlay').classList.add('show');
-  // Try reverse geocoding to pre-fill the address (best effort — fails gracefully)
   adtReverseGeocode(p.lat, p.lng).then(function(addr) {
     if (addr && !document.getElementById('adtNewStopAddr').value) {
       document.getElementById('adtNewStopAddr').value = addr;

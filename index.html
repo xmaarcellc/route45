@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,349 +12,349 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-color-scheme: dark only;
-–bg: #1e40af;
-–sur: #2e5cd6;
-–sur2: #234d9e;
-–bdr: #7da3e0;
-–acc: #ff7a3d;
-–acc2: #ff9966;
-–grn: #10b981;
-–red: #ef476f;
-–blu: #60a5fa;
-–pur: #c084fc;
-–txt: #ffffff;
-–mut: #dce8f8;
-–fd: ‘Bebas Neue’, sans-serif;
-–fm: ‘DM Mono’, monospace;
-–fb: ‘DM Sans’, sans-serif;
+  color-scheme: dark only;
+  --bg: #1e40af;
+  --sur: #2e5cd6;
+  --sur2: #234d9e;
+  --bdr: #7da3e0;
+  --acc: #ff7a3d;
+  --acc2: #ff9966;
+  --grn: #10b981;
+  --red: #ef476f;
+  --blu: #60a5fa;
+  --pur: #c084fc;
+  --txt: #ffffff;
+  --mut: #dce8f8;
+  --fd: 'Bebas Neue', sans-serif;
+  --fm: 'DM Mono', monospace;
+  --fb: 'DM Sans', sans-serif;
 }
 
-- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { background: var(–bg); }
-  body {
-  background-color: var(–bg);
-  /* Subtle 2px dot grid texture so the background doesn’t look flat */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); }
+body {
+  background-color: var(--bg);
+  /* Subtle 2px dot grid texture so the background doesn't look flat */
   background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
   background-size: 18px 18px;
   background-attachment: fixed;
-  color: var(–txt);
-  font-family: var(–fb);
+  color: var(--txt);
+  font-family: var(--fb);
   min-height: 100vh;
   padding-bottom: 20px;
   overflow-x: hidden;
-  }
+}
 
 /* HEADER */
-.hdr { background: #1a2540; border-bottom: 2px solid var(–acc); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
-.hdr-title { font-family: var(–fd); font-size: 28px; letter-spacing: 2px; color: var(–acc); }
-.hdr-sub { font-family: var(–fm); font-size: 11px; color: var(–mut); margin-top: 2px; }
+.hdr { background: #1a2540; border-bottom: 2px solid var(--acc); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
+.hdr-title { font-family: var(--fd); font-size: 28px; letter-spacing: 2px; color: var(--acc); }
+.hdr-sub { font-family: var(--fm); font-size: 11px; color: var(--mut); margin-top: 2px; }
 .hdr-right { display: flex; align-items: center; gap: 8px; }
-.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–grn); }
-.sync-dot.off { background: var(–red); }
-.sync-dot.loading { background: var(–acc); animation: sync-pulse 1s ease-in-out infinite; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--grn); }
+.sync-dot.off { background: var(--red); }
+.sync-dot.loading { background: var(--acc); animation: sync-pulse 1s ease-in-out infinite; }
 @keyframes sync-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
-.sync-banner { position: fixed; top: 56px; left: 0; right: 0; background: var(–acc); color: #000; padding: 8px 16px; font-family: var(–fm); font-size: 11px; text-align: center; z-index: 100; font-weight: 600; letter-spacing: 0.5px; display: none; }
+.sync-banner { position: fixed; top: 56px; left: 0; right: 0; background: var(--acc); color: #000; padding: 8px 16px; font-family: var(--fm); font-size: 11px; text-align: center; z-index: 100; font-weight: 600; letter-spacing: 0.5px; display: none; }
 .sync-banner.show { display: block; }
-.day-badge { background: var(–acc); color: #000; font-family: var(–fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.day-badge { background: var(--acc); color: #000; font-family: var(--fm); font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* TABS */
-.tabs { display: flex; background: #1a2540; border-bottom: 2px solid var(–acc); position: sticky; top: 53px; z-index: 99; }
-.tab { flex: 1; padding: 14px 12px; text-align: center; font-family: var(–fm); font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; border-bottom: 3px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
-.tab.active { color: var(–acc); border-bottom-color: var(–acc); background: rgba(255,122,61,0.08); }
-.badge { display: inline-block; background: var(–acc); color: #000; font-family: var(–fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+.tabs { display: flex; background: #1a2540; border-bottom: 2px solid var(--acc); position: sticky; top: 53px; z-index: 99; }
+.tab { flex: 1; padding: 14px 12px; text-align: center; font-family: var(--fm); font-size: 12px; font-weight: 600; color: #fff; cursor: pointer; border-bottom: 3px solid transparent; text-transform: uppercase; letter-spacing: 1px; }
+.tab.active { color: var(--acc); border-bottom-color: var(--acc); background: rgba(255,122,61,0.08); }
+.badge { display: inline-block; background: var(--acc); color: #000; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
 
 /* DAY SELECTOR */
-.day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: #1a2540; border-bottom: 2px solid var(–acc); scrollbar-width: none; }
+.day-sel { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: #1a2540; border-bottom: 2px solid var(--acc); scrollbar-width: none; }
 .day-sel::-webkit-scrollbar { display: none; }
-.day-btn { flex-shrink: 0; background: #0e1830; border: 2px solid var(–acc); color: #fff; font-family: var(–fm); font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 5px; cursor: pointer; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-.day-btn.active { background: var(–acc); border-color: #fff; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.6), 0 0 0 2px var(–acc); }
+.day-btn { flex-shrink: 0; background: #0e1830; border: 2px solid var(--acc); color: #fff; font-family: var(--fm); font-size: 13px; font-weight: 700; padding: 7px 16px; border-radius: 5px; cursor: pointer; -webkit-appearance: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.day-btn.active { background: var(--acc); border-color: #fff; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.6), 0 0 0 2px var(--acc); }
 
 /* STATS BAR */
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(–acc); border-bottom: 2px solid var(–acc); }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--acc); border-bottom: 2px solid var(--acc); }
 .stat { background: #1a2540; padding: 12px 8px; text-align: center; }
-.stat-val { font-family: var(–fd); font-size: 22px; color: var(–acc); line-height: 1; }
-.stat-lbl { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+.stat-val { font-family: var(--fd); font-size: 22px; color: var(--acc); line-height: 1; }
+.stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 
 /* FILTER PILLS */
 .filter-pill {
-background: var(–sur2);
-border: 1px solid var(–bdr);
-color: var(–mut);
-font-family: var(–fm);
-font-size: 11px;
-padding: 6px 12px;
-border-radius: 14px;
-cursor: pointer;
-white-space: nowrap;
-transition: all 0.15s;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  color: var(--mut);
+  font-family: var(--fm);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
 }
 .filter-pill.active {
-background: var(–acc);
-border-color: var(–acc);
-color: #000;
-font-weight: 600;
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #000;
+  font-weight: 600;
 }
 .filter-pill:active {
-transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 /* STOP CARDS */
 .stop-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
-.stop-card { background: #1a2540; border: 2px solid var(–acc); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-.stop-card.active { border-color: var(–acc); border-width: 3px; box-shadow: 0 0 0 2px var(–acc), 0 0 24px rgba(255,122,61,0.5), 0 4px 16px rgba(0,0,0,0.6); }
+.stop-card { background: #1a2540; border: 2px solid var(--acc); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.stop-card.active { border-color: var(--acc); border-width: 3px; box-shadow: 0 0 0 2px var(--acc), 0 0 24px rgba(255,122,61,0.5), 0 4px 16px rgba(0,0,0,0.6); }
 /* Done stops get a clear green highlight (no fading) so they stand out as completed */
 .stop-card.done {
-border-color: var(–grn);
-border-width: 2px;
-background: #0e2e26;
-box-shadow: 0 0 0 1px var(–grn), 0 4px 12px rgba(16,185,129,0.35);
+  border-color: var(--grn);
+  border-width: 2px;
+  background: #0e2e26;
+  box-shadow: 0 0 0 1px var(--grn), 0 4px 12px rgba(16,185,129,0.35);
 }
 .stop-header { display: flex; align-items: center; padding: 14px 12px; gap: 12px; cursor: pointer; user-select: none; }
-.stop-num { font-family: var(–fd); font-size: 26px; color: var(–mut); min-width: 34px; line-height: 1; }
-.stop-card.active .stop-num { color: var(–acc); }
-.stop-card.done .stop-num { color: var(–grn); }
+.stop-num { font-family: var(--fd); font-size: 26px; color: var(--mut); min-width: 34px; line-height: 1; }
+.stop-card.active .stop-num { color: var(--acc); }
+.stop-card.done .stop-num { color: var(--grn); }
 .stop-info { flex: 1; }
-.stop-name { font-size: 14px; font-weight: 600; color: var(–txt); line-height: 1.2; }
-.stop-meta { font-family: var(–fm); font-size: 10px; color: var(–mut); margin-top: 3px; }
-.stop-note { font-family: var(–fm); font-size: 10px; color: var(–acc2); margin-top: 2px; }
-.stop-status { font-family: var(–fm); font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
-.s-pending { background: #0e1830; color: #fff; border: 1px solid var(–acc); font-weight: 600; }
-.s-active { background: var(–acc); color: #000; }
-.s-done { background: var(–grn); color: #000; }
+.stop-name { font-size: 14px; font-weight: 600; color: var(--txt); line-height: 1.2; }
+.stop-meta { font-family: var(--fm); font-size: 10px; color: var(--mut); margin-top: 3px; }
+.stop-note { font-family: var(--fm); font-size: 10px; color: var(--acc2); margin-top: 2px; }
+.stop-status { font-family: var(--fm); font-size: 10px; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.s-pending { background: #0e1830; color: #fff; border: 1px solid var(--acc); font-weight: 600; }
+.s-active { background: var(--acc); color: #000; }
+.s-done { background: var(--grn); color: #000; }
 
 /* STOP PANEL */
-.stop-panel { border-top: 2px solid var(–acc); padding: 16px; display: none; background: #0e1830; }
+.stop-panel { border-top: 2px solid var(--acc); padding: 16px; display: none; background: #0e1830; }
 .stop-card.active .stop-panel { display: block; }
 
 /* NAVIGATION BUTTONS */
 .nav-row { display: flex; gap: 8px; margin-bottom: 14px; }
-.nav-btn { flex: 1; padding: 12px; border-radius: 6px; border: none; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
+.nav-btn { flex: 1; padding: 12px; border-radius: 6px; border: none; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; cursor: pointer; }
 .nav-maps { background: #4285f4; color: #fff; }
 
 /* TIMESTAMPS */
 .ts-row { display: flex; gap: 8px; margin-bottom: 14px; }
-.ts-box { flex: 1; background: var(–sur2); border: 1px solid var(–bdr); border-radius: 6px; padding: 10px; text-align: center; }
-.ts-box.filled { border-color: var(–acc); }
-.ts-lbl { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; }
-.ts-val { font-family: var(–fd); font-size: 20px; color: var(–acc); line-height: 1.2; margin-top: 2px; }
-.ts-val.empty { color: var(–bdr); }
+.ts-box { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 6px; padding: 10px; text-align: center; }
+.ts-box.filled { border-color: var(--acc); }
+.ts-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; }
+.ts-val { font-family: var(--fd); font-size: 20px; color: var(--acc); line-height: 1.2; margin-top: 2px; }
+.ts-val.empty { color: var(--bdr); }
 
 /* ACTION BUTTONS */
-.arrive-btn { width: 100%; background: var(–acc); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(–fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 12px; }
-.depart-btn { width: 100%; background: var(–sur2); color: var(–txt); border: 1px solid var(–bdr); border-radius: 6px; padding: 14px; font-family: var(–fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 12px; }
-.complete-btn { width: 100%; background: var(–grn); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(–fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-top: 8px; display: none; }
+.arrive-btn { width: 100%; background: var(--acc); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 12px; }
+.depart-btn { width: 100%; background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 6px; padding: 14px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 12px; }
+.complete-btn { width: 100%; background: var(--grn); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-top: 8px; display: none; }
 .complete-btn.show { display: block; }
 
 /* QUESTION CARDS */
-.q-divider { height: 1px; background: var(–bdr); margin: 10px 0; }
-.q-card { background: var(–sur2); border: 1px solid var(–bdr); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-.q-lbl { font-family: var(–fm); font-size: 10px; color: var(–mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.q-divider { height: 1px; background: var(--bdr); margin: 10px 0; }
+.q-card { background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.q-lbl { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 .btn-row { display: flex; gap: 8px; }
-.choice-btn { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(–bdr); background: var(–sur); color: var(–mut); font-family: var(–fm); font-size: 12px; cursor: pointer; text-align: center; }
-.choice-btn.sel-y { background: var(–grn); border-color: var(–grn); color: #000; font-weight: 500; }
-.choice-btn.sel-n { background: var(–red); border-color: var(–red); color: #fff; font-weight: 500; }
-.choice-btn.sel-L { background: var(–grn); border-color: var(–grn); color: #000; font-weight: 500; }
-.choice-btn.sel-M { background: var(–acc2); border-color: var(–acc2); color: #000; font-weight: 500; }
-.choice-btn.sel-H { background: var(–red); border-color: var(–red); color: #fff; font-weight: 500; }
+.choice-btn { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--bdr); background: var(--sur); color: var(--mut); font-family: var(--fm); font-size: 12px; cursor: pointer; text-align: center; }
+.choice-btn.sel-y { background: var(--grn); border-color: var(--grn); color: #000; font-weight: 500; }
+.choice-btn.sel-n { background: var(--red); border-color: var(--red); color: #fff; font-weight: 500; }
+.choice-btn.sel-L { background: var(--grn); border-color: var(--grn); color: #000; font-weight: 500; }
+.choice-btn.sel-M { background: var(--acc2); border-color: var(--acc2); color: #000; font-weight: 500; }
+.choice-btn.sel-H { background: var(--red); border-color: var(--red); color: #fff; font-weight: 500; }
 .dur-row { display: flex; gap: 8px; align-items: center; }
-.dur-input { flex: 1; background: var(–sur); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 16px; padding: 10px 12px; border-radius: 6px; outline: none; }
-.dur-input:focus { border-color: var(–acc); }
-.dur-unit { font-family: var(–fm); font-size: 11px; color: var(–mut); }
-.delay-input { width: 100%; background: var(–sur); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 13px; padding: 10px 12px; border-radius: 6px; outline: none; margin-top: 8px; display: none; }
+.dur-input { flex: 1; background: var(--sur); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 16px; padding: 10px 12px; border-radius: 6px; outline: none; }
+.dur-input:focus { border-color: var(--acc); }
+.dur-unit { font-family: var(--fm); font-size: 11px; color: var(--mut); }
+.delay-input { width: 100%; background: var(--sur); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 13px; padding: 10px 12px; border-radius: 6px; outline: none; margin-top: 8px; display: none; }
 .delay-input.show { display: block; }
 
 /* STOP SUMMARY */
-.stop-summary { background: var(–sur2); border: 1px solid var(–grn); border-radius: 8px; padding: 12px; }
-.sum-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(–bdr); font-size: 12px; }
+.stop-summary { background: var(--sur2); border: 1px solid var(--grn); border-radius: 8px; padding: 12px; }
+.sum-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--bdr); font-size: 12px; }
 .sum-row:last-child { border-bottom: none; }
-.sum-key { font-family: var(–fm); color: var(–mut); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
-.sum-val { font-family: var(–fm); font-size: 11px; color: var(–txt); font-weight: 500; }
+.sum-key { font-family: var(--fm); color: var(--mut); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+.sum-val { font-family: var(--fm); font-size: 11px; color: var(--txt); font-weight: 500; }
 
 /* EOD SECTION */
 .eod-section { padding: 16px; margin-top: 8px; }
-.eod-btn { width: 100%; padding: 14px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 8px; }
-.btn-complete-day { background: var(–grn); color: #000; }
-.btn-ai-analyze { background: var(–acc); color: #000; }
-.btn-view-log { background: var(–blu); color: #fff; }
-.btn-copy-log { background: var(–sur2); color: var(–txt); border: 1px solid var(–bdr); font-family: var(–fm); font-size: 12px; }
+.eod-btn { width: 100%; padding: 14px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-bottom: 8px; }
+.btn-complete-day { background: var(--grn); color: #000; }
+.btn-ai-analyze { background: var(--acc); color: #000; }
+.btn-view-log { background: var(--blu); color: #fff; }
+.btn-copy-log { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); font-family: var(--fm); font-size: 12px; }
 
 /* MANAGE TAB */
-.opt-bar { padding: 12px 16px; background: var(–sur); border-bottom: 1px solid var(–bdr); display: flex; gap: 8px; align-items: center; }
-.start-time { background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 14px; padding: 10px 12px; border-radius: 6px; outline: none; flex: 1; }
-.opt-btn { background: var(–acc); color: #000; border: none; border-radius: 6px; padding: 10px 16px; font-family: var(–fd); font-size: 18px; letter-spacing: 1px; cursor: pointer; }
+.opt-bar { padding: 12px 16px; background: var(--sur); border-bottom: 1px solid var(--bdr); display: flex; gap: 8px; align-items: center; }
+.start-time { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 14px; padding: 10px 12px; border-radius: 6px; outline: none; flex: 1; }
+.opt-btn { background: var(--acc); color: #000; border: none; border-radius: 6px; padding: 10px 16px; font-family: var(--fd); font-size: 18px; letter-spacing: 1px; cursor: pointer; }
 .add-panel { padding: 16px; }
-.add-title { font-family: var(–fd); font-size: 24px; color: var(–acc); letter-spacing: 2px; margin-bottom: 16px; }
+.add-title { font-family: var(--fd); font-size: 24px; color: var(--acc); letter-spacing: 2px; margin-bottom: 16px; }
 .form-group { margin-bottom: 12px; }
-.form-label { font-family: var(–fm); font-size: 10px; color: var(–mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-.form-input { width: 100%; background: #e0e3e8; border: 2px solid #c4cad3; color: #000; font-family: var(–fb); font-size: 15px; font-weight: 500; padding: 12px; border-radius: 6px; outline: none; }
-.form-input:focus { border-color: var(–acc); box-shadow: 0 0 0 3px rgba(255,122,61,0.25); }
+.form-label { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: #e0e3e8; border: 2px solid #c4cad3; color: #000; font-family: var(--fb); font-size: 15px; font-weight: 500; padding: 12px; border-radius: 6px; outline: none; }
+.form-input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(255,122,61,0.25); }
 .form-input::placeholder { color: #888; }
 .form-row { display: flex; gap: 8px; }
 .form-row .form-group { flex: 1; }
-.search-results { background: var(–sur2); border: 1px solid var(–bdr); border-radius: 6px; margin-top: 4px; display: none; overflow: hidden; }
+.search-results { background: var(--sur2); border: 1px solid var(--bdr); border-radius: 6px; margin-top: 4px; display: none; overflow: hidden; }
 .search-results.show { display: block; }
-.search-item { padding: 12px; border-bottom: 1px solid var(–bdr); cursor: pointer; font-size: 13px; }
+.search-item { padding: 12px; border-bottom: 1px solid var(--bdr); cursor: pointer; font-size: 13px; }
 .search-item:last-child { border-bottom: none; }
-.search-item:active { background: var(–bdr); }
-.search-name { font-weight: 600; color: var(–txt); }
-.search-addr { font-family: var(–fm); font-size: 10px; color: var(–mut); margin-top: 2px; }
-.fetching { font-family: var(–fm); font-size: 11px; color: var(–acc); animation: blink 1s infinite; display: none; }
-.add-stop-btn { width: 100%; background: var(–acc); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(–fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-top: 8px; }
+.search-item:active { background: var(--bdr); }
+.search-name { font-weight: 600; color: var(--txt); }
+.search-addr { font-family: var(--fm); font-size: 10px; color: var(--mut); margin-top: 2px; }
+.fetching { font-family: var(--fm); font-size: 11px; color: var(--acc); animation: blink 1s infinite; display: none; }
+.add-stop-btn { width: 100%; background: var(--acc); color: #000; border: none; border-radius: 6px; padding: 14px; font-family: var(--fd); font-size: 20px; letter-spacing: 2px; cursor: pointer; margin-top: 8px; }
 .manage-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
-.manage-card { background: var(–sur); border: 1px solid var(–bdr); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; }
+.manage-card { background: var(--sur); border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; }
 .manage-info { flex: 1; }
-.manage-name { font-size: 14px; font-weight: 600; color: var(–txt); }
-.manage-meta { font-family: var(–fm); font-size: 10px; color: var(–mut); margin-top: 2px; }
+.manage-name { font-size: 14px; font-weight: 600; color: var(--txt); }
+.manage-meta { font-family: var(--fm); font-size: 10px; color: var(--mut); margin-top: 2px; }
 .manage-actions { display: flex; gap: 6px; }
-.manage-btn { background: var(–sur2); border: 1px solid var(–bdr); color: var(–mut); font-family: var(–fm); font-size: 11px; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
-.manage-btn.edit { border-color: var(–blu); color: var(–blu); }
-.manage-btn.del { border-color: var(–red); color: var(–red); }
+.manage-btn { background: var(--sur2); border: 1px solid var(--bdr); color: var(--mut); font-family: var(--fm); font-size: 11px; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+.manage-btn.edit { border-color: var(--blu); color: var(--blu); }
+.manage-btn.del { border-color: var(--red); color: var(--red); }
 
 /* BULK SELECTION MODE */
 .manage-card.selectable { cursor: pointer; }
-.manage-card.selected { border-color: var(–acc); background: rgba(59,130,246,.08); box-shadow: 0 0 0 1px var(–acc); }
-.manage-checkbox { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(–bdr); border-radius: 5px; background: var(–sur2); display: none; align-items: center; justify-content: center; font-size: 14px; color: transparent; transition: all 0.1s; }
+.manage-card.selected { border-color: var(--acc); background: rgba(59,130,246,.08); box-shadow: 0 0 0 1px var(--acc); }
+.manage-checkbox { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--bdr); border-radius: 5px; background: var(--sur2); display: none; align-items: center; justify-content: center; font-size: 14px; color: transparent; transition: all 0.1s; }
 .manage-card.selectable .manage-checkbox { display: flex; }
-.manage-card.selected .manage-checkbox { background: var(–acc); border-color: var(–acc); color: #000; font-weight: bold; }
+.manage-card.selected .manage-checkbox { background: var(--acc); border-color: var(--acc); color: #000; font-weight: bold; }
 .manage-card.selectable .manage-actions { opacity: 0.3; pointer-events: none; }
-.bulk-toolbar { padding: 10px 16px; background: var(–sur); border-bottom: 1px solid var(–bdr); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.bulk-toolbar-btn { background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 11px; padding: 7px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-.bulk-toolbar-btn.primary { background: var(–acc); border-color: var(–acc); color: #000; font-weight: 600; }
-.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(–sur); border-top: 2px solid var(–acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(0,0,0,.6); display: none; flex-direction: column; gap: 8px; }
+.bulk-toolbar { padding: 10px 16px; background: var(--sur); border-bottom: 1px solid var(--bdr); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bulk-toolbar-btn { background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 11px; padding: 7px 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+.bulk-toolbar-btn.primary { background: var(--acc); border-color: var(--acc); color: #000; font-weight: 600; }
+.bulk-action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--sur); border-top: 2px solid var(--acc); padding: 12px 16px; z-index: 150; box-shadow: 0 -4px 16px rgba(0,0,0,.6); display: none; flex-direction: column; gap: 8px; }
 .bulk-action-bar.show { display: flex; }
 .bulk-action-row { display: flex; gap: 8px; align-items: center; }
-.bulk-action-counter { font-family: var(–fd); font-size: 18px; color: var(–acc); letter-spacing: 1px; flex: 1; }
-.bulk-action-btn { padding: 10px 14px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; flex-shrink: 0; }
-.bulk-action-btn.move { background: var(–blu); color: #fff; }
-.bulk-action-btn.del { background: var(–red); color: #fff; }
-.bulk-action-btn.cancel { background: var(–sur2); color: var(–txt); border: 1px solid var(–bdr); }
-.bulk-day-row { display: none; gap: 6px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(–bdr); }
+.bulk-action-counter { font-family: var(--fd); font-size: 18px; color: var(--acc); letter-spacing: 1px; flex: 1; }
+.bulk-action-btn { padding: 10px 14px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; flex-shrink: 0; }
+.bulk-action-btn.move { background: var(--blu); color: #fff; }
+.bulk-action-btn.del { background: var(--red); color: #fff; }
+.bulk-action-btn.cancel { background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); }
+.bulk-day-row { display: none; gap: 6px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--bdr); }
 .bulk-day-row.show { display: flex; }
-.bulk-day-btn { flex: 1; min-width: 60px; padding: 10px; border: 1px solid var(–bdr); background: var(–sur2); color: var(–txt); font-family: var(–fd); font-size: 14px; letter-spacing: 1px; border-radius: 6px; cursor: pointer; }
+.bulk-day-btn { flex: 1; min-width: 60px; padding: 10px; border: 1px solid var(--bdr); background: var(--sur2); color: var(--txt); font-family: var(--fd); font-size: 14px; letter-spacing: 1px; border-radius: 6px; cursor: pointer; }
 .bulk-day-btn.disabled { opacity: 0.3; cursor: not-allowed; }
 
 /* MODAL */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; padding: 20px; overflow-y: auto; }
 .modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
-.modal-box { background: var(–sur); border: 1px solid var(–bdr); border-radius: 12px; padding: 20px; width: 100%; max-width: 500px; margin-top: 20px; }
-.modal-title { font-family: var(–fd); font-size: 24px; color: var(–acc); letter-spacing: 2px; margin-bottom: 16px; }
-.modal-body { font-family: var(–fm); font-size: 11px; color: var(–txt); background: var(–bg); border: 1px solid var(–bdr); border-radius: 6px; padding: 12px; white-space: pre-wrap; line-height: 1.8; max-height: 60vh; overflow-y: auto; margin-bottom: 12px; }
-.modal-close { width: 100%; background: var(–sur2); color: var(–txt); border: 1px solid var(–bdr); border-radius: 6px; padding: 12px; font-family: var(–fm); font-size: 12px; cursor: pointer; margin-top: 8px; }
+.modal-box { background: var(--sur); border: 1px solid var(--bdr); border-radius: 12px; padding: 20px; width: 100%; max-width: 500px; margin-top: 20px; }
+.modal-title { font-family: var(--fd); font-size: 24px; color: var(--acc); letter-spacing: 2px; margin-bottom: 16px; }
+.modal-body { font-family: var(--fm); font-size: 11px; color: var(--txt); background: var(--bg); border: 1px solid var(--bdr); border-radius: 6px; padding: 12px; white-space: pre-wrap; line-height: 1.8; max-height: 60vh; overflow-y: auto; margin-bottom: 12px; }
+.modal-close { width: 100%; background: var(--sur2); color: var(--txt); border: 1px solid var(--bdr); border-radius: 6px; padding: 12px; font-family: var(--fm); font-size: 12px; cursor: pointer; margin-top: 8px; }
 
-.empty-state { text-align: center; padding: 40px; font-family: var(–fm); color: var(–mut); font-size: 13px; line-height: 2; }
-.freq-tag { display: inline-block; font-family: var(–fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
-.freq-weekly { background: var(–grn); color: #000; }
-.freq-biweekly { background: var(–acc2); color: #000; }
-.freq-monthly { background: var(–acc); color: #000; }
+.empty-state { text-align: center; padding: 40px; font-family: var(--fm); color: var(--mut); font-size: 13px; line-height: 2; }
+.freq-tag { display: inline-block; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
+.freq-weekly { background: var(--grn); color: #000; }
+.freq-biweekly { background: var(--acc2); color: #000; }
+.freq-monthly { background: var(--acc); color: #000; }
 .freq-skip { opacity: 0.3; }
-.note-tag { display: inline-block; background: var(–acc); color: #000; font-family: var(–fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
-.manage-num { font-family: var(–fd); font-size: 20px; color: var(–mut); min-width: 28px; }
-.notes-section { margin-top: 10px; border-top: 1px solid var(–bdr); padding-top: 10px; }
-.notes-lbl { font-family: var(–fm); font-size: 10px; color: var(–mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
-.note-item { background: var(–sur); border: 1px solid var(–bdr); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
-.note-txt { flex: 1; font-family: var(–fm); font-size: 12px; color: var(–txt); line-height: 1.4; }
-.note-del { background: none; border: none; color: var(–red); font-size: 14px; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
+.note-tag { display: inline-block; background: var(--acc); color: #000; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
+.manage-num { font-family: var(--fd); font-size: 20px; color: var(--mut); min-width: 28px; }
+.notes-section { margin-top: 10px; border-top: 1px solid var(--bdr); padding-top: 10px; }
+.notes-lbl { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+.note-item { background: var(--sur); border: 1px solid var(--bdr); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+.note-txt { flex: 1; font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.4; }
+.note-del { background: none; border: none; color: var(--red); font-size: 14px; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
 .note-input-row { display: flex; gap: 6px; margin-top: 6px; }
-.note-input { flex: 1; background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 12px; padding: 8px 10px; border-radius: 6px; outline: none; }
-.note-input:focus { border-color: var(–acc); }
-.note-add-btn { background: var(–acc); border: none; color: #000; font-family: var(–fm); font-size: 11px; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
-.stop-dist { font-family: var(–fm); font-size: 10px; color: var(–acc); margin-top: 2px; }
+.note-input { flex: 1; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 12px; padding: 8px 10px; border-radius: 6px; outline: none; }
+.note-input:focus { border-color: var(--acc); }
+.note-add-btn { background: var(--acc); border: none; color: #000; font-family: var(--fm); font-size: 11px; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+.stop-dist { font-family: var(--fm); font-size: 10px; color: var(--acc); margin-top: 2px; }
 
 /* MAP STOP POPUP */
 /* MAP STOP POPUP — enhanced card look */
 .map-stop-popup {
-position: absolute;
-bottom: 24px;
-left: 12px;
-right: 12px;
-background: #1a2540;
-border: 2px solid var(–acc);
-border-radius: 14px;
-padding: 16px 18px 14px;
-z-index: 20;
-box-shadow: 0 12px 40px rgba(0,0,0,0.85), 0 0 24px rgba(255,122,61,0.3);
-display: none;
+  position: absolute;
+  bottom: 24px;
+  left: 12px;
+  right: 12px;
+  background: #1a2540;
+  border: 2px solid var(--acc);
+  border-radius: 14px;
+  padding: 16px 18px 14px;
+  z-index: 20;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.85), 0 0 24px rgba(255,122,61,0.3);
+  display: none;
 }
 .map-stop-popup.show { display: block; animation: stop-popup-rise 0.25s ease-out; }
 @keyframes stop-popup-rise {
-from { transform: translateY(20px); opacity: 0; }
-to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .map-popup-close {
-position: absolute;
-top: 8px;
-right: 10px;
-background: #0e1830;
-border: 1px solid #3d6bbf;
-color: var(–txt);
-font-size: 16px;
-cursor: pointer;
-width: 26px;
-height: 26px;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-line-height: 1;
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: #0e1830;
+  border: 1px solid #3d6bbf;
+  color: var(--txt);
+  font-size: 16px;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .map-popup-name {
-font-family: var(–fb);
-font-weight: 700;
-font-size: 20px;
-color: #fff;
-letter-spacing: 0;
-padding-right: 32px;
-line-height: 1.15;
-text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  font-family: var(--fb);
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: 0;
+  padding-right: 32px;
+  line-height: 1.15;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .map-popup-addr {
-font-family: var(–fb);
-font-size: 13px;
-color: var(–mut);
-margin-top: 6px;
-font-weight: 500;
+  font-family: var(--fb);
+  font-size: 13px;
+  color: var(--mut);
+  margin-top: 6px;
+  font-weight: 500;
 }
 .map-popup-meta { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .map-popup-tag {
-font-family: var(–fm);
-font-size: 10px;
-font-weight: 600;
-color: #fff;
-background: #0e1830;
-border: 1px solid #3d6bbf;
-padding: 4px 9px;
-border-radius: 12px;
-letter-spacing: 0.3px;
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: #0e1830;
+  border: 1px solid #3d6bbf;
+  padding: 4px 9px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
 }
 .map-popup-tag.done {
-background: #064c3a;
-border-color: var(–grn);
-color: var(–grn);
+  background: #064c3a;
+  border-color: var(--grn);
+  color: var(--grn);
 }
 .map-popup-tag.overdue {
-background: #5a1a2e;
-border-color: var(–red);
-color: var(–red);
+  background: #5a1a2e;
+  border-color: var(--red);
+  color: var(--red);
 }
 .map-popup-btns { display: flex; gap: 8px; margin-top: 14px; }
 .map-nav-btn {
-flex: 1;
-padding: 12px;
-border: none;
-border-radius: 8px;
-font-family: var(–fd);
-font-size: 15px;
-font-weight: 700;
-letter-spacing: 1.5px;
-cursor: pointer;
-box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--fd);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.map-nav-start { background: var(–acc); color: #000; border: 2px solid #fff; }
+.map-nav-start { background: var(--acc); color: #000; border: 2px solid #fff; }
 .map-nav-gmaps { background: #4285f4; color: #fff; border: 2px solid #fff; }
 
 /* NAVIGATION HUD */
-.nav-hud { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 2px solid var(–acc); padding: 14px 16px; z-index: 25; display: none; }
+.nav-hud { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a0800, #0f0500); border-bottom: 2px solid var(--acc); padding: 14px 16px; z-index: 25; display: none; }
 .nav-hud.show { display: block; }
 
 /* NAV TAKEOVER MODE — full-screen lock. Set when isNavigating === true. */
@@ -373,17 +372,17 @@ body.nav-active .upcoming-turn { z-index: 9101; }
 /* Bigger, more obvious STOP button when nav is active */
 body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 4px 12px rgba(239,71,111,.4); }
 .nav-hud-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.nav-hud-dest { font-family: var(–fd); font-size: 20px; color: var(–acc); letter-spacing: 1px; }
-.nav-stop-btn { background: var(–red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+.nav-hud-dest { font-family: var(--fd); font-size: 20px; color: var(--acc); letter-spacing: 1px; }
+.nav-stop-btn { background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .nav-hud-stats { display: flex; gap: 16px; }
 .nav-stat { text-align: center; }
-.nav-stat-val { font-family: var(–fd); font-size: 26px; color: var(–txt); line-height: 1; }
-.nav-stat-lbl { font-family: var(–fm); font-size: 9px; color: var(–mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+.nav-stat-val { font-family: var(--fd); font-size: 26px; color: var(--txt); line-height: 1; }
+.nav-stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
 .nav-route-line { stroke: #3b82f6; stroke-width: 4; stroke-opacity: 0.8; }
-.nav-turn { background: var(–sur); border: 1px solid var(–acc); border-radius: 8px; padding: 10px 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+.nav-turn { background: var(--sur); border: 1px solid var(--acc); border-radius: 8px; padding: 10px 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
 .nav-turn-icon { font-size: 22px; flex-shrink: 0; }
-.nav-turn-txt { font-family: var(–fm); font-size: 12px; color: var(–txt); line-height: 1.4; flex: 1; }
-.nav-turn-dist { font-family: var(–fd); font-size: 16px; color: var(–acc); flex-shrink: 0; }
+.nav-turn-txt { font-family: var(--fm); font-size: 12px; color: var(--txt); line-height: 1.4; flex: 1; }
+.nav-turn-dist { font-family: var(--fd); font-size: 16px; color: var(--acc); flex-shrink: 0; }
 
 /* BIG UPCOMING-TURN ALERT (shows when ≤ 0.5 mi from next turn) */
 .upcoming-turn { position: absolute; top: 200px; left: 12px; right: 12px; background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #000; border-radius: 14px; padding: 16px 18px; z-index: 28; display: none; box-shadow: 0 6px 24px rgba(59,130,246,.45), 0 0 0 2px rgba(0,0,0,.6); animation: upcoming-pulse 1.4s ease-in-out infinite; }
@@ -392,75 +391,75 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 .upcoming-turn-row { display: flex; align-items: center; gap: 14px; }
 .upcoming-turn-icon { font-size: 56px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
 .upcoming-turn-info { flex: 1; min-width: 0; }
-.upcoming-turn-dist { font-family: var(–fd); font-size: 38px; line-height: 1; letter-spacing: 1px; }
-.upcoming-turn-action { font-family: var(–fm); font-size: 13px; font-weight: 600; line-height: 1.25; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; word-wrap: break-word; }
+.upcoming-turn-dist { font-family: var(--fd); font-size: 38px; line-height: 1; letter-spacing: 1px; }
+.upcoming-turn-action { font-family: var(--fm); font-size: 13px; font-weight: 600; line-height: 1.25; margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; word-wrap: break-word; }
 @keyframes upcoming-pulse {
-0%, 100% { transform: scale(1); }
-50% { transform: scale(1.015); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
 }
 @keyframes upcoming-pulse-fast {
-0%, 100% { transform: scale(1); }
-50% { transform: scale(1.04); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 
-.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(–sur); border: 1px solid var(–acc); border-radius: 50%; color: var(–acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
-.dots-btn { background: none; border: none; color: var(–mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
-.dots-btn:active { background: var(–bdr); }
-.freq-menu { display: none; position: absolute; right: 16px; background: var(–sur2); border: 1px solid var(–bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+.recenter-btn { position: absolute; bottom: 90px; right: 10px; width: 44px; height: 44px; background: var(--sur); border: 1px solid var(--acc); border-radius: 50%; color: var(--acc); font-size: 20px; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.dots-btn { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px; line-height: 1; }
+.dots-btn:active { background: var(--bdr); }
+.freq-menu { display: none; position: absolute; right: 16px; background: var(--sur2); border: 1px solid var(--bdr); border-radius: 8px; overflow: hidden; z-index: 50; min-width: 150px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
 .freq-menu.show { display: block; }
-.freq-menu-item { padding: 12px 16px; font-family: var(–fm); font-size: 12px; color: var(–txt); cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(–bdr); }
+.freq-menu-item { padding: 12px 16px; font-family: var(--fm); font-size: 12px; color: var(--txt); cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--bdr); }
 .freq-menu-item:last-child { border-bottom: none; }
-.freq-menu-item:active { background: var(–bdr); }
-.freq-menu-item.active-freq { color: var(–acc); font-weight: 600; }
+.freq-menu-item:active { background: var(--bdr); }
+.freq-menu-item.active-freq { color: var(--acc); font-weight: 600; }
 .freq-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .manage-card { position: relative; }
-.last-service { font-family: var(–fm); font-size: 10px; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+.last-service { font-family: var(--fm); font-size: 10px; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
 .last-service-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.svc-ok { color: var(–grn); }
-.svc-warn { color: var(–acc2); }
-.svc-late { color: var(–red); }
+.svc-ok { color: var(--grn); }
+.svc-warn { color: var(--acc2); }
+.svc-late { color: var(--red); }
 
 /* LOGIN SCREEN */
-.login-overlay { position: fixed; inset: 0; background: var(–bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .login-box { width: 100%; max-width: 360px; }
-.login-logo { font-family: var(–fd); font-size: 64px; letter-spacing: 4px; color: var(–acc); text-align: center; line-height: 1; }
-.login-sub { font-family: var(–fm); font-size: 11px; color: var(–mut); text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; margin-bottom: 40px; }
+.login-logo { font-family: var(--fd); font-size: 64px; letter-spacing: 4px; color: var(--acc); text-align: center; line-height: 1; }
+.login-sub { font-family: var(--fm); font-size: 11px; color: var(--mut); text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; margin-bottom: 40px; }
 .login-field { margin-bottom: 16px; }
-.login-label { font-family: var(–fm); font-size: 10px; color: var(–mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-.login-input { width: 100%; background: var(–sur2); border: 1px solid var(–bdr); color: var(–txt); font-family: var(–fm); font-size: 15px; padding: 14px 16px; border-radius: 8px; outline: none; letter-spacing: 1px; }
-.login-input:focus { border-color: var(–acc); }
-.login-btn { width: 100%; background: var(–acc); color: #000; border: none; border-radius: 8px; padding: 16px; font-family: var(–fd); font-size: 24px; letter-spacing: 3px; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+.login-label { font-family: var(--fm); font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+.login-input { width: 100%; background: var(--sur2); border: 1px solid var(--bdr); color: var(--txt); font-family: var(--fm); font-size: 15px; padding: 14px 16px; border-radius: 8px; outline: none; letter-spacing: 1px; }
+.login-input:focus { border-color: var(--acc); }
+.login-btn { width: 100%; background: var(--acc); color: #000; border: none; border-radius: 8px; padding: 16px; font-family: var(--fd); font-size: 24px; letter-spacing: 3px; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
 .login-btn:active { opacity: 0.8; }
-.login-error { font-family: var(–fm); font-size: 12px; color: var(–red); text-align: center; margin-top: 14px; min-height: 18px; }
+.login-error { font-family: var(--fm); font-size: 12px; color: var(--red); text-align: center; margin-top: 14px; min-height: 18px; }
 .login-dot-row { display: flex; justify-content: center; gap: 8px; margin-top: 10px; min-height: 12px; }
-.login-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–acc); }
-.google-btn { width: 100%; background: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 8px; padding: 14px 20px; font-family: var(–fb); font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: box-shadow 0.2s; }
+.login-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
+.google-btn { width: 100%; background: #fff; color: #3c4043; border: 1px solid #dadce0; border-radius: 8px; padding: 14px 20px; font-family: var(--fb); font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: box-shadow 0.2s; }
 .google-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.2); }
 .google-btn:active { background: #f8f8f8; }
 
 /* MODE BANNER (Reorganize / Measure) */
-.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(–acc); color: #000; font-family: var(–fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
+.mode-banner { position: absolute; top: 50px; left: 12px; right: 12px; background: var(--acc); color: #000; font-family: var(--fd); font-size: 16px; letter-spacing: 1px; padding: 12px 14px; border-radius: 8px; z-index: 30; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
 .mode-banner.show { display: block; }
 
 .mode-banner-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .mode-banner-text { flex: 1; font-size: 14px; }
-.mode-banner-counter { font-family: var(–fd); font-size: 22px; letter-spacing: 1px; }
-.mode-banner-last { font-family: ‘DM Mono’, monospace; font-size: 12px; margin-top: 8px; padding: 8px 10px; background: rgba(0,0,0,0.18); border-radius: 6px; line-height: 1.3; display: none; }
+.mode-banner-counter { font-family: var(--fd); font-size: 22px; letter-spacing: 1px; }
+.mode-banner-last { font-family: 'DM Mono', monospace; font-size: 12px; margin-top: 8px; padding: 8px 10px; background: rgba(0,0,0,0.18); border-radius: 6px; line-height: 1.3; display: none; }
 .mode-banner-last.show { display: block; }
-.mode-banner-last-num { font-family: var(–fd); font-size: 14px; letter-spacing: 1px; margin-right: 6px; opacity: 0.7; }
+.mode-banner-last-num { font-family: var(--fd); font-size: 14px; letter-spacing: 1px; margin-right: 6px; opacity: 0.7; }
 .mode-banner-btns { display: flex; gap: 8px; margin-top: 10px; }
-.mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(–fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
+.mode-btn { flex: 1; padding: 9px; border: none; border-radius: 6px; font-family: var(--fd); font-size: 14px; letter-spacing: 1px; cursor: pointer; }
 .mode-btn-cancel { background: #e0e3e8; color: #000; border: 2px solid #c4cad3; font-weight: bold; }
 
-.mode-btn-done { background: var(–grn); color: #fff; font-weight: bold; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(16,185,129,0.5); }
+.mode-btn-done { background: var(--grn); color: #fff; font-weight: bold; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(16,185,129,0.5); }
 .mode-btn-done:disabled { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.5); border: 2px solid rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
 
+  
 </style>
 </head>
 <body>
 
 <!-- LOGIN SCREEN -->
-
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
     <div class="login-logo">Z</div>
@@ -477,7 +476,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 </div>
 
 <!-- HEADER -->
-
 <div class="hdr">
   <div>
     <div class="hdr-title">PROJECT Z</div>
@@ -492,7 +490,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <div class="sync-banner show" id="syncBanner">⏳ SYNCING WITH DATABASE — please wait before editing</div>
 
 <!-- TABS -->
-
 <div class="tabs">
   <div class="tab active" id="tab-route" onclick="switchTab('route')">ROUTE</div>
   <div class="tab" id="tab-manage" onclick="switchTab('manage')">STOPS</div>
@@ -500,7 +497,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 </div>
 
 <!-- ===== ROUTE TAB ===== -->
-
 <div id="routeTab">
   <div class="day-sel" id="routeDaySel">
     <button class="day-btn active" onclick="selectDay('MON')">MON</button>
@@ -525,7 +521,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- FUEL PRICE + LIVE COST BAR -->
-
   <div style="padding:8px 16px 0;">
     <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;">
       <div style="flex:1;">
@@ -548,7 +543,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- ADD CURRENT LOCATION AS STOP -->
-
   <div style="padding:8px 16px 0;">
     <button onclick="addCurrentLocationAsStop()" style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;border-radius:6px;padding:11px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);">📍 ADD MY CURRENT LOCATION AS A STOP</button>
   </div>
@@ -603,7 +597,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 </div>
 
 <!-- ===== MANAGE TAB ===== -->
-
 <div id="manageTab" style="display:none;">
   <div class="day-sel" id="manageDaySel">
     <button class="day-btn active" id="mday-MON" onclick="selectManageDay('MON')">MON</button>
@@ -659,7 +652,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <div class="manage-list" id="manageList"></div>
 
   <!-- BULK ACTION BAR (slides up when stops selected) -->
-
   <div class="bulk-action-bar" id="bulkActionBar">
     <div class="bulk-action-row">
       <div class="bulk-action-counter" id="bulkActionCounter">0 SELECTED</div>
@@ -680,7 +672,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <!-- ===== HISTORY TAB REMOVED — tab nav hidden; underlying functions kept as orphans ===== -->
 
 <!-- ===== MAP TAB ===== -->
-
 <div id="mapTab" style="display:none;position:relative;">
   <div id="mapContainer" style="width:100%;height:calc(100vh - 120px);background:var(--sur2);"></div>
   <div id="mapControls" style="position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:8px;z-index:10;">
@@ -700,12 +691,10 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- 3D / RECENTER BUTTONS (bottom right stack) -->
-
-<button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏙️</button>
-<button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
+  <button id="btn3D" onclick="toggle3D()" title="Toggle 3D view" style="position:absolute;bottom:144px;right:10px;width:44px;height:44px;background:var(--sur);border:1px solid var(--bdr);color:var(--txt);font-size:18px;cursor:pointer;border-radius:50%;z-index:20;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.18), 0 0 18px rgba(255,255,255,0.12);">🏙️</button>
+  <button class="recenter-btn" id="recenterBtn" onclick="recenterOnMe()" title="Recenter on my location" style="display:none;">⊙</button>
 
   <!-- NAVIGATION HUD (shown during navigation) -->
-
   <div class="nav-hud" id="navHud">
     <div class="nav-hud-top">
       <div class="nav-hud-dest" id="navDest">Navigating...</div>
@@ -725,7 +714,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- BIG UPCOMING-TURN ALERT (shown when within 0.5 mi of next turn) -->
-
   <div class="upcoming-turn" id="upcomingTurn">
     <div class="upcoming-turn-row">
       <div class="upcoming-turn-icon" id="upcomingTurnIcon">➡️</div>
@@ -737,7 +725,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- STOP POPUP (shown when tapping a pin) -->
-
 <div class="map-stop-popup" id="mapStopPopup">
     <button class="map-popup-close" onclick="closeMapPopup()">✕</button>
     <div class="map-popup-name" id="popupName">Stop Name</div>
@@ -750,7 +737,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- REORGANIZE / MEASURE MODE BANNER -->
-
   <div class="mode-banner" id="modeBanner">
     <div class="mode-banner-row">
       <div class="mode-banner-text" id="modeBannerText">Tap stops in the order you want them</div>
@@ -772,11 +758,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
 
   <!-- (measure feature removed) -->
-
 </div>
 
 <!-- MODAL -->
-
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div class="modal-title" id="modalTitle">LOG</div>
@@ -789,15 +773,11 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <!-- PART 2: Firebase + Google Maps + Data + State -->
 
 <!-- Load Firebase COMPAT (not modular - works in plain HTML) -->
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <!-- Stub for onMapsReady so Maps callback doesn't fail -->
-
 <script>
 window.mapsReady = false;
 window.onMapsReady = function() {
@@ -812,7 +792,6 @@ window.onMapsReady = function() {
 </script>
 
 <!-- Load Google Maps -->
-
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4&libraries=places,geometry&loading=async&callback=onMapsReady"></script>
 
 <script>
@@ -5011,9 +4990,7 @@ function runMeasurement() { /* measure feature removed */ }
 
 function closeMeasureResult() { /* measure feature removed */ }
 </script>
-
 <!-- ===== EDIT STOP MODAL ===== -->
-
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--sur);border:2px solid var(--acc);border-radius:12px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -5021,83 +4998,73 @@ function closeMeasureResult() { /* measure feature removed */ }
       <button onclick="closeEditModal()" style="background:none;border:none;color:var(--mut);font-size:22px;cursor:pointer;">✕</button>
     </div>
 
-```
-<div class="form-group">
-  <label class="form-label">Business Name</label>
-  <input class="form-input" id="editName">
-</div>
+    <div class="form-group">
+      <label class="form-label">Business Name</label>
+      <input class="form-input" id="editName">
+    </div>
 
-<div class="form-group">
-  <label class="form-label">Address</label>
-  <input class="form-input" id="editAddr">
-  <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ If changed, map pin will update automatically</div>
-</div>
+    <div class="form-group">
+      <label class="form-label">Address</label>
+      <input class="form-input" id="editAddr">
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ If changed, map pin will update automatically</div>
+    </div>
 
-<div class="form-row">
-  <div class="form-group">
-    <label class="form-label">Opens At</label>
-    <input class="form-input" id="editOpens" placeholder="e.g. 9:00AM or 24hrs">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Frequency</label>
-    <select class="form-input" id="editFreq" style="background:#e0e3e8;color:#000;">
-      <option value="weekly">Weekly</option>
-      <option value="biweekly">Biweekly</option>
-      <option value="monthly">Monthly</option>
-    </select>
-  </div>
-</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Opens At</label>
+        <input class="form-input" id="editOpens" placeholder="e.g. 9:00AM or 24hrs">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Frequency</label>
+        <select class="form-input" id="editFreq" style="background:#e0e3e8;color:#000;">
+          <option value="weekly">Weekly</option>
+          <option value="biweekly">Biweekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
 
-<div class="form-group">
-  <label class="form-label">📅 Day <span id="editDayBadge" style="font-size:9px;color:var(--mut);"></span></label>
-  <select class="form-input" id="editDay" style="background:#e0e3e8;color:#000;">
-    <option value="MON">Monday</option>
-    <option value="TUE">Tuesday</option>
-    <option value="WED">Wednesday</option>
-    <option value="THU">Thursday</option>
-    <option value="FRI">Friday</option>
-  </select>
-  <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Change to move this stop to a different day</div>
-</div>
+    <div class="form-group">
+      <label class="form-label">📅 Day <span id="editDayBadge" style="font-size:9px;color:var(--mut);"></span></label>
+      <select class="form-input" id="editDay" style="background:#e0e3e8;color:#000;">
+        <option value="MON">Monday</option>
+        <option value="TUE">Tuesday</option>
+        <option value="WED">Wednesday</option>
+        <option value="THU">Thursday</option>
+        <option value="FRI">Friday</option>
+      </select>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Change to move this stop to a different day</div>
+    </div>
 
-<div class="form-group">
-  <label class="form-label">Note</label>
-  <input class="form-input" id="editNote" placeholder="Optional">
-</div>
+    <div class="form-group">
+      <label class="form-label">Note</label>
+      <input class="form-input" id="editNote" placeholder="Optional">
+    </div>
 
-<div class="form-group">
-  <label class="form-label">📅 Last Serviced Date</label>
-  <input class="form-input" id="editLastServiced" type="date">
-  <div style="display:flex;gap:6px;margin-top:6px;">
-    <button type="button" onclick="setLastServicedToday()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Today</button>
-    <button type="button" onclick="clearLastServiced()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--mut);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Clear (Never)</button>
-  </div>
-  <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Tracks how long since this account was serviced</div>
-</div>
+    <div class="form-group">
+      <label class="form-label">📅 Last Serviced Date</label>
+      <input class="form-input" id="editLastServiced" type="date">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button type="button" onclick="setLastServicedToday()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Today</button>
+        <button type="button" onclick="clearLastServiced()" style="flex:1;padding:8px;background:var(--sur2);border:1px solid var(--bdr);color:var(--mut);border-radius:6px;font-family:var(--fm);font-size:11px;cursor:pointer;">Clear (Never)</button>
+      </div>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Tracks how long since this account was serviced</div>
+    </div>
 
-<div style="display:flex;gap:8px;margin-top:16px;">
-  <button onclick="closeEditModal()" style="flex:1;padding:12px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);cursor:pointer;">CANCEL</button>
-  <button onclick="saveEditedStop()" style="flex:2;padding:13px;background:var(--acc);border:2px solid #fff;color:#000;border-radius:6px;font-family:var(--fm);font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 12px rgba(255,122,61,0.5);">SAVE CHANGES</button>
-</div>
-```
-
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="closeEditModal()" style="flex:1;padding:12px;background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;font-family:var(--fm);cursor:pointer;">CANCEL</button>
+      <button onclick="saveEditedStop()" style="flex:2;padding:13px;background:var(--acc);border:2px solid #fff;color:#000;border-radius:6px;font-family:var(--fm);font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 12px rgba(255,122,61,0.5);">SAVE CHANGES</button>
+    </div>
   </div>
 </div>
 
 <!-- ===================================================================== -->
-
 <!-- ===== PHASE 2: MILEAGE TRACKING MODULE ============================== -->
-
 <!-- ===================================================================== -->
-
 <!-- Self-contained module that hooks into existing logArrival/             -->
-
 <!-- logDepartureAndComplete/completeDay flow. Captures GPS trails per leg, -->
-
 <!-- computes distance, syncs to Firebase, draws line preview on map tab,   -->
-
 <!-- and prompts for fuel cost at end of day.                               -->
-
 <!-- ===================================================================== -->
 
 <style>
@@ -5261,7 +5228,6 @@ function closeMeasureResult() { /* measure feature removed */ }
 </style>
 
 <!-- === FLOATING TRACKER BADGE (shown on route tab) === -->
-
 <div class="mt-badge" id="mtBadge">
   <div class="mt-pulse" id="mtPulse"></div>
   <div class="mt-stats">
@@ -5273,7 +5239,6 @@ function closeMeasureResult() { /* measure feature removed */ }
 </div>
 
 <!-- === LEG POPUP (shown when tapping a polyline on the map) === -->
-
 <div class="leg-popup" id="legPopup">
   <button class="leg-popup-close" onclick="mtHideLegPopup()">✕</button>
   <div class="leg-popup-color-bar" id="legPopupColorBar"></div>
@@ -5301,45 +5266,70 @@ function closeMeasureResult() { /* measure feature removed */ }
 </div>
 
 <!-- === FUEL COST MODAL === -->
-
 <div class="fuel-modal-overlay" id="fuelModalOverlay">
   <div class="fuel-modal">
     <div class="fuel-modal-title">⛽ DAY SUMMARY</div>
     <div class="fuel-modal-sub" id="fuelModalDate">Today</div>
 
-```
-<div class="fuel-row">
-  <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalMiles">0.0</div><div class="fuel-stat-lbl">Miles Driven</div></div>
-  <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalLegs">0</div><div class="fuel-stat-lbl">Legs</div></div>
-  <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalTime">0m</div><div class="fuel-stat-lbl">Drive Time</div></div>
-</div>
+    <div class="fuel-row">
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalMiles">0.0</div><div class="fuel-stat-lbl">Miles Driven</div></div>
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalLegs">0</div><div class="fuel-stat-lbl">Legs</div></div>
+      <div class="fuel-stat-box"><div class="fuel-stat-val" id="fuelTotalTime">0m</div><div class="fuel-stat-lbl">Drive Time</div></div>
+    </div>
 
-<div class="fuel-input-group">
-  <label class="fuel-input-lbl">Gas price ($/gallon)</label>
-  <input class="fuel-input" id="fuelGasPrice" type="number" step="0.01" placeholder="e.g. 3.45" oninput="recalcFuelCost()">
-</div>
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Gas price ($/gallon)</label>
+      <input class="fuel-input" id="fuelGasPrice" type="number" step="0.01" placeholder="e.g. 3.45" oninput="recalcFuelCost()">
+    </div>
 
-<div class="fuel-input-group">
-  <label class="fuel-input-lbl">Truck MPG (estimate)</label>
-  <input class="fuel-input" id="fuelMpg" type="number" step="0.1" placeholder="e.g. 14" oninput="recalcFuelCost()">
-</div>
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Truck MPG (estimate)</label>
+      <input class="fuel-input" id="fuelMpg" type="number" step="0.1" placeholder="e.g. 14" oninput="recalcFuelCost()">
+    </div>
 
-<div class="fuel-result">
-  <div class="fuel-result-val" id="fuelCostResult">$0.00</div>
-  <div class="fuel-result-lbl">Estimated fuel cost</div>
-</div>
+    <div class="fuel-result">
+      <div class="fuel-result-val" id="fuelCostResult">$0.00</div>
+      <div class="fuel-result-lbl">Estimated fuel cost</div>
+    </div>
 
-<div class="fuel-btn-row">
-  <button class="fuel-btn fuel-btn-cancel" onclick="closeFuelModal()">SKIP</button>
-  <button class="fuel-btn fuel-btn-save" onclick="saveFuelData()">SAVE & COMPLETE</button>
-</div>
-```
-
+    <div class="fuel-btn-row">
+      <button class="fuel-btn fuel-btn-cancel" onclick="closeFuelModal()">SKIP</button>
+      <button class="fuel-btn fuel-btn-save" onclick="saveFuelData()">SAVE & COMPLETE</button>
+    </div>
   </div>
 </div>
 
-<!-- === DIAGNOSTIC PANEL (tap PROJECT Z title 5 times to open) === -->
+<!-- === NEARBY BUSINESSES PICKER === -->
+<div id="nearbyPickerOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10001;padding:20px;overflow-y:auto;">
+  <div style="max-width:520px;margin:0 auto;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div>
+        <div style="font-family:var(--fd);font-size:20px;color:var(--acc);letter-spacing:1px;">📍 ADD A NEW STOP</div>
+        <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Tap a business near you</div>
+      </div>
+      <button onclick="closeNearbyPicker()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+    <div id="nearbyPickerList"></div>
+  </div>
+</div>
+<style>#nearbyPickerOverlay.show { display: block !important; }</style>
 
+<!-- === INSERT POSITION PICKER === -->
+<div id="insertPositionOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10002;padding:20px;overflow-y:auto;">
+  <div style="max-width:520px;margin:0 auto;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div>
+        <div style="font-family:var(--fd);font-size:20px;color:var(--acc);letter-spacing:1px;">📌 INSERT WHERE?</div>
+        <div style="font-family:var(--fb);font-size:13px;color:#fff;margin-top:4px;">Where should <strong id="insertPosName" style="color:var(--acc);">--</strong> go?</div>
+      </div>
+      <button onclick="closeInsertPositionPicker()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>
+    <div id="insertPosList"></div>
+  </div>
+</div>
+<style>#insertPositionOverlay.show { display: block !important; }</style>
+
+<!-- === DIAGNOSTIC PANEL (tap PROJECT Z title 5 times to open) === -->
 <div id="diagOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10001;padding:20px;overflow-y:auto;">
   <div style="max-width:600px;margin:0 auto;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:18px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -5355,69 +5345,60 @@ function closeMeasureResult() { /* measure feature removed */ }
 <style>#diagOverlay.show { display: block !important; }</style>
 
 <!-- === SAVE ORDER PROMPT (after Complete Day) === -->
-
 <div class="fuel-modal-overlay" id="saveOrderOverlay">
   <div class="fuel-modal">
     <div class="fuel-modal-title">📋 SAVE ROUTE ORDER?</div>
     <div class="fuel-modal-sub">You completed <span id="saveOrderCount">0</span> stops on <span id="saveOrderDayLabel">--</span> today.</div>
 
-```
-<div style="background:#0e1830;border:1px solid var(--bdr);border-radius:8px;padding:12px;margin:14px 0;">
-  <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Today's completion order</div>
-  <div id="saveOrderPreview"></div>
-</div>
+    <div style="background:#0e1830;border:1px solid var(--bdr);border-radius:8px;padding:12px;margin:14px 0;">
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Today's completion order</div>
+      <div id="saveOrderPreview"></div>
+    </div>
 
-<div style="font-family:var(--fb);font-size:13px;color:var(--mut);line-height:1.4;margin-bottom:14px;">
-  Save this as your new permanent <span id="saveOrderDayLabel2" style="display:none;">--</span>route order? This will reorder the stops in both the Route list and the Stops tab.
-</div>
+    <div style="font-family:var(--fb);font-size:13px;color:var(--mut);line-height:1.4;margin-bottom:14px;">
+      Save this as your new permanent <span id="saveOrderDayLabel2" style="display:none;">--</span>route order? This will reorder the stops in both the Route list and the Stops tab.
+    </div>
 
-<div class="fuel-btn-row">
-  <button class="fuel-btn fuel-btn-cancel" onclick="dismissSaveOrderPrompt()">NO, KEEP CURRENT</button>
-  <button class="fuel-btn fuel-btn-save" onclick="confirmSaveOrderAsNewRoute()">✓ SAVE NEW ORDER</button>
-</div>
-```
-
+    <div class="fuel-btn-row">
+      <button class="fuel-btn fuel-btn-cancel" onclick="dismissSaveOrderPrompt()">NO, KEEP CURRENT</button>
+      <button class="fuel-btn fuel-btn-save" onclick="confirmSaveOrderAsNewRoute()">✓ SAVE NEW ORDER</button>
+    </div>
   </div>
 </div>
 
 <!-- === EDIT FUEL MODAL (for historical days) === -->
-
 <div class="fuel-modal-overlay" id="editFuelOverlay">
   <div class="fuel-modal">
     <div class="fuel-modal-title">✏️ EDIT FUEL</div>
     <div class="fuel-modal-sub" id="editFuelDate">--</div>
 
-```
-<div class="fuel-row">
-  <div class="fuel-stat-box" style="flex:1;"><div class="fuel-stat-val" id="editFuelMiles">0.0 mi</div><div class="fuel-stat-lbl">Miles Driven</div></div>
-</div>
+    <div class="fuel-row">
+      <div class="fuel-stat-box" style="flex:1;"><div class="fuel-stat-val" id="editFuelMiles">0.0 mi</div><div class="fuel-stat-lbl">Miles Driven</div></div>
+    </div>
 
-<div class="fuel-input-group">
-  <label class="fuel-input-lbl">Gas price ($/gallon)</label>
-  <input class="fuel-input" id="editFuelGasInput" type="number" step="0.01" placeholder="e.g. 3.45" oninput="mtRecalcEditFuelCost()">
-</div>
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Gas price ($/gallon)</label>
+      <input class="fuel-input" id="editFuelGasInput" type="number" step="0.01" placeholder="e.g. 3.45" oninput="mtRecalcEditFuelCost()">
+    </div>
 
-<div class="fuel-input-group">
-  <label class="fuel-input-lbl">Truck MPG</label>
-  <input class="fuel-input" id="editFuelMpgInput" type="number" step="0.1" placeholder="e.g. 14" oninput="mtRecalcEditFuelCost()">
-</div>
+    <div class="fuel-input-group">
+      <label class="fuel-input-lbl">Truck MPG</label>
+      <input class="fuel-input" id="editFuelMpgInput" type="number" step="0.1" placeholder="e.g. 14" oninput="mtRecalcEditFuelCost()">
+    </div>
 
-<div class="fuel-result">
-  <div class="fuel-result-val" id="editFuelCostPreview">$0.00</div>
-  <div class="fuel-result-lbl">Updated fuel cost</div>
-</div>
+    <div class="fuel-result">
+      <div class="fuel-result-val" id="editFuelCostPreview">$0.00</div>
+      <div class="fuel-result-lbl">Updated fuel cost</div>
+    </div>
 
-<div class="fuel-btn-row">
-  <button class="fuel-btn fuel-btn-cancel" onclick="mtCloseEditFuelModal()">CANCEL</button>
-  <button class="fuel-btn fuel-btn-save" onclick="mtSaveEditFuelData()">SAVE CHANGES</button>
-</div>
-```
-
+    <div class="fuel-btn-row">
+      <button class="fuel-btn fuel-btn-cancel" onclick="mtCloseEditFuelModal()">CANCEL</button>
+      <button class="fuel-btn fuel-btn-save" onclick="mtSaveEditFuelData()">SAVE CHANGES</button>
+    </div>
   </div>
 </div>
 
 <!-- === TRAIL OVERLAY CONTROLS REMOVED — historic trail access is via HISTORY tab === -->
-
 <div class="trail-controls" id="trailControls" style="display:none !important;">
   <!-- Hidden but kept in DOM so JS references don't error. Date select is preserved
        (hidden) so loadTrailForDate's existing wiring still works from History tab. -->
@@ -6583,7 +6564,6 @@ function addCurrentLocationAsStop() {
   }
   // Show a quick loading indicator
   var loadingMsg = '📍 Getting your location...';
-  var origText = '';
   var btns = document.querySelectorAll('[onclick="addCurrentLocationAsStop()"]');
   btns.forEach(function(b) {
     b.dataset.origText = b.textContent;
@@ -6606,17 +6586,323 @@ function addCurrentLocationAsStop() {
       var proceed = confirm('GPS accuracy is ' + Math.round(accuracy) + 'm — the location may be imprecise. Continue anyway?');
       if (!proceed) { restoreBtns(); return; }
     }
-    // Try reverse geocoding to pre-fill address (best effort, fails gracefully)
-    var addrPromise = adtReverseGeocode ? adtReverseGeocode(lat, lng) : Promise.reject();
-    addrPromise.then(function(addr) {
-      createStopAtLocation(lat, lng, addr || '');
-    }).catch(function() {
-      createStopAtLocation(lat, lng, '');
-    }).finally(restoreBtns);
+    restoreBtns();
+    // Open the nearby-businesses picker
+    openNearbyBusinessesPicker(lat, lng);
   }, function(err) {
     restoreBtns();
     alert('Could not get location: ' + err.message);
   }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+}
+
+// =====================================================================
+// NEARBY BUSINESSES PICKER
+// =====================================================================
+// Calls Google Places nearbySearch with commercial-only types so we surface
+// businesses the user might want to add as a stop. Includes a fallback to
+// manual-name entry.
+
+var pendingNewStopLocation = null; // { lat, lng } stashed while user picks
+
+function openNearbyBusinessesPicker(lat, lng) {
+  pendingNewStopLocation = { lat: lat, lng: lng };
+  var overlay = document.getElementById('nearbyPickerOverlay');
+  if (!overlay) {
+    alert('Internal error: nearbyPickerOverlay missing');
+    return;
+  }
+  overlay.classList.add('show');
+  var list = document.getElementById('nearbyPickerList');
+  list.innerHTML = '<div style="text-align:center;color:var(--mut);padding:30px;font-family:var(--fm);">🔍 Finding nearby businesses...</div>';
+
+  // Use Google Places service. Requires the Places library to be loaded.
+  if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+    list.innerHTML = renderManualOnlyFallback('Google Places not loaded.');
+    return;
+  }
+  // PlacesService needs a map or HTMLDiv attribute. Use a hidden div.
+  var attr = document.getElementById('nearbyPickerHiddenAttr');
+  if (!attr) {
+    attr = document.createElement('div');
+    attr.id = 'nearbyPickerHiddenAttr';
+    attr.style.display = 'none';
+    document.body.appendChild(attr);
+  }
+  var service = new google.maps.places.PlacesService(attr);
+  service.nearbySearch({
+    location: new google.maps.LatLng(lat, lng),
+    radius: 150, // ~500ft — tight, since you're physically at the strip mall
+    // Commercial types only — explicitly excluding residential & generic stuff
+    type: 'establishment'
+  }, function(results, status) {
+    if (status !== google.maps.places.PlacesServiceStatus.OK || !results || results.length === 0) {
+      // Try a slightly wider radius before giving up
+      service.nearbySearch({
+        location: new google.maps.LatLng(lat, lng),
+        radius: 400,
+        type: 'establishment'
+      }, function(results2, status2) {
+        if (status2 === google.maps.places.PlacesServiceStatus.OK && results2 && results2.length > 0) {
+          renderBusinessesList(results2, lat, lng);
+        } else {
+          list.innerHTML = renderManualOnlyFallback('No nearby businesses found.');
+        }
+      });
+      return;
+    }
+    renderBusinessesList(results, lat, lng);
+  });
+}
+
+function renderBusinessesList(results, lat, lng) {
+  // Filter: keep commercial / business types, drop residential / generic location types
+  var excludeTypes = {
+    'street_address': true, 'route': true, 'intersection': true,
+    'political': true, 'country': true, 'administrative_area_level_1': true,
+    'administrative_area_level_2': true, 'colloquial_area': true,
+    'locality': true, 'sublocality': true, 'neighborhood': true,
+    'premise': true, 'subpremise': true, 'plus_code': true,
+    'postal_code': true, 'postal_town': true, 'natural_feature': true,
+    'park': true, 'point_of_interest': false // POI is OK
+  };
+  var filtered = results.filter(function(p) {
+    if (!p.name) return false;
+    if (!p.types || p.types.length === 0) return true;
+    // Drop if ALL types are in excludeTypes
+    var allExcluded = p.types.every(function(t) { return excludeTypes[t] === true; });
+    if (allExcluded) return false;
+    // Drop if it's a pure residential building
+    if (p.types.indexOf('lodging') === -1 && p.types.indexOf('residential') !== -1) return false;
+    return true;
+  });
+  // Compute distance from current location and sort by distance
+  filtered.forEach(function(p) {
+    var pLat = p.geometry.location.lat();
+    var pLng = p.geometry.location.lng();
+    p._distMeters = mtHaversineMeters(lat, lng, pLat, pLng);
+  });
+  filtered.sort(function(a, b) { return a._distMeters - b._distMeters; });
+  // Limit to 12 closest
+  filtered = filtered.slice(0, 12);
+
+  var list = document.getElementById('nearbyPickerList');
+  if (filtered.length === 0) {
+    list.innerHTML = renderManualOnlyFallback('No matching businesses nearby.');
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(p, i) {
+    var distFt = Math.round(p._distMeters * 3.28084);
+    var name = (p.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    var addr = (p.vicinity || p.formatted_address || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    var lat2 = p.geometry.location.lat();
+    var lng2 = p.geometry.location.lng();
+    html += '<div onclick="selectNearbyBusiness(\'' + encodeURIComponent(name) + '\', \'' + encodeURIComponent(addr) + '\', ' + lat2 + ', ' + lng2 + ')" ' +
+            'style="background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+              '<div style="flex:1;min-width:0;">' +
+                '<div style="font-family:var(--fb);font-weight:700;font-size:15px;color:#fff;margin-bottom:3px;">' + name + '</div>' +
+                '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);">' + addr + '</div>' +
+              '</div>' +
+              '<div style="font-family:var(--fm);font-size:10px;color:var(--acc);font-weight:700;white-space:nowrap;">' + distFt + ' ft</div>' +
+            '</div>' +
+            '</div>';
+  });
+
+  // Fallback manual-entry option at the bottom
+  html += '<div onclick="selectManualEntry()" style="background:#0e1830;border:2px dashed var(--acc);border-radius:8px;padding:12px 14px;margin-top:14px;cursor:pointer;text-align:center;">' +
+          '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;">✏️ ENTER NAME MANUALLY</div>' +
+          '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);margin-top:3px;">Don\'t see your stop? Type the name in.</div>' +
+          '</div>';
+
+  list.innerHTML = html;
+}
+
+function renderManualOnlyFallback(reason) {
+  return '<div style="text-align:center;padding:24px 16px;color:var(--mut);font-family:var(--fb);font-size:13px;">' + reason + '</div>' +
+         '<div onclick="selectManualEntry()" style="background:#0e1830;border:2px dashed var(--acc);border-radius:8px;padding:14px;margin-top:8px;cursor:pointer;text-align:center;">' +
+         '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;">✏️ ENTER NAME MANUALLY</div>' +
+         '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);margin-top:3px;">Type the stop\'s name in.</div>' +
+         '</div>';
+}
+
+function closeNearbyPicker() {
+  var overlay = document.getElementById('nearbyPickerOverlay');
+  if (overlay) overlay.classList.remove('show');
+  pendingNewStopLocation = null;
+}
+
+function selectNearbyBusiness(encodedName, encodedAddr, lat, lng) {
+  var name = decodeURIComponent(encodedName);
+  var addr = decodeURIComponent(encodedAddr);
+  closeNearbyPicker();
+  // Move to insert-position picker
+  openInsertPositionPicker({ name: name, addr: addr, lat: lat, lng: lng });
+}
+
+function selectManualEntry() {
+  if (!pendingNewStopLocation) { closeNearbyPicker(); return; }
+  var lat = pendingNewStopLocation.lat;
+  var lng = pendingNewStopLocation.lng;
+  closeNearbyPicker();
+  // Reverse-geocode for the address (best effort)
+  var addrPromise = (typeof adtReverseGeocode === 'function') ? adtReverseGeocode(lat, lng) : Promise.reject();
+  addrPromise.then(function(addr) {
+    openInsertPositionPicker({ name: '', addr: addr || '', lat: lat, lng: lng, openEditModalAfter: true });
+  }).catch(function() {
+    openInsertPositionPicker({ name: '', addr: '', lat: lat, lng: lng, openEditModalAfter: true });
+  });
+}
+
+// =====================================================================
+// INSERT-POSITION PICKER — "where in the route should this go?"
+// =====================================================================
+var pendingNewStopData = null;
+
+function openInsertPositionPicker(stopData) {
+  pendingNewStopData = stopData;
+  var overlay = document.getElementById('insertPositionOverlay');
+  if (!overlay) {
+    // Fallback: just append at end if modal missing
+    finalizeNewStop(stopData, -1);
+    return;
+  }
+  // Populate header
+  var nameEl = document.getElementById('insertPosName');
+  if (nameEl) nameEl.textContent = stopData.name || '(unnamed — will name later)';
+  // Build the list of insertion points
+  var listEl = document.getElementById('insertPosList');
+  var dayStops = stops[currentDay] || [];
+  var dayData = (typeof stopData !== 'undefined' && stopData[currentDay]) ? stopData[currentDay] : [];
+  // Resolve dayData properly (the param name shadowed the global)
+  var stopDataGlobal = (window.stopData && window.stopData[currentDay]) ? window.stopData[currentDay] : [];
+
+  // Find the index of the last completed stop (most recent by departureTime)
+  var lastDoneIdx = -1;
+  var lastDoneTime = '';
+  stopDataGlobal.forEach(function(d, i) {
+    if (d && d.status === 'done' && d.departureTime && d.departureTime > lastDoneTime) {
+      lastDoneTime = d.departureTime;
+      lastDoneIdx = i;
+    }
+  });
+
+  var html = '';
+  // Quick options at top
+  if (lastDoneIdx !== -1 && dayStops[lastDoneIdx]) {
+    var afterLastName = (dayStops[lastDoneIdx].name || '').toString();
+    html += '<div onclick="finalizeNewStopByInsertAfter(' + lastDoneIdx + ')" style="background:var(--acc);border:2px solid #fff;border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;text-align:center;">' +
+            '<div style="font-family:var(--fd);font-size:14px;color:#000;letter-spacing:1px;">⚡ AFTER LAST COMPLETED</div>' +
+            '<div style="font-family:var(--fb);font-size:12px;color:#000;margin-top:4px;font-weight:700;">After: ' + afterLastName + '</div>' +
+            '</div>';
+  }
+  html += '<div onclick="finalizeNewStopByInsertAfter(-1)" style="background:#0e1830;border:2px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;cursor:pointer;text-align:center;">' +
+          '<div style="font-family:var(--fd);font-size:13px;color:var(--txt);letter-spacing:1px;">📌 ADD TO END OF ROUTE</div>' +
+          '</div>';
+  // Full list
+  if (dayStops.length > 0) {
+    html += '<div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Or insert after a specific stop:</div>';
+    dayStops.forEach(function(s, i) {
+      var sName = (s && s.name) ? s.name : '(unnamed)';
+      var doneFlag = (stopDataGlobal[i] && stopDataGlobal[i].status === 'done');
+      var bg = doneFlag ? '#0e2e26' : '#0e1830';
+      html += '<div onclick="finalizeNewStopByInsertAfter(' + i + ')" style="background:' + bg + ';border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;margin-bottom:5px;cursor:pointer;display:flex;align-items:center;gap:10px;">' +
+              '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);width:28px;">' + String(i+1).padStart(2,'0') + '</div>' +
+              '<div style="flex:1;font-family:var(--fb);font-size:13px;color:#fff;">' + sName + '</div>' +
+              (doneFlag ? '<div style="font-family:var(--fm);font-size:9px;color:var(--grn);letter-spacing:.5px;">DONE</div>' : '') +
+              '</div>';
+    });
+  }
+  listEl.innerHTML = html;
+  overlay.classList.add('show');
+}
+
+function closeInsertPositionPicker() {
+  var overlay = document.getElementById('insertPositionOverlay');
+  if (overlay) overlay.classList.remove('show');
+  pendingNewStopData = null;
+}
+
+function finalizeNewStopByInsertAfter(afterIdx) {
+  if (!pendingNewStopData) { closeInsertPositionPicker(); return; }
+  var stopInfo = pendingNewStopData;
+  closeInsertPositionPicker();
+  finalizeNewStop(stopInfo, afterIdx);
+}
+
+function finalizeNewStop(stopInfo, afterIdx) {
+  // afterIdx === -1 means "append to end". Otherwise insert at afterIdx + 1.
+  var insertAt = (afterIdx === -1) ? -1 : (afterIdx + 1);
+
+  if (typeof stops === 'undefined' || !stops[currentDay]) {
+    if (typeof stops !== 'undefined') stops[currentDay] = [];
+  }
+  if (typeof window.stopData !== 'undefined' && !window.stopData[currentDay]) {
+    window.stopData[currentDay] = [];
+  }
+
+  var defaultName = stopInfo.name || ('New stop (' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) + ')');
+  var newStop = {
+    name: defaultName,
+    addr: stopInfo.addr || '',
+    opens: 'TBD',
+    note: '',
+    frequency: 'weekly',
+    lat: stopInfo.lat,
+    lng: stopInfo.lng,
+    lastServiced: null,
+    addedAt: new Date().toISOString(),
+    addedVia: 'manual-current-location'
+  };
+  var blankData = (typeof blankStopData === 'function') ? blankStopData() : { status: 'pending' };
+
+  var dayStops = stops[currentDay];
+  var dayData = window.stopData[currentDay];
+
+  if (insertAt === -1 || insertAt >= dayStops.length) {
+    // Append
+    dayStops.push(newStop);
+    dayData.push(blankData);
+  } else {
+    dayStops.splice(insertAt, 0, newStop);
+    dayData.splice(insertAt, 0, blankData);
+  }
+
+  var newIdx = (insertAt === -1 || insertAt >= dayStops.length - 1) ? (dayStops.length - 1) : insertAt;
+
+  // Persist
+  try {
+    if (typeof saveStopsForDay === 'function') {
+      saveStopsForDay(currentDay);
+    } else if (typeof fbSave === 'function') {
+      fbSave('stops/' + currentDay, dayStops);
+    }
+    if (typeof fbSave === 'function') {
+      fbSave('stopData/' + currentDay, dayData);
+    }
+    console.log('[ADDLOC] Saved new stop "' + defaultName + '" at index ' + newIdx + ' of stops/' + currentDay);
+  } catch (e) {
+    console.error('[ADDLOC] save err:', e);
+  }
+
+  // Re-render everything
+  try {
+    if (typeof renderRoute === 'function') renderRoute();
+    if (typeof renderManageList === 'function') renderManageList();
+    if (typeof renderMapMarkers === 'function' && typeof mapView !== 'undefined' && mapView) renderMapMarkers();
+  } catch (e) { console.error('[ADDLOC] render err:', e); }
+
+  // If picked via "manual entry", open edit modal so user can fill name
+  if (stopInfo.openEditModalAfter) {
+    setTimeout(function() {
+      if (typeof editStop === 'function') editStop(currentDay, newIdx);
+    }, 250);
+  } else {
+    // Brief confirmation toast
+    var positionLbl = (afterIdx === -1) ? 'at end of route' : 'after stop #' + (afterIdx + 1);
+    console.log('[ADDLOC] Added "' + defaultName + '" ' + positionLbl);
+  }
 }
 
 function createStopAtLocation(lat, lng, address) {
@@ -8008,19 +8294,13 @@ async function diagRestoreDefault(day) {
   }
 }
 </script>
-
 <!-- ===================================================================== -->
-
 <!-- ===== END MILEAGE TRACKING MODULE =================================== -->
-
 <!-- ===================================================================== -->
 
 <!-- ===================================================================== -->
-
 <!-- ===== PHASE 3: AUTO STOP DETECTION ================================== -->
-
 <!-- ===================================================================== -->
-
 <style>
 /* === SETTINGS GEAR BUTTON (floating, top-right of route tab) === */
 .adt-gear {
@@ -8414,17 +8694,14 @@ async function diagRestoreDefault(day) {
 </style>
 
 <!-- === SETTINGS GEAR === -->
-
 <button class="adt-gear" onclick="adtShowSettings()" title="Auto-detect settings">⚙️</button>
 
 <!-- === AMBIENT STATUS PILL === -->
-
 <div class="adt-status-pill" id="adtStatusPill">
   <span class="adt-status-dot"></span><span id="adtStatusText">IDLE</span>
 </div>
 
 <!-- === UNDO BANNER === -->
-
 <div class="adt-undo-banner" id="adtUndoBanner">
   <div class="adt-undo-text">
     <div class="adt-undo-verb" id="adtUndoVerb">✅ ARRIVED</div>
@@ -8435,76 +8712,71 @@ async function diagRestoreDefault(day) {
 </div>
 
 <!-- === SETTINGS MODAL === -->
-
 <div class="adt-settings-overlay" id="adtSettingsOverlay">
   <div class="adt-settings">
     <div class="adt-settings-title">⚙️ AUTO-DETECT</div>
     <div class="adt-settings-sub">Detect stops automatically based on how long you've been parked</div>
 
-```
-<div class="adt-setting-row">
-  <div>
-    <div class="adt-setting-label">Auto-detect stops</div>
-    <div class="adt-setting-desc">Detect when you've been parked and prompt to mark a stop</div>
-  </div>
-  <div class="adt-toggle" id="adtToggleAuto" onclick="adtToggleSetting('autoDetect')">
-    <div class="adt-toggle-knob"></div>
-  </div>
-</div>
+    <div class="adt-setting-row">
+      <div>
+        <div class="adt-setting-label">Auto-detect stops</div>
+        <div class="adt-setting-desc">Detect when you've been parked and prompt to mark a stop</div>
+      </div>
+      <div class="adt-toggle" id="adtToggleAuto" onclick="adtToggleSetting('autoDetect')">
+        <div class="adt-toggle-knob"></div>
+      </div>
+    </div>
 
-<div class="adt-setting-row">
-  <div>
-    <div class="adt-setting-label">Show manual buttons</div>
-    <div class="adt-setting-desc">Keep ARRIVED &amp; DEPARTED buttons on stop cards</div>
-  </div>
-  <div class="adt-toggle on" id="adtToggleManual" onclick="adtToggleSetting('manualButtons')">
-    <div class="adt-toggle-knob"></div>
-  </div>
-</div>
+    <div class="adt-setting-row">
+      <div>
+        <div class="adt-setting-label">Show manual buttons</div>
+        <div class="adt-setting-desc">Keep ARRIVED &amp; DEPARTED buttons on stop cards</div>
+      </div>
+      <div class="adt-toggle on" id="adtToggleManual" onclick="adtToggleSetting('manualButtons')">
+        <div class="adt-toggle-knob"></div>
+      </div>
+    </div>
 
-<div class="adt-setting-row">
-  <div>
-    <div class="adt-setting-label">Silent mode</div>
-    <div class="adt-setting-desc">Auto-arrive without prompt; show UNDO banner for 30 sec</div>
-  </div>
-  <div class="adt-toggle on" id="adtToggleSilent" onclick="adtToggleSetting('silentMode')">
-    <div class="adt-toggle-knob"></div>
-  </div>
-</div>
+    <div class="adt-setting-row">
+      <div>
+        <div class="adt-setting-label">Silent mode</div>
+        <div class="adt-setting-desc">Auto-arrive without prompt; show UNDO banner for 30 sec</div>
+      </div>
+      <div class="adt-toggle on" id="adtToggleSilent" onclick="adtToggleSetting('silentMode')">
+        <div class="adt-toggle-knob"></div>
+      </div>
+    </div>
 
-<div class="adt-slider-row">
-  <div class="adt-slider-top">
-    <div class="adt-setting-label">Dwell time to auto-arrive</div>
-    <div class="adt-slider-val"><span id="adtDwellVal">2</span> min</div>
-  </div>
-  <input class="adt-slider" id="adtDwellSlider" type="range" min="1" max="10" step="1" value="2" oninput="adtSliderChange('dwellMinutes', this.value)">
-</div>
+    <div class="adt-slider-row">
+      <div class="adt-slider-top">
+        <div class="adt-setting-label">Dwell time to auto-arrive</div>
+        <div class="adt-slider-val"><span id="adtDwellVal">2</span> min</div>
+      </div>
+      <input class="adt-slider" id="adtDwellSlider" type="range" min="1" max="10" step="1" value="2" oninput="adtSliderChange('dwellMinutes', this.value)">
+    </div>
 
-<div class="adt-slider-row">
-  <div class="adt-slider-top">
-    <div class="adt-setting-label">Match radius for known stops</div>
-    <div class="adt-slider-val"><span id="adtRadiusVal">250</span> ft</div>
-  </div>
-  <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="500" step="25" value="250" oninput="adtSliderChange('matchRadiusFt', this.value)">
-</div>
+    <div class="adt-slider-row">
+      <div class="adt-slider-top">
+        <div class="adt-setting-label">Match radius for known stops</div>
+        <div class="adt-slider-val"><span id="adtRadiusVal">250</span> ft</div>
+      </div>
+      <input class="adt-slider" id="adtRadiusSlider" type="range" min="50" max="500" step="25" value="250" oninput="adtSliderChange('matchRadiusFt', this.value)">
+    </div>
 
-<div class="adt-slider-row">
-  <div class="adt-slider-top">
-    <div class="adt-setting-label">Leave radius (auto-DONE distance)</div>
-    <div class="adt-slider-val"><span id="adtLeaveRadiusVal">2112</span> ft <span style="font-size:10px;color:var(--mut);">(0.4 mi)</span></div>
-  </div>
-  <input class="adt-slider" id="adtLeaveRadiusSlider" type="range" min="2112" max="2112" step="1" value="2112" disabled style="opacity:0.5;cursor:not-allowed;">
-  <div style="font-family:var(--fm);font-size:9px;color:var(--mut);margin-top:4px;letter-spacing:.5px;">🔒 LOCKED AT 0.4 MILES</div>
-</div>
+    <div class="adt-slider-row">
+      <div class="adt-slider-top">
+        <div class="adt-setting-label">Leave radius (auto-DONE distance)</div>
+        <div class="adt-slider-val"><span id="adtLeaveRadiusVal">2112</span> ft <span style="font-size:10px;color:var(--mut);">(0.4 mi)</span></div>
+      </div>
+      <input class="adt-slider" id="adtLeaveRadiusSlider" type="range" min="2112" max="2112" step="1" value="2112" disabled style="opacity:0.5;cursor:not-allowed;">
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);margin-top:4px;letter-spacing:.5px;">🔒 LOCKED AT 0.4 MILES</div>
+    </div>
 
-<button class="adt-settings-close" onclick="adtHideSettings()">DONE</button>
-```
-
+    <button class="adt-settings-close" onclick="adtHideSettings()">DONE</button>
   </div>
 </div>
 
 <!-- === STOP-DETECTED CONFIRMATION MODAL === -->
-
 <div class="adt-confirm-overlay" id="adtConfirmOverlay">
   <div class="adt-confirm">
     <div class="adt-confirm-icon">📍</div>
@@ -8524,38 +8796,34 @@ async function diagRestoreDefault(day) {
 </div>
 
 <!-- === NEW-STOP CREATION MODAL === -->
-
 <div class="adt-newstop-overlay" id="adtNewStopOverlay">
   <div class="adt-newstop">
     <div class="adt-newstop-title">➕ ADD STOP</div>
     <div class="adt-newstop-sub">Create a new stop at your current location</div>
 
-```
-<div class="adt-newstop-coords" id="adtNewStopCoords">Coordinates: --</div>
+    <div class="adt-newstop-coords" id="adtNewStopCoords">Coordinates: --</div>
 
-<div class="adt-newstop-input-grp">
-  <label class="adt-newstop-lbl">Business name *</label>
-  <input class="adt-newstop-input" id="adtNewStopName" type="text" placeholder="e.g. ACME Manufacturing">
-</div>
-<div class="adt-newstop-input-grp">
-  <label class="adt-newstop-lbl">Address</label>
-  <input class="adt-newstop-input" id="adtNewStopAddr" type="text" placeholder="Street address">
-</div>
-<div class="adt-newstop-input-grp">
-  <label class="adt-newstop-lbl">Frequency</label>
-  <select class="adt-newstop-input" id="adtNewStopFreq">
-    <option value="WEEKLY">WEEKLY</option>
-    <option value="BIWEEKLY">BIWEEKLY</option>
-    <option value="MONTHLY">MONTHLY</option>
-  </select>
-</div>
+    <div class="adt-newstop-input-grp">
+      <label class="adt-newstop-lbl">Business name *</label>
+      <input class="adt-newstop-input" id="adtNewStopName" type="text" placeholder="e.g. ACME Manufacturing">
+    </div>
+    <div class="adt-newstop-input-grp">
+      <label class="adt-newstop-lbl">Address</label>
+      <input class="adt-newstop-input" id="adtNewStopAddr" type="text" placeholder="Street address">
+    </div>
+    <div class="adt-newstop-input-grp">
+      <label class="adt-newstop-lbl">Frequency</label>
+      <select class="adt-newstop-input" id="adtNewStopFreq">
+        <option value="WEEKLY">WEEKLY</option>
+        <option value="BIWEEKLY">BIWEEKLY</option>
+        <option value="MONTHLY">MONTHLY</option>
+      </select>
+    </div>
 
-<div class="adt-newstop-btns">
-  <button class="adt-newstop-btn cancel" onclick="adtCloseNewStopModal()">CANCEL</button>
-  <button class="adt-newstop-btn save" onclick="adtSaveNewStop()">SAVE &amp; MARK DONE</button>
-</div>
-```
-
+    <div class="adt-newstop-btns">
+      <button class="adt-newstop-btn cancel" onclick="adtCloseNewStopModal()">CANCEL</button>
+      <button class="adt-newstop-btn save" onclick="adtSaveNewStop()">SAVE &amp; MARK DONE</button>
+    </div>
   </div>
 </div>
 
@@ -9218,11 +9486,8 @@ function adtApplyManualButtonVisibility() {
 
 console.log('[ADT] Auto stop detection module loaded. Settings:', adtSettings);
 </script>
-
 <!-- ===================================================================== -->
-
 <!-- ===== END AUTO STOP DETECTION MODULE ================================ -->
-
 <!-- ===================================================================== -->
 
 </body>

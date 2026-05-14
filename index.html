@@ -513,11 +513,11 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
   <!-- START / END ROUTE -->
   <div style="padding:8px 16px 0;">
-    <button id="startRouteBtn" onclick="toggleRouteActive()" style="width:100%;background:var(--grn);color:#fff;border:none;border-radius:6px;padding:14px;font-family:var(--fd);font-size:20px;letter-spacing:2px;cursor:pointer;">▶️ START ROUTE</button>
+    <button id="startRouteBtn" onclick="toggleRouteActive()" style="width:100%;background:#000;color:#fff;border:2px solid var(--grn);border-radius:6px;padding:14px;font-family:var(--fd);font-size:20px;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5);">▶️ START ROUTE</button>
   </div>
 
   <div style="padding:8px 16px 0;">
-    <button onclick="optimizeRouteFromLocation()" style="width:100%;background:var(--acc);color:#000;border:2px solid #fff;border-radius:6px;padding:12px;font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 0 14px rgba(255,122,61,0.4);">⚡ OPTIMIZE FROM MY LOCATION</button>
+    <button onclick="optimizeRouteFromLocation()" style="width:100%;background:#000;color:#fff;border:2px solid var(--acc);border-radius:6px;padding:12px;font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 0 14px rgba(255,122,61,0.3);">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
 
   <!-- FUEL PRICE + LIVE COST BAR -->
@@ -590,8 +590,6 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   </div>
   <div class="eod-section">
     <button class="eod-btn btn-complete-day" onclick="completeDay()">✅ COMPLETE DAY & SAVE</button>
-    <button class="eod-btn btn-view-log" onclick="showLog()">📋 VIEW DAY LOG</button>
-    <button class="eod-btn btn-copy-log" onclick="copyLog()">COPY LOG TO CLIPBOARD</button>
     <button class="eod-btn" onclick="resetStops()" style="background:var(--red);color:#fff;">↺ RESET ALL STOPS FOR DAY</button>
   </div>
 </div>
@@ -5329,6 +5327,80 @@ function closeMeasureResult() { /* measure feature removed */ }
 </div>
 <style>#insertPositionOverlay.show { display: block !important; }</style>
 
+<!-- === LAST SERVICE DATE MODAL (forced — cannot be dismissed) === -->
+<div id="serviceDateOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10005;align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:380px;width:100%;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:22px;">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-family:var(--fd);font-size:20px;color:var(--acc);letter-spacing:1px;">📅 WHEN WAS THIS SERVICED?</div>
+      <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Required before route can start</div>
+    </div>
+
+    <div style="background:#0e1830;border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;">
+      <div style="font-family:var(--fb);font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;" id="serviceDateStopName">--</div>
+      <div style="font-family:var(--fb);font-size:12px;color:var(--mut);" id="serviceDateStopAddr">--</div>
+      <div style="font-family:var(--fm);font-size:10px;color:var(--acc);margin-top:6px;letter-spacing:1px;"><span id="serviceDateStopFreq">--</span></div>
+    </div>
+
+    <label style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">Last service date</label>
+    <input id="serviceDateInput" type="date"
+      style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-size:16px;font-weight:600;padding:12px;border-radius:6px;outline:none;margin-bottom:10px;">
+
+    <div id="serviceDateError" style="display:none;font-family:var(--fm);font-size:11px;color:var(--red);text-align:center;margin-bottom:10px;letter-spacing:.5px;"></div>
+
+    <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-align:center;margin-bottom:12px;letter-spacing:.5px;">Progress: <span id="serviceDateProgress">1 of 1</span></div>
+
+    <button onclick="saveLastServiceDate()" style="width:100%;background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fd);font-size:15px;font-weight:700;padding:13px;border-radius:6px;cursor:pointer;letter-spacing:1.5px;box-shadow:0 3px 12px rgba(255,122,61,0.5);">✓ SAVE &amp; CONTINUE</button>
+  </div>
+</div>
+<style>
+#serviceDateOverlay.show { display: flex !important; }
+
+/* Not-due stop card styling */
+.stop-card.not-due {
+  position: relative;
+  opacity: 0.45;
+  filter: grayscale(0.5);
+  pointer-events: none;
+}
+.stop-card.not-due .not-due-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(10, 18, 40, 0.6);
+  pointer-events: auto;
+}
+.not-due-pill {
+  background: #0e1830;
+  border: 2px solid var(--mut);
+  color: #fff;
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 14px;
+}
+.not-due-override {
+  background: var(--sur);
+  border: 1px solid var(--acc);
+  color: var(--acc);
+  font-family: var(--fd);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+
 <!-- === DEBUG PASSCODE MODAL === -->
 <div id="debugPasscodeOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10010;align-items:center;justify-content:center;padding:20px;">
   <div style="max-width:340px;width:100%;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:22px;">
@@ -5352,14 +5424,30 @@ function closeMeasureResult() { /* measure feature removed */ }
 <div id="debugConsoleOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10003;padding:0;flex-direction:column;">
   <div style="background:#1a2540;border-bottom:2px solid var(--acc);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
     <div>
-      <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;">🐛 CONSOLE</div>
-      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Captured logs · oldest first</div>
+      <div style="font-family:var(--fd);font-size:18px;color:var(--acc);letter-spacing:1px;">🐛 DEBUG TOOLS</div>
+      <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Console &middot; logs &middot; utilities</div>
     </div>
-    <div style="display:flex;gap:6px;">
-      <button onclick="copyDebugConsoleToClipboard()" style="background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;font-weight:bold;">COPY</button>
-      <button onclick="clearDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">CLEAR</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
       <button onclick="lockDebugTools()" style="background:#0e1830;color:var(--red);border:1px solid var(--red);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">🔒 LOCK</button>
       <button onclick="closeDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+  <!-- Day Log Tools section (formerly on route tab) -->
+  <div style="background:#0e1830;border-bottom:1px solid var(--bdr);padding:12px 16px;">
+    <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Day Log Tools</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="showLog()" style="flex:1;min-width:140px;background:#000;color:#fff;border:2px solid var(--acc);font-family:var(--fd);font-size:13px;padding:10px;border-radius:6px;cursor:pointer;letter-spacing:1px;">📋 VIEW DAY LOG</button>
+      <button onclick="copyLog()" style="flex:1;min-width:140px;background:#000;color:#fff;border:2px solid var(--bdr);font-family:var(--fd);font-size:13px;padding:10px;border-radius:6px;cursor:pointer;letter-spacing:1px;">📤 COPY LOG</button>
+    </div>
+  </div>
+
+  <!-- Console section header -->
+  <div style="background:#1a2540;border-bottom:1px solid var(--bdr);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Captured Console</div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="copyDebugConsoleToClipboard()" style="background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fm);font-size:10px;padding:5px 10px;border-radius:4px;cursor:pointer;font-weight:bold;">COPY</button>
+      <button onclick="clearDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fm);font-size:10px;padding:5px 10px;border-radius:4px;cursor:pointer;">CLEAR</button>
     </div>
   </div>
   <div id="debugConsoleBody" style="flex:1;overflow-y:auto;background:#0a1228;padding:0;"></div>
@@ -7130,16 +7218,16 @@ function applyRouteActiveUI() {
   if (!btn) return;
   if (isRouteActive()) {
     btn.textContent = '✅ ROUTE ACTIVE';
-    btn.style.background = 'var(--sur)';
+    btn.style.background = '#000';
     btn.style.color = 'var(--grn)';
-    btn.style.border = '2px solid var(--grn)';
-    btn.style.boxShadow = '0 0 0 1px var(--grn)';
+    btn.style.border = '3px solid var(--grn)';
+    btn.style.boxShadow = '0 0 0 1px var(--grn), 0 0 18px rgba(16,185,129,0.4)';
   } else {
     btn.textContent = '▶️ START ROUTE';
-    btn.style.background = 'var(--grn)';
+    btn.style.background = '#000';
     btn.style.color = '#fff';
-    btn.style.border = 'none';
-    btn.style.boxShadow = 'none';
+    btn.style.border = '2px solid var(--grn)';
+    btn.style.boxShadow = '0 4px 14px rgba(0,0,0,0.5)';
   }
 }
 
@@ -8184,6 +8272,396 @@ function performReorder(fromIdx, toIdx, dropBefore) {
 })();
 
 console.log('[MT] Mileage tracking module loaded');
+
+// =====================================================================
+// SERVICE FREQUENCY MODULE
+// =====================================================================
+// 1. getStopDueStatus(stop) — returns { isDue, daysSinceService, daysUntilDue, intervalDays }
+// 2. Gate START ROUTE on every stop having a lastServiced date
+// 3. Prompt user (forced, undismissible) for any stop missing lastServiced
+// 4. Filter rendering to gray-out not-due stops (view-only, with override)
+// 5. Auto-update lastServiced when a stop is marked complete
+// 6. Prompt for lastServiced when creating a new stop
+// =====================================================================
+
+// Days threshold per frequency (interval) — what counts as a full cycle
+function getFrequencyIntervalDays(freq) {
+  if (freq === 'biweekly') return 14;
+  if (freq === 'monthly') return 28;
+  return 7; // weekly default
+}
+
+// "Due" threshold = 90% of interval (early reveal)
+function getFrequencyDueDays(freq) {
+  return Math.floor(getFrequencyIntervalDays(freq) * 0.9);
+}
+
+// Returns due status for a stop. If lastServiced is missing, treats as null (NOT DUE state),
+// since the START ROUTE gate forces a date to be set before route runs.
+function getStopDueStatus(stop) {
+  var freq = (stop && stop.frequency) || 'weekly';
+  var interval = getFrequencyIntervalDays(freq);
+  var dueDays = getFrequencyDueDays(freq);
+  if (!stop || !stop.lastServiced) {
+    // Never serviced is always due immediately (when set the user'll pick a real date)
+    return { isDue: true, daysSinceService: null, daysUntilDue: 0, intervalDays: interval, neverServiced: true };
+  }
+  var daysSinceSvc = daysSince(stop.lastServiced);
+  if (daysSinceSvc === null) {
+    return { isDue: true, daysSinceService: null, daysUntilDue: 0, intervalDays: interval, neverServiced: true };
+  }
+  var isDue = daysSinceSvc >= dueDays;
+  var daysUntilDue = Math.max(0, dueDays - daysSinceSvc);
+  return { isDue: isDue, daysSinceService: daysSinceSvc, daysUntilDue: daysUntilDue, intervalDays: interval, neverServiced: false };
+}
+
+// =====================================================================
+// MODAL: prompt for lastServiced — forced, can't be dismissed
+// =====================================================================
+var pendingServiceDateQueue = []; // [{ day, idx, onAllDone }]
+var serviceDateModalContext = null; // current item being prompted
+
+function promptForLastServiceDate(day, idx, onComplete) {
+  serviceDateModalContext = { day: day, idx: idx, onComplete: onComplete };
+  var stop = (stops[day] || [])[idx];
+  if (!stop) { if (onComplete) onComplete(); return; }
+  var overlay = document.getElementById('serviceDateOverlay');
+  if (!overlay) {
+    console.error('[SVC] serviceDateOverlay missing');
+    if (onComplete) onComplete();
+    return;
+  }
+  // Populate
+  var nameEl = document.getElementById('serviceDateStopName');
+  if (nameEl) nameEl.textContent = stop.name || '(unnamed stop)';
+  var addrEl = document.getElementById('serviceDateStopAddr');
+  if (addrEl) addrEl.textContent = stop.addr || stop.address || '';
+  var freqEl = document.getElementById('serviceDateStopFreq');
+  if (freqEl) freqEl.textContent = (stop.frequency || 'weekly').toUpperCase();
+  // Reset input to today's date as default
+  var dateInput = document.getElementById('serviceDateInput');
+  if (dateInput) {
+    var today = new Date();
+    var iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    dateInput.value = iso;
+    dateInput.max = iso; // can't pick future date
+  }
+  // Hide error
+  var errEl = document.getElementById('serviceDateError');
+  if (errEl) errEl.style.display = 'none';
+  overlay.classList.add('show');
+}
+
+function saveLastServiceDate() {
+  if (!serviceDateModalContext) return;
+  var ctx = serviceDateModalContext;
+  var dateInput = document.getElementById('serviceDateInput');
+  var errEl = document.getElementById('serviceDateError');
+  var val = dateInput ? dateInput.value : '';
+  if (!val) {
+    if (errEl) {
+      errEl.textContent = '✗ Please pick a date';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  var picked = new Date(val + 'T12:00:00');
+  var now = new Date();
+  if (picked > now) {
+    if (errEl) {
+      errEl.textContent = '✗ Date cannot be in the future';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  // Save to memory + Firebase
+  var day = ctx.day;
+  var idx = ctx.idx;
+  if (stops[day] && stops[day][idx]) {
+    stops[day][idx].lastServiced = picked.toISOString();
+    try {
+      if (typeof saveStopsForDay === 'function') saveStopsForDay(day);
+      else if (typeof fbSave === 'function') fbSave('stops/' + day, stops[day]);
+    } catch (e) { console.error('[SVC] save err:', e); }
+    console.log('[SVC] Set lastServiced for ' + (stops[day][idx].name || idx) + ' = ' + picked.toLocaleDateString());
+  }
+  // Close + chain callback
+  var overlay = document.getElementById('serviceDateOverlay');
+  if (overlay) overlay.classList.remove('show');
+  var cb = ctx.onComplete;
+  serviceDateModalContext = null;
+  if (cb) cb();
+}
+
+// Force the user through every stop missing lastServiced, one by one.
+// onAllDone fires after the last one is set.
+function promptMissingServiceDates(day, onAllDone) {
+  var dayStops = stops[day] || [];
+  var missingIdxs = [];
+  dayStops.forEach(function(s, i) {
+    if (s && !s.lastServiced) missingIdxs.push(i);
+  });
+  if (missingIdxs.length === 0) { if (onAllDone) onAllDone(); return; }
+  console.log('[SVC] ' + missingIdxs.length + ' stops missing lastServiced — prompting');
+  // Show progress count in the modal
+  var totalNeeded = missingIdxs.length;
+  var doneCount = 0;
+  function next() {
+    if (missingIdxs.length === 0) { if (onAllDone) onAllDone(); return; }
+    var idx = missingIdxs.shift();
+    doneCount++;
+    // Update progress label
+    setTimeout(function() {
+      var progEl = document.getElementById('serviceDateProgress');
+      if (progEl) progEl.textContent = doneCount + ' of ' + totalNeeded;
+    }, 50);
+    promptForLastServiceDate(day, idx, next);
+  }
+  next();
+}
+
+// =====================================================================
+// GATE: hook START ROUTE so it can't begin until all stops have lastServiced
+// =====================================================================
+(function() {
+  function hookToggle() {
+    if (typeof window.toggleRouteActive !== 'function') { setTimeout(hookToggle, 200); return; }
+    var orig = window.toggleRouteActive;
+    window.toggleRouteActive = function() {
+      // If already active, defer to original (which shows the "tap Complete Day to end" message)
+      if (typeof isRouteActive === 'function' && isRouteActive()) {
+        return orig.apply(this, arguments);
+      }
+      // Check for missing lastServiced
+      var dayStops = stops[currentDay] || [];
+      var missingCount = 0;
+      dayStops.forEach(function(s) { if (s && !s.lastServiced) missingCount++; });
+      if (missingCount > 0) {
+        // Block start, show modal flow first
+        var ok = confirm(missingCount + ' stop' + (missingCount === 1 ? '' : 's') + ' on ' + currentDay + ' ' + (missingCount === 1 ? 'is' : 'are') + ' missing a last-service date.\n\nYou need to set the date for each one before you can start the route.\n\nProceed?');
+        if (!ok) return;
+        promptMissingServiceDates(currentDay, function() {
+          alert('✓ All stops have service dates. You can now START ROUTE.');
+        });
+        return;
+      }
+      // All set — proceed with normal start
+      return orig.apply(this, arguments);
+    };
+  }
+  hookToggle();
+})();
+
+// =====================================================================
+// AUTO-UPDATE lastServiced on stop completion
+// =====================================================================
+// Already partially handled at line ~2248. This is a defensive secondary hook
+// that wraps logDepartureAndComplete to guarantee the update.
+(function() {
+  function hookComplete() {
+    if (typeof window.logDepartureAndComplete !== 'function') { setTimeout(hookComplete, 200); return; }
+    var orig = window.logDepartureAndComplete;
+    window.logDepartureAndComplete = function(i) {
+      var result = orig.apply(this, arguments);
+      try {
+        var s = stops[currentDay] && stops[currentDay][i];
+        if (s) {
+          var now = new Date().toISOString();
+          // Only update if not already set today (avoid clobbering an explicit edit)
+          var already = s.lastServiced && (new Date(s.lastServiced).toDateString() === new Date().toDateString());
+          if (!already) {
+            s.lastServiced = now;
+            if (typeof saveStopsForDay === 'function') {
+              try { saveStopsForDay(currentDay); } catch (e) {}
+            } else if (typeof fbSave === 'function') {
+              try { fbSave('stops/' + currentDay + '/' + i + '/lastServiced', now); } catch (e) {}
+            }
+            console.log('[SVC] Auto-set lastServiced=today for "' + (s.name || i) + '" after completion');
+          }
+        }
+      } catch (e) { console.error('[SVC] auto-update err:', e); }
+      return result;
+    };
+  }
+  hookComplete();
+})();
+
+// =====================================================================
+// RENDER OVERRIDE: add 'NOT DUE' styling and skip in NEXT STOP
+// =====================================================================
+// We wrap renderRoute to post-process cards: stops that aren't due get a
+// 'not-due' class and a 'NOT DUE — N days' label injected. The 'serviceAnyway'
+// button restores tap interaction.
+(function() {
+  function hookRender() {
+    if (typeof window.renderRoute !== 'function') { setTimeout(hookRender, 200); return; }
+    var orig = window.renderRoute;
+    window.renderRoute = function() {
+      var r = orig.apply(this, arguments);
+      try { applyDueStatusToRouteCards(); } catch (e) { console.error('[SVC] post-render err:', e); }
+      return r;
+    };
+  }
+  hookRender();
+})();
+
+function applyDueStatusToRouteCards() {
+  var dayStops = stops[currentDay] || [];
+  dayStops.forEach(function(stop, i) {
+    var card = document.getElementById('card-' + i);
+    if (!card) return;
+    if (!stop) return;
+    // Don't apply not-due styling to already-done or active stops
+    var d = stopData[currentDay] && stopData[currentDay][i];
+    if (d && (d.status === 'done' || d.status === 'active')) {
+      card.classList.remove('not-due');
+      return;
+    }
+    var status = getStopDueStatus(stop);
+    if (status.neverServiced) {
+      card.classList.remove('not-due');
+      return;
+    }
+    if (!status.isDue) {
+      card.classList.add('not-due');
+      // Add an overlay label if it isn't there yet
+      var existing = card.querySelector('.not-due-overlay');
+      if (!existing) {
+        var overlay = document.createElement('div');
+        overlay.className = 'not-due-overlay';
+        overlay.innerHTML =
+          '<div class="not-due-pill">⏸ NOT DUE — ' + status.daysUntilDue + ' day' + (status.daysUntilDue === 1 ? '' : 's') + '</div>' +
+          '<button class="not-due-override" onclick="event.stopPropagation();serviceStopAnyway(' + i + ')">SERVICE ANYWAY</button>';
+        card.appendChild(overlay);
+      } else {
+        // Update label in case days changed (e.g., midnight rollover)
+        var pill = existing.querySelector('.not-due-pill');
+        if (pill) pill.textContent = '⏸ NOT DUE — ' + status.daysUntilDue + ' day' + (status.daysUntilDue === 1 ? '' : 's');
+      }
+    } else {
+      card.classList.remove('not-due');
+      var ov = card.querySelector('.not-due-overlay');
+      if (ov) ov.remove();
+    }
+  });
+}
+
+// When user taps SERVICE ANYWAY on a not-due stop, remove the not-due lock
+// for THIS session so the card becomes fully interactive again.
+var sessionOverrideDueStops = {}; // { 'currentDay_idx': true }
+function serviceStopAnyway(i) {
+  var key = currentDay + '_' + i;
+  sessionOverrideDueStops[key] = true;
+  var card = document.getElementById('card-' + i);
+  if (card) {
+    card.classList.remove('not-due');
+    var ov = card.querySelector('.not-due-overlay');
+    if (ov) ov.remove();
+  }
+  console.log('[SVC] User unlocked stop ' + i + ' (SERVICE ANYWAY)');
+}
+
+// NEXT STOP logic: skip not-due stops when picking the next active one.
+// We accomplish this by exposing a helper that other code (or the existing
+// nextStopIdx logic) can use. Since the existing renderRoute already computes
+// nextStopIdx, we hook into renderRoute (above) and re-set nextStopIdx if
+// the original picked a not-due stop.
+(function() {
+  function hookNextStop() {
+    // Walk dayStops, find first non-done, non-active, due-OR-overridden stop
+    function findNextDueStop() {
+      var dayStops = stops[currentDay] || [];
+      var dayData = stopData[currentDay] || [];
+      for (var i = 0; i < dayStops.length; i++) {
+        var s = dayStops[i];
+        var d = dayData[i] || {};
+        if (!s) continue;
+        if (d.status === 'done' || d.status === 'active') continue;
+        var status = getStopDueStatus(s);
+        var overridden = sessionOverrideDueStops[currentDay + '_' + i];
+        if (status.isDue || overridden) return i;
+      }
+      return -1;
+    }
+    if (typeof window.renderRoute !== 'function') { setTimeout(hookNextStop, 200); return; }
+    var orig = window.renderRoute;
+    window.renderRoute = function() {
+      // Override nextStopIdx BEFORE rendering
+      try {
+        var due = findNextDueStop();
+        if (due !== -1 && typeof window.nextStopIdx !== 'undefined') {
+          window.nextStopIdx = due;
+        }
+      } catch (e) {}
+      return orig.apply(this, arguments);
+    };
+  }
+  hookNextStop();
+})();
+
+// =====================================================================
+// NEW STOP CREATION: prompt for lastServiced after the user adds a stop
+// =====================================================================
+// We hook into finalizeNewStop (the add-current-location flow) so right after
+// the stop is created, we show the service date modal for it.
+(function() {
+  function hookFinalize() {
+    if (typeof window.finalizeNewStop !== 'function') { setTimeout(hookFinalize, 200); return; }
+    var orig = window.finalizeNewStop;
+    window.finalizeNewStop = function(stopInfo, afterIdx) {
+      var result = orig.apply(this, arguments);
+      try {
+        // Find the newly-inserted stop's index (the last addition for currentDay)
+        var dayStops = stops[currentDay] || [];
+        // Find a stop with addedAt matching now (within last 5 seconds) and missing lastServiced
+        var newIdx = -1;
+        for (var i = dayStops.length - 1; i >= 0; i--) {
+          var s = dayStops[i];
+          if (s && s.addedVia === 'manual-current-location' && !s.lastServiced) {
+            // Probably this one if added very recently
+            if (s.addedAt) {
+              var age = Date.now() - new Date(s.addedAt).getTime();
+              if (age < 5000) { newIdx = i; break; }
+            } else {
+              newIdx = i; break;
+            }
+          }
+        }
+        if (newIdx !== -1) {
+          // Defer slightly so the edit modal has time to open and not collide
+          setTimeout(function() {
+            // Only prompt if still missing
+            if (stops[currentDay][newIdx] && !stops[currentDay][newIdx].lastServiced) {
+              promptForLastServiceDate(currentDay, newIdx, function() {
+                console.log('[SVC] New stop lastServiced set');
+              });
+            }
+          }, 500);
+        }
+      } catch (e) { console.error('[SVC] new-stop service-date prompt err:', e); }
+      return result;
+    };
+  }
+  hookFinalize();
+})();
+
+// Re-apply due-status styling whenever sync arrives or day changes
+(function() {
+  ['selectDay'].forEach(function(fnName) {
+    function hookFn() {
+      if (typeof window[fnName] !== 'function') { setTimeout(hookFn, 200); return; }
+      var orig = window[fnName];
+      window[fnName] = function() {
+        var r = orig.apply(this, arguments);
+        try { setTimeout(applyDueStatusToRouteCards, 200); } catch (e) {}
+        return r;
+      };
+    }
+    hookFn();
+  });
+})();
+
+console.log('[SVC] Service frequency module loaded');
 
 // =====================================================================
 // DIAGNOSTIC TOOL — tap PROJECT Z title 5 times to open

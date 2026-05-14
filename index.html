@@ -478,7 +478,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
 <!-- HEADER -->
 <div class="hdr">
   <div>
-    <div class="hdr-title">PROJECT Z</div>
+    <div class="hdr-title">ROUTE 45</div>
     <div class="hdr-sub" id="currentDate">Loading...</div>
   </div>
   <div class="hdr-right">
@@ -2364,7 +2364,7 @@ function renderManageList() {
     list.innerHTML = '<div class="empty-state" style="color:var(--red);padding:20px;">' +
       '<div style="font-family:var(--fd);font-size:18px;margin-bottom:8px;">⚠ Stops list render error</div>' +
       '<div style="font-size:12px;">' + (e.message || e) + '</div>' +
-      '<div style="font-size:11px;margin-top:8px;color:var(--mut);">Check console for details. Try tapping PROJECT Z 5x to open Diagnostic.</div>' +
+      '<div style="font-size:11px;margin-top:8px;color:var(--mut);">Check console for details. Try tapping ROUTE 45 5x to open Diagnostic.</div>' +
       '<button onclick="renderManageList()" style="margin-top:12px;background:var(--acc);color:#000;border:none;padding:8px 16px;border-radius:6px;font-family:var(--fd);cursor:pointer;">RETRY</button>' +
       '</div>';
   }
@@ -2711,7 +2711,7 @@ async function completeDay() {
 // ============================================================
 function generateLog() {
   const data = stopData[currentDay] || [];
-  let log = `PROJECT Z — ${currentDay} ROUTE LOG
+  let log = `ROUTE 45 — ${currentDay} ROUTE LOG
 Generated: ${new Date().toLocaleString()}
 ${'='.repeat(40)}
 
@@ -5329,7 +5329,26 @@ function closeMeasureResult() { /* measure feature removed */ }
 </div>
 <style>#insertPositionOverlay.show { display: block !important; }</style>
 
-<!-- === ON-SCREEN DEBUG CONSOLE (tap PROJECT Z title 3 times) === -->
+<!-- === DEBUG PASSCODE MODAL === -->
+<div id="debugPasscodeOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10010;align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:340px;width:100%;background:#1a2540;border:2px solid var(--acc);border-radius:12px;padding:22px;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-family:var(--fd);font-size:20px;color:var(--acc);letter-spacing:1px;">🔒 ENTER PASSCODE</div>
+      <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Debug tools require passcode</div>
+    </div>
+    <input id="debugPasscodeInput" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"
+      style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:'DM Mono',monospace;font-size:28px;font-weight:700;text-align:center;letter-spacing:8px;padding:14px;border-radius:8px;outline:none;margin-bottom:10px;"
+      onkeydown="if(event.key==='Enter'){tryPasscode();}">
+    <div id="debugPasscodeError" style="display:none;font-family:var(--fm);font-size:11px;color:var(--red);text-align:center;margin-bottom:10px;letter-spacing:.5px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closePasscodeModal()" style="flex:1;background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fd);font-size:14px;padding:11px;border-radius:6px;cursor:pointer;letter-spacing:1px;">CANCEL</button>
+      <button onclick="tryPasscode()" style="flex:2;background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fd);font-size:14px;font-weight:700;padding:11px;border-radius:6px;cursor:pointer;letter-spacing:1px;box-shadow:0 3px 10px rgba(255,122,61,0.4);">UNLOCK</button>
+    </div>
+  </div>
+</div>
+<style>#debugPasscodeOverlay.show { display: flex !important; }</style>
+
+<!-- === ON-SCREEN DEBUG CONSOLE (tap ROUTE 45 title 3 times) === -->
 <div id="debugConsoleOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10003;padding:0;flex-direction:column;">
   <div style="background:#1a2540;border-bottom:2px solid var(--acc);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
     <div>
@@ -5339,6 +5358,7 @@ function closeMeasureResult() { /* measure feature removed */ }
     <div style="display:flex;gap:6px;">
       <button onclick="copyDebugConsoleToClipboard()" style="background:var(--acc);color:#000;border:2px solid #fff;font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;font-weight:bold;">COPY</button>
       <button onclick="clearDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">CLEAR</button>
+      <button onclick="lockDebugTools()" style="background:#0e1830;color:var(--red);border:1px solid var(--red);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">🔒 LOCK</button>
       <button onclick="closeDebugConsole()" style="background:#0e1830;color:#fff;border:1px solid var(--bdr);font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
     </div>
   </div>
@@ -5354,7 +5374,10 @@ function closeMeasureResult() { /* measure feature removed */ }
         <div style="font-family:var(--fd);font-size:22px;color:var(--acc);letter-spacing:1px;">🔧 DIAGNOSTIC</div>
         <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Firebase data inspector</div>
       </div>
-      <button onclick="closeDiagnosticPanel()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="lockDebugTools()" style="background:#0e1830;color:var(--red);border:1px solid var(--red);font-family:var(--fm);font-size:10px;padding:6px 10px;border-radius:4px;cursor:pointer;">🔒 LOCK</button>
+        <button onclick="closeDiagnosticPanel()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+      </div>
     </div>
     <div id="diagBody"></div>
   </div>
@@ -8269,6 +8292,83 @@ function copyDebugConsoleToClipboard() {
   }
 }
 
+// =====================================================================
+// PASSCODE GATE for debug tools (console + diagnostic)
+// Passcode: 3617
+// Once entered correctly, stays unlocked for the rest of the page session
+// (cleared on reload or by tapping LOCK in either panel).
+// =====================================================================
+var DEBUG_PASSCODE = '3617';
+
+function isDebugUnlocked() {
+  try { return sessionStorage.getItem('debugUnlocked') === '1'; } catch (e) { return false; }
+}
+
+function requireDebugPasscode(onSuccess) {
+  if (isDebugUnlocked()) {
+    onSuccess();
+    return;
+  }
+  showPasscodeModal(onSuccess);
+}
+
+function lockDebugTools() {
+  try { sessionStorage.removeItem('debugUnlocked'); } catch (e) {}
+  closeDebugConsole();
+  closeDiagnosticPanel();
+  // Brief confirmation
+  console.log('[DEBUG] Tools re-locked');
+}
+
+function showPasscodeModal(onSuccess) {
+  var overlay = document.getElementById('debugPasscodeOverlay');
+  if (!overlay) {
+    alert('Passcode modal missing');
+    return;
+  }
+  // Stash the success callback so the form-submit handler can call it
+  overlay._pendingSuccess = onSuccess;
+  // Clear any previous input
+  var input = document.getElementById('debugPasscodeInput');
+  if (input) input.value = '';
+  var errEl = document.getElementById('debugPasscodeError');
+  if (errEl) errEl.style.display = 'none';
+  overlay.classList.add('show');
+  // Auto-focus the input so keyboard pops up on iOS
+  setTimeout(function() { if (input) input.focus(); }, 100);
+}
+
+function closePasscodeModal() {
+  var overlay = document.getElementById('debugPasscodeOverlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    overlay._pendingSuccess = null;
+  }
+}
+
+function tryPasscode() {
+  var input = document.getElementById('debugPasscodeInput');
+  var errEl = document.getElementById('debugPasscodeError');
+  var entered = (input.value || '').trim();
+  if (entered === DEBUG_PASSCODE) {
+    try { sessionStorage.setItem('debugUnlocked', '1'); } catch (e) {}
+    var overlay = document.getElementById('debugPasscodeOverlay');
+    var cb = overlay._pendingSuccess;
+    closePasscodeModal();
+    if (typeof cb === 'function') {
+      setTimeout(cb, 150); // slight delay so modal close animation finishes
+    }
+  } else {
+    if (errEl) {
+      errEl.textContent = '✗ Incorrect passcode';
+      errEl.style.display = 'block';
+    }
+    input.value = '';
+    // Vibrate to give feedback
+    if (navigator.vibrate) { try { navigator.vibrate(200); } catch (e) {} }
+  }
+}
+
 (function() {
   var titleTapCount = 0;
   var titleTapTimer = null;
@@ -8278,7 +8378,7 @@ function copyDebugConsoleToClipboard() {
     if (!titleEl) {
       var headers = document.querySelectorAll('.hdr, h1, h2');
       for (var i = 0; i < headers.length; i++) {
-        if (headers[i].textContent && headers[i].textContent.indexOf('PROJECT Z') !== -1) {
+        if (headers[i].textContent && (headers[i].textContent.indexOf('ROUTE 45') !== -1 || headers[i].textContent.indexOf('PROJECT Z') !== -1)) {
           titleEl = headers[i];
           break;
         }
@@ -8292,9 +8392,9 @@ function copyDebugConsoleToClipboard() {
       // After 1.2 sec of no taps, evaluate the count
       titleTapTimer = setTimeout(function() {
         if (titleTapCount === 3) {
-          openDebugConsole();
+          requireDebugPasscode(openDebugConsole);
         } else if (titleTapCount >= 5) {
-          openDiagnosticPanel();
+          requireDebugPasscode(openDiagnosticPanel);
         }
         titleTapCount = 0;
       }, 1200);

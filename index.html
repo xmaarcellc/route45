@@ -6752,27 +6752,41 @@ function onFuelMpgChange(val) {
   recalcLiveFuelCost();
 }
 
-// Sum locked-in per-leg fuel costs. Fuel cost is locked when the leg completes
-// (at ARRIVED time) using the gas price + MPG at that moment. Subsequent gas
-// price or MPG changes do NOT retroactively change earlier legs' costs.
+// Sum locked-in per-leg fuel costs. Fuel cost is recomputed from each leg's
+// distanceMiles using the current gas/MPG inputs — this guards against
+// corrupted stored fuelCost values from older bugs (e.g. saw a $216 leg
+// for 7.96 mi which is mathematically impossible at any reasonable gas/MPG).
 function recalcLiveFuelCost() {
   var el = document.getElementById('fuelLiveCost');
   if (!el) return;
+  var gas = getCurrentGasPrice();
+  var mpg = getCurrentMpg();
   var total = 0;
   if (typeof mtState !== 'undefined' && mtState.todayLegs && mtState.todayLegs.length) {
     for (var i = 0; i < mtState.todayLegs.length; i++) {
       var lg = mtState.todayLegs[i];
-      if (lg && typeof lg.fuelCost === 'number' && !isNaN(lg.fuelCost)) {
-        total += lg.fuelCost;
+      if (!lg) continue;
+      var miles = (typeof lg.distanceMiles === 'number') ? lg.distanceMiles : 0;
+      // Always recompute from CURRENT inputs — don't trust a possibly-corrupted stored fuelCost.
+      // (The "lock at arrival" semantics still hold for routeDay totals, but for the live
+      // display we use the user's currently-entered gas/MPG.)
+      var cost = (miles > 0 && gas > 0 && mpg > 0) ? (miles / mpg) * gas : 0;
+      // Sanity clamp: a single leg can't realistically exceed $50 of fuel
+      // (would mean >100 mi at $4.50 gas + 9 mpg). If it does, treat as 0
+      // and log so we can find the bad data.
+      if (cost > 50) {
+        console.warn('[FUEL] Clamping absurd leg cost: ' + miles.toFixed(2) + ' mi → $' + cost.toFixed(2) + ' (' + (lg.fromName || '?') + ' → ' + (lg.toName || '?') + ')');
+        cost = 0;
       }
+      total += cost;
     }
   }
   el.textContent = '$' + total.toFixed(2);
-  // Also re-render the per-leg breakdown if the panel is expanded
   try { renderFuelLegBreakdown(); } catch (e) {}
 }
 
 // Render the per-leg fuel breakdown inside the expanded fuel bar.
+// Recomputes each leg's cost from miles + current inputs (see comment above).
 function renderFuelLegBreakdown() {
   var container = document.getElementById('fuelLegBreakdown');
   if (!container) return;
@@ -6781,12 +6795,16 @@ function renderFuelLegBreakdown() {
     container.innerHTML = '<div style="font-family:var(--fb);font-size:11px;color:var(--mut);text-align:center;padding:10px 0;">No legs tracked yet today. Once you arrive at your first stop, the leg from base will appear here.</div>';
     return;
   }
+  var gas = getCurrentGasPrice();
+  var mpg = getCurrentMpg();
   var html = '<div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px;">Today\'s Legs (' + legs.length + ')</div>';
   html += '<div style="display:flex;flex-direction:column;gap:3px;">';
   var grandTotal = 0;
   legs.forEach(function(leg, i) {
     var miles = (typeof leg.distanceMiles === 'number') ? leg.distanceMiles : 0;
-    var cost = (typeof leg.fuelCost === 'number') ? leg.fuelCost : 0;
+    var cost = (miles > 0 && gas > 0 && mpg > 0) ? (miles / mpg) * gas : 0;
+    // Sanity clamp (see comment in recalcLiveFuelCost)
+    if (cost > 50) cost = 0;
     grandTotal += cost;
     var fromLbl = leg.fromName || (leg.fromIdx === 'BASE' ? 'Base' : (typeof leg.fromIdx === 'number' ? 'Stop ' + (leg.fromIdx + 1) : 'Stop'));
     var toLbl = leg.toName || (leg.toIdx === -1 ? 'Base' : (typeof leg.toIdx === 'number' ? 'Stop ' + (leg.toIdx + 1) : 'Stop'));

@@ -4804,6 +4804,14 @@ var mapMode = null;          // null | 'reorganize'
 var reorgOrder = [];          // origIdx[] in tap order
 
 function startReorganize() {
+  // Manual tap-to-reorder UI is currently disabled. The function body below is
+  // preserved for easy re-enable later — just remove this early-return block.
+  alert('Manual reorder is disabled. Use one of these instead:\n\n' +
+        '• Drag-reorder on the STOPS tab (🔀 REORDER button)\n' +
+        '• Save-as-new-order prompt after COMPLETE DAY\n' +
+        '• ⚡ OPTIMIZE FROM MY LOCATION on the ROUTE tab');
+  return;
+  // --- Original logic preserved below (unreachable while early-return is in place) ---
   if (mapMode) cancelMode();
   var dayStops = stops[currentDay] || [];
   if (dayStops.length === 0) { alert('No stops on ' + currentDay + ' to reorganize.'); return; }

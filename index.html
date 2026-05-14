@@ -71,7 +71,7 @@ body {
 .day-btn.active { background: var(--acc); border-color: #fff; color: #000; font-weight: 700; box-shadow: 0 2px 10px rgba(255,122,61,0.6), 0 0 0 2px var(--acc); }
 
 /* STATS BAR */
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--acc); border-bottom: 2px solid var(--acc); }
+.stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--acc); border-bottom: 2px solid var(--acc); }
 .stat { background: #1a2540; padding: 12px 8px; text-align: center; }
 .stat-val { font-family: var(--fd); font-size: 22px; color: var(--acc); line-height: 1; }
 .stat-lbl { font-family: var(--fm); font-size: 9px; color: var(--mut); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
@@ -508,8 +508,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <div class="stats-bar">
     <div class="stat"><div class="stat-val" id="statDone">0</div><div class="stat-lbl">Done</div></div>
     <div class="stat"><div class="stat-val" id="statLeft">0</div><div class="stat-lbl">Left</div></div>
-    <div class="stat"><div class="stat-val" id="statTime">0m</div><div class="stat-lbl">On Road</div></div>
-    <div class="stat"><div class="stat-val" id="statLast">--</div><div class="stat-lbl">Last Stop</div></div>
+    <!-- Hidden but kept in DOM so existing JS updates don't error -->
+    <div class="stat" style="display:none;"><div class="stat-val" id="statTime">0m</div><div class="stat-lbl">On Road</div></div>
+    <div class="stat" style="display:none;"><div class="stat-val" id="statLast">--</div><div class="stat-lbl">Last Stop</div></div>
   </div>
   <!-- START / END ROUTE -->
   <div style="padding:8px 16px 0;">
@@ -520,24 +521,34 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button onclick="optimizeRouteFromLocation()" style="width:100%;background:#000;color:#fff;border:2px solid var(--acc);border-radius:6px;padding:12px;font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 0 14px rgba(255,122,61,0.3);">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
 
-  <!-- FUEL PRICE + LIVE COST BAR -->
+  <!-- FUEL PRICE + LIVE COST BAR (collapsible) -->
   <div style="padding:8px 16px 0;">
-    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;">
-      <div style="flex:1;">
-        <label style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Gas price ($/gal)</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="fuelPriceInput" type="number" step="0.01" placeholder="3.45"
-            oninput="onFuelPriceChange(this.value)"
-            style="flex:1;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:18px;padding:9px 12px;border-radius:6px;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
-          <input id="fuelMpgInput" type="number" step="0.1" placeholder="MPG"
-            oninput="onFuelMpgChange(this.value)"
-            title="MPG"
-            style="width:72px;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:16px;padding:9px 8px;border-radius:6px;outline:none;text-align:center;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;">
+      <!-- Always-visible summary row -->
+      <div id="fuelBarHeader" onclick="toggleFuelBar()" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;user-select:none;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;">
+          <span style="font-family:var(--fd);font-size:14px;color:var(--acc);letter-spacing:1px;">⛽ FUEL</span>
+          <span style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Today:</span>
+          <span id="fuelLiveCost" style="font-family:var(--fd);font-size:18px;color:var(--grn);letter-spacing:1px;">$0.00</span>
         </div>
+        <span id="fuelBarChevron" style="font-family:var(--fm);font-size:14px;color:var(--mut);transition:transform .2s;">▾</span>
       </div>
-      <div style="text-align:right;min-width:80px;">
-        <div style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;">Today's fuel</div>
-        <div id="fuelLiveCost" style="font-family:var(--fd);font-size:22px;color:var(--grn);letter-spacing:1px;line-height:1.1;">$0.00</div>
+      <!-- Expanded panel (hidden by default) -->
+      <div id="fuelBarPanel" style="display:none;padding:0 12px 12px;border-top:1px solid var(--bdr);">
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:10px;">
+          <div style="flex:1;">
+            <label style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">Gas price ($/gal)</label>
+            <input id="fuelPriceInput" type="number" step="0.01" placeholder="3.45"
+              oninput="onFuelPriceChange(this.value)"
+              style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:18px;padding:9px 12px;border-radius:6px;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
+          </div>
+          <div style="width:90px;">
+            <label style="font-family:var(--fm);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;">MPG</label>
+            <input id="fuelMpgInput" type="number" step="0.1" placeholder="14"
+              oninput="onFuelMpgChange(this.value)"
+              style="width:100%;background:#e0e3e8;border:2px solid var(--acc);color:#000;font-family:var(--fb);font-weight:700;font-size:16px;padding:9px 8px;border-radius:6px;outline:none;text-align:center;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -560,13 +571,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button class="filter-pill" data-filter="done" onclick="setRouteFilter('done')">✅ Done</button>
   </div>
 
-  <div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-    <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-right:4px;">Freq:</span>
-    <button class="filter-pill freq-filter-pill active" data-freqfilter="all" onclick="setFreqFilter('all')">All</button>
-    <button class="filter-pill freq-filter-pill" data-freqfilter="weekly" onclick="setFreqFilter('weekly')" style="border-color:var(--grn);">🟢 Weekly</button>
-    <button class="filter-pill freq-filter-pill" data-freqfilter="biweekly" onclick="setFreqFilter('biweekly')" style="border-color:var(--acc2);">🟠 Biweekly</button>
-    <button class="filter-pill freq-filter-pill" data-freqfilter="monthly" onclick="setFreqFilter('monthly')" style="border-color:var(--acc);">🔴 Monthly</button>
-  </div>
+  <!-- (Frequency filter pills removed — due-status logic auto-filters now) -->
 
   <div id="filterStatus" style="padding:0 16px 4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);display:none;"></div>
 
@@ -603,10 +608,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button class="day-btn" id="mday-THU" onclick="selectManageDay('THU')">THU</button>
     <button class="day-btn" id="mday-FRI" onclick="selectManageDay('FRI')">FRI</button>
   </div>
-  <div class="opt-bar">
-    <input class="start-time" type="time" id="startTimeInput" value="06:45">
-    <button class="opt-btn" onclick="optimizeRoute()">⚡ OPTIMIZE</button>
-  </div>
+  <!-- (Old time-picker + OPTIMIZE button removed — replaced by OPTIMIZE FROM MY LOCATION on route tab) -->
   <div class="add-panel">
     <div class="add-title">ADD STOP</div>
     <div class="form-group" style="position:relative;">
@@ -1865,7 +1867,8 @@ function optimizeRoute() {
   // Save snapshot for undo
   previousStopOrder = { day: day, stops: JSON.parse(JSON.stringify(stops[day])) };
 
-  const st = document.getElementById('startTimeInput').value || '06:45';
+  const startTimeEl = document.getElementById('startTimeInput');
+  const st = (startTimeEl && startTimeEl.value) ? startTimeEl.value : '06:45';
   const [sh, sm] = st.split(':').map(Number);
   const startMins = sh * 60 + sm;
 
@@ -6616,6 +6619,47 @@ function fuelInputInit() {
   if (mpgEl) mpgEl.value = lastMpg;
   recalcLiveFuelCost();
 }
+
+// Toggle the fuel-bar expanded/collapsed state. Remembers preference in localStorage.
+function toggleFuelBar() {
+  var panel = document.getElementById('fuelBarPanel');
+  var chevron = document.getElementById('fuelBarChevron');
+  if (!panel) return;
+  var isOpen = panel.style.display !== 'none';
+  if (isOpen) {
+    panel.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+    try { localStorage.setItem('fuelBarOpen', '0'); } catch (e) {}
+  } else {
+    panel.style.display = 'block';
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    try { localStorage.setItem('fuelBarOpen', '1'); } catch (e) {}
+  }
+}
+
+// On load, restore the user's last open/closed preference.
+// Default: collapsed (so the route tab starts cleaner).
+(function() {
+  function restoreFuelBarState() {
+    var panel = document.getElementById('fuelBarPanel');
+    var chevron = document.getElementById('fuelBarChevron');
+    if (!panel) { setTimeout(restoreFuelBarState, 200); return; }
+    var pref = '0';
+    try { pref = localStorage.getItem('fuelBarOpen') || '0'; } catch (e) {}
+    if (pref === '1') {
+      panel.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+      panel.style.display = 'none';
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(restoreFuelBarState, 300); });
+  } else {
+    setTimeout(restoreFuelBarState, 300);
+  }
+})();
 
 function onFuelPriceChange(val) {
   var v = parseFloat(val);

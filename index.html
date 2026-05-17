@@ -339,6 +339,21 @@ body {
   border-color: var(--red);
   color: var(--red);
 }
+.map-popup-tag.open {
+  background: #064c3a;
+  border-color: var(--grn);
+  color: var(--grn);
+}
+.map-popup-tag.opening-soon {
+  background: #4a3a0e;
+  border-color: var(--acc2);
+  color: var(--acc2);
+}
+.map-popup-tag.closed {
+  background: #5a1a2e;
+  border-color: var(--red);
+  color: var(--red);
+}
 .map-popup-btns { display: flex; gap: 8px; margin-top: 14px; }
 .map-nav-btn {
   flex: 1;
@@ -575,6 +590,9 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button class="filter-pill active" data-filter="all" onclick="setRouteFilter('all')">All</button>
     <button class="filter-pill" data-filter="pending" onclick="setRouteFilter('pending')">Pending</button>
     <button class="filter-pill" data-filter="done" onclick="setRouteFilter('done')">✅ Done</button>
+    <button class="filter-pill" data-filter="open_now" onclick="setRouteFilter('open_now')" style="border-color:var(--grn);">🟢 Open Now</button>
+    <button class="filter-pill" data-filter="opening_soon" onclick="setRouteFilter('opening_soon')" style="border-color:var(--acc2);">🟡 Open Soon</button>
+    <button class="filter-pill" data-filter="closed" onclick="setRouteFilter('closed')" style="border-color:var(--red);">🔴 Closed</button>
   </div>
 
   <!-- (Frequency filter pills removed — due-status logic auto-filters now) -->
@@ -1495,7 +1513,7 @@ function selectSearchResult(placeId, name, addr) {
       var phoneEl = document.getElementById('newPhone');
       if (phoneEl && !phoneEl.value) phoneEl.value = phoneNum;
     }
-    // Try to extract Monday opening time
+    // Try to extract Monday opening time AND store full per-day hours schema
     var hours = place.regularOpeningHours || place.currentOpeningHours;
     if (hours && hours.weekdayDescriptions) {
       var monText = hours.weekdayDescriptions.find(function(h) { return h.indexOf('Monday') === 0; });
@@ -1509,6 +1527,16 @@ function selectSearchResult(placeId, name, addr) {
           if (match) document.getElementById('newOpens').value = match[1];
         }
       }
+    }
+    // Store full per-day hours so OPEN NOW filter can use real close times
+    if (hours && hours.periods) {
+      var hoursSchema = parsePlacesHoursToSchema(hours.periods);
+      if (hoursSchema && selectedPlaceCoords) {
+        selectedPlaceCoords.hours = hoursSchema;
+      } else if (hoursSchema) {
+        selectedPlaceCoords = { hours: hoursSchema };
+      }
+      console.log('[HOURS] Parsed hours schema for', name, hoursSchema);
     }
   })
   .catch(function(e) {
@@ -1600,7 +1628,8 @@ function addStop() {
     name, addr, opens, phone, note,
     frequency: currentFreq,
     lat: lat,
-    lng: lng
+    lng: lng,
+    hours: (selectedPlaceCoords && selectedPlaceCoords.hours) ? selectedPlaceCoords.hours : null
   };
 
   if (!stops[currentManageDay]) stops[currentManageDay] = [];
@@ -1712,6 +1741,11 @@ function editStop(day, idx) {
   document.getElementById('editPhone').value = s.phone || '';
   document.getElementById('editNote').value = s.note || '';
   document.getElementById('editFreq').value = s.frequency || 'weekly';
+
+  // Render existing hours schema preview (if any)
+  renderEditHoursPreview(s.hours);
+  // Reset the "pending fetched hours" stash (will get set if user taps Fetch)
+  if (typeof window._pendingEditHours !== 'undefined') window._pendingEditHours = null;
   document.getElementById('editDay').value = day;
   document.getElementById('editDayBadge').textContent = '(currently ' + day + ')';
 
@@ -1823,7 +1857,9 @@ function saveEditedStop() {
     frequency: newFreq,
     lastServiced: newLastServiced,
     lat: addrChanged ? null : s.lat,
-    lng: addrChanged ? null : s.lng
+    lng: addrChanged ? null : s.lng,
+    // If user tapped 🔄 FETCH FROM GOOGLE in this session, the new hours replace the stored ones
+    hours: (typeof window._pendingEditHours !== 'undefined' && window._pendingEditHours) ? window._pendingEditHours : s.hours
   };
 
   if (dayChanged) {
@@ -2891,6 +2927,12 @@ function getFilteredStops() {
 
       if (routeFilter === 'pending') return status !== 'done';
       if (routeFilter === 'done') return status === 'done';
+      if (routeFilter === 'open_now' || routeFilter === 'opening_soon' || routeFilter === 'closed') {
+        var oss = getStopOpenStatus(item.stop, currentDay, new Date());
+        if (routeFilter === 'open_now') return oss.status === 'open';
+        if (routeFilter === 'opening_soon') return oss.status === 'opening_soon';
+        if (routeFilter === 'closed') return oss.status === 'closed' || oss.status === 'unknown';
+      }
       return true;
     });
   }
@@ -2906,6 +2948,233 @@ function getFreqTag(stop) {
   if (freq === 'biweekly') return '<span class="freq-tag freq-biweekly">Biweekly</span>';
   if (freq === 'monthly') return '<span class="freq-tag freq-monthly">Monthly</span>';
   return '';
+}
+
+// =====================================================================
+// OPEN-STATUS HELPERS (used by the OPEN NOW / OPEN SOON / CLOSED filters)
+// =====================================================================
+var DAY_KEYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+// Parse Google Places regularOpeningHours.periods into a per-day { open, close } schema.
+// Each period in the Places response looks like:
+//   { open: { day: 1, hour: 6, minute: 0 }, close: { day: 1, hour: 21, minute: 0 } }
+// where day is 0=Sun...6=Sat. We collapse multiple periods per day into one
+// (uses the earliest open + latest close) for simplicity. Returns null on bad input.
+function parsePlacesHoursToSchema(periods) {
+  if (!Array.isArray(periods) || periods.length === 0) return null;
+  var byDay = {}; // dayKey -> { open: 'HH:MM', close: 'HH:MM' }
+  periods.forEach(function(p) {
+    if (!p.open || typeof p.open.day !== 'number') return;
+    var dayKey = DAY_KEYS[p.open.day];
+    if (!dayKey) return;
+    var oh = (p.open.hour != null) ? p.open.hour : 0;
+    var om = (p.open.minute != null) ? p.open.minute : 0;
+    var openStr = String(oh).padStart(2, '0') + ':' + String(om).padStart(2, '0');
+    var closeStr = '23:59';
+    if (p.close && typeof p.close.hour === 'number') {
+      var ch = p.close.hour;
+      var cm = (p.close.minute != null) ? p.close.minute : 0;
+      closeStr = String(ch).padStart(2, '0') + ':' + String(cm).padStart(2, '0');
+    } else {
+      // No close means 24-hour establishment
+      closeStr = '24:00';
+    }
+    if (!byDay[dayKey]) {
+      byDay[dayKey] = { open: openStr, close: closeStr };
+    } else {
+      // Merge: earliest open, latest close
+      if (openStr < byDay[dayKey].open) byDay[dayKey].open = openStr;
+      if (closeStr > byDay[dayKey].close) byDay[dayKey].close = closeStr;
+    }
+  });
+  return byDay;
+}
+
+// Convert "9:00AM" / "9:00 AM" / "06:00" / "Open 24 hours" type strings to "HH:MM" or null.
+function parseOpensStringToTime(str) {
+  if (!str || typeof str !== 'string') return null;
+  var s = str.trim();
+  if (!s || s === 'TBD') return null;
+  if (/open 24|24hrs|24 hours/i.test(s)) return '00:00'; // always open
+  // Try 12-hour format
+  var m12 = s.match(/(\d{1,2}):(\d{2})\s*([AP])M/i);
+  if (m12) {
+    var h = parseInt(m12[1], 10);
+    var min = parseInt(m12[2], 10);
+    var pm = m12[3].toUpperCase() === 'P';
+    if (pm && h < 12) h += 12;
+    if (!pm && h === 12) h = 0;
+    return String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+  }
+  // Try 24-hour format
+  var m24 = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (m24) {
+    return String(parseInt(m24[1], 10)).padStart(2, '0') + ':' + m24[2];
+  }
+  return null;
+}
+
+// Returns { status: 'open' | 'opening_soon' | 'closed' | 'unknown', minutesToOpen, minutesToClose }
+// Uses stop.hours (preferred) or falls back to stop.opens (parsed as open-only).
+function getStopOpenStatus(stop, dayKey, now) {
+  if (!stop) return { status: 'unknown' };
+  var nowDate = now || new Date();
+  var dk = dayKey || DAY_KEYS[nowDate.getDay()];
+  var nowMin = nowDate.getHours() * 60 + nowDate.getMinutes();
+
+  // Try the rich hours schema first
+  if (stop.hours && stop.hours[dk]) {
+    var h = stop.hours[dk];
+    var openMin = parseTimeToMinutes(h.open);
+    var closeMin = parseTimeToMinutes(h.close);
+    if (openMin == null) return { status: 'unknown' };
+    // Handle 24-hour: open==close==00:00, or close==24:00 / 23:59 with open==00:00
+    if (openMin === 0 && (closeMin === 0 || closeMin >= 1439)) {
+      return { status: 'open' };
+    }
+    if (nowMin >= openMin && nowMin < closeMin) {
+      return { status: 'open', minutesToClose: closeMin - nowMin };
+    }
+    if (nowMin < openMin) {
+      var diff = openMin - nowMin;
+      if (diff <= 60) return { status: 'opening_soon', minutesToOpen: diff };
+      return { status: 'closed', minutesToOpen: diff };
+    }
+    return { status: 'closed' };
+  }
+
+  // Fallback: parse the legacy opens string (open-time only, no close)
+  var fallbackOpen = parseOpensStringToTime(stop.opens);
+  if (fallbackOpen == null) return { status: 'unknown' };
+  var fbMin = parseTimeToMinutes(fallbackOpen);
+  if (fbMin == null) return { status: 'unknown' };
+  if (fallbackOpen === '00:00') return { status: 'open' }; // 24-hour
+  if (nowMin >= fbMin) return { status: 'open' }; // already opened; assume still open (no close known)
+  var diff2 = fbMin - nowMin;
+  if (diff2 <= 60) return { status: 'opening_soon', minutesToOpen: diff2 };
+  return { status: 'closed', minutesToOpen: diff2 };
+}
+
+function parseTimeToMinutes(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string') return null;
+  var parts = hhmm.split(':');
+  if (parts.length !== 2) return null;
+  var h = parseInt(parts[0], 10);
+  var m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// Pretty-print the hours schema for the edit-modal preview pane.
+function renderEditHoursPreview(hoursSchema) {
+  var el = document.getElementById('editHoursPreview');
+  var statusEl = document.getElementById('editHoursStatus');
+  if (!el) return;
+  if (!hoursSchema || typeof hoursSchema !== 'object' || Object.keys(hoursSchema).length === 0) {
+    el.style.display = 'none';
+    if (statusEl) statusEl.textContent = '(none on file)';
+    return;
+  }
+  if (statusEl) statusEl.textContent = '✓ on file';
+  var order = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  var html = '<div style="background:#0e1830;border:1px solid var(--bdr);border-radius:6px;padding:8px 10px;">';
+  order.forEach(function(dk) {
+    var h = hoursSchema[dk];
+    if (h && h.open) {
+      html += '<div style="display:flex;justify-content:space-between;padding:2px 0;">' +
+        '<span style="color:var(--acc);font-weight:700;">' + dk + '</span>' +
+        '<span style="color:#fff;">' + formatHourLabel(h.open) + ' – ' + formatHourLabel(h.close) + '</span>' +
+        '</div>';
+    } else {
+      html += '<div style="display:flex;justify-content:space-between;padding:2px 0;">' +
+        '<span style="color:var(--mut);">' + dk + '</span>' +
+        '<span style="color:var(--mut);">closed</span>' +
+        '</div>';
+    }
+  });
+  html += '</div>';
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+function formatHourLabel(hhmm) {
+  if (!hhmm) return '—';
+  if (hhmm === '24:00' || hhmm === '00:00') return hhmm === '24:00' ? '24hr' : '12:00AM';
+  var parts = hhmm.split(':');
+  var h = parseInt(parts[0], 10);
+  var m = parts[1];
+  var period = h >= 12 ? 'PM' : 'AM';
+  var hh = h % 12; if (hh === 0) hh = 12;
+  return hh + ':' + m + period;
+}
+
+// Compact minute formatter: 45 → "45m", 90 → "1h 30m", 120 → "2h"
+function formatMinutesShort(mins) {
+  if (typeof mins !== 'number' || mins < 0) return '';
+  if (mins < 60) return mins + 'm';
+  var h = Math.floor(mins / 60);
+  var m = mins % 60;
+  if (m === 0) return h + 'h';
+  return h + 'h ' + m + 'm';
+}
+
+// Tap "🔄 FETCH FROM GOOGLE" — pulls fresh hours from Places using current name+addr.
+function fetchHoursForEditedStop() {
+  if (!editingStopRef) { alert('No stop selected.'); return; }
+  var name = document.getElementById('editName').value.trim();
+  var addr = document.getElementById('editAddr').value.trim();
+  if (!name || !addr) { alert('Name and address required to fetch hours.'); return; }
+  var btn = document.getElementById('editHoursFetchBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '🔄 Fetching…';
+    btn.style.opacity = '0.6';
+  }
+  // First: find the place via TextSearch to get a place_id
+  if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+    alert('Google Places not loaded. Try again in a moment.');
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 FETCH FROM GOOGLE'; btn.style.opacity = '1'; }
+    return;
+  }
+  var svc = new google.maps.places.PlacesService(document.createElement('div'));
+  svc.textSearch({ query: name + ' ' + addr }, function(results, status) {
+    if (status !== google.maps.places.PlacesServiceStatus.OK || !results || !results.length) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 FETCH FROM GOOGLE'; btn.style.opacity = '1'; }
+      alert('Could not find this business on Google. Hours not updated.');
+      return;
+    }
+    var placeId = results[0].place_id;
+    // Then fetch details via Places API (new) for periods
+    fetch('https://places.googleapis.com/v1/places/' + placeId, {
+      method: 'GET',
+      headers: {
+        'X-Goog-Api-Key': 'AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4',
+        'X-Goog-FieldMask': 'regularOpeningHours'
+      }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(place) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 FETCH FROM GOOGLE'; btn.style.opacity = '1'; }
+      var periods = place.regularOpeningHours && place.regularOpeningHours.periods;
+      if (!periods) {
+        alert('No hours data available for this business on Google.');
+        return;
+      }
+      var schema = parsePlacesHoursToSchema(periods);
+      if (!schema || Object.keys(schema).length === 0) {
+        alert('Hours data was returned but couldn\'t be parsed.');
+        return;
+      }
+      // Stash so saveEditedStop picks it up
+      window._pendingEditHours = schema;
+      renderEditHoursPreview(schema);
+      console.log('[HOURS] Fetched and parsed hours for "' + name + '":', schema);
+    })
+    .catch(function(e) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 FETCH FROM GOOGLE'; btn.style.opacity = '1'; }
+      alert('Error fetching hours: ' + e.message);
+    });
+  });
 }
 
 // ============================================================
@@ -3457,11 +3726,37 @@ function showMapStopPopup(i) {
   var svc = getServiceStatus(stop);
   var statusTxt = d.status === 'done' ? 'Done' : d.status === 'active' ? 'Active' : 'Stop ' + (i+1);
   var statusCls = d.status === 'done' ? 'done' : '';
+
+  // Build the open-status pill using real hours if available, else fall back to legacy "opens" string.
+  var openStatusHtml = '';
+  var hoursTodayLabel = '';
+  try {
+    var oss = getStopOpenStatus(stop, currentDay, new Date());
+    if (oss.status === 'open') {
+      var closeLbl = (typeof oss.minutesToClose === 'number') ? ' · closes in ' + formatMinutesShort(oss.minutesToClose) : '';
+      openStatusHtml = '<span class="map-popup-tag open">🟢 Open Now' + closeLbl + '</span>';
+    } else if (oss.status === 'opening_soon') {
+      openStatusHtml = '<span class="map-popup-tag opening-soon">🟡 Opens in ' + (oss.minutesToOpen || '?') + ' min</span>';
+    } else if (oss.status === 'closed') {
+      var opensLbl = (typeof oss.minutesToOpen === 'number') ? ' · opens in ' + formatMinutesShort(oss.minutesToOpen) : '';
+      openStatusHtml = '<span class="map-popup-tag closed">🔴 Closed' + opensLbl + '</span>';
+    }
+    // If we have real hours data, include today's actual hours as a second tag
+    if (stop.hours && stop.hours[currentDay]) {
+      var h = stop.hours[currentDay];
+      hoursTodayLabel = '<span class="map-popup-tag">🕐 ' + formatHourLabel(h.open) + ' – ' + formatHourLabel(h.close) + '</span>';
+    } else if (stop.opens && stop.opens !== 'TBD') {
+      // Legacy fallback: just show the opens string
+      hoursTodayLabel = '<span class="map-popup-tag">🕐 Opens ' + stop.opens + '</span>';
+    }
+  } catch (e) { console.error('[POPUP] open-status err:', e); }
+
   meta.innerHTML = '<span class="map-popup-tag ' + statusCls + '">' + statusTxt + '</span>'
-    + '<span class="map-popup-tag">' + (stop.opens || 'TBD') + '</span>'
+    + openStatusHtml
+    + hoursTodayLabel
     + (stop.frequency && stop.frequency !== 'weekly' ? '<span class="map-popup-tag">' + stop.frequency + '</span>' : '')
     + '<span class="map-popup-tag ' + (svc.cls === 'svc-late' ? 'overdue' : '') + '">' + svc.label + '</span>'
-    + (stop.lastServiced ? '<span class="map-popup-tag">🕐 ' + new Date(stop.lastServiced).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</span>' : '');
+    + (stop.lastServiced ? '<span class="map-popup-tag">📅 Last: ' + new Date(stop.lastServiced).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</span>' : '');
 
   // Distance
   if (userLat && stop.lat && stop.lng) {
@@ -5078,6 +5373,13 @@ function closeMeasureResult() { /* measure feature removed */ }
       <label class="form-label">📞 Business Phone</label>
       <input class="form-input" id="editPhone" type="tel" placeholder="(555) 123-4567">
       <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Tap the phone icon on a stop card to call directly</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🕐 Hours of Operation <span id="editHoursStatus" style="font-size:9px;color:var(--mut);"></span></label>
+      <button type="button" onclick="fetchHoursForEditedStop()" id="editHoursFetchBtn" style="width:100%;background:#000;color:#fff;border:2px solid var(--acc);border-radius:6px;padding:11px;font-family:var(--fm);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700;">🔄 FETCH FROM GOOGLE</button>
+      <div id="editHoursPreview" style="margin-top:8px;font-family:var(--fb);font-size:11px;color:var(--mut);line-height:1.4;display:none;"></div>
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Needed for the OPEN NOW / CLOSED filters to work</div>
     </div>
 
     <div class="form-group">
@@ -9058,6 +9360,21 @@ function serviceStopAnyway(i) {
 })();
 
 console.log('[SVC] Service frequency module loaded');
+
+// =====================================================================
+// AUTO-REFRESH for OPEN NOW / OPEN SOON / CLOSED filters
+// =====================================================================
+// Re-renders the route every 5 minutes so the open-status filter stays
+// accurate as time passes. Only runs when one of the open-status filters
+// is active — no work when not needed.
+setInterval(function() {
+  try {
+    if (typeof routeFilter !== 'undefined' &&
+        (routeFilter === 'open_now' || routeFilter === 'opening_soon' || routeFilter === 'closed')) {
+      if (typeof renderRoute === 'function') renderRoute();
+    }
+  } catch (e) {}
+}, 5 * 60 * 1000);
 
 // =====================================================================
 // DIAGNOSTIC TOOL — tap PROJECT Z title 5 times to open

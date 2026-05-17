@@ -3768,23 +3768,126 @@ function showMapStopPopup(i) {
   var navBtn = document.getElementById('popupNavBtn');
   if (navBtn) navBtn.textContent = isNavigating && popupStopIdx === i ? '■ NAVIGATING' : '▶ NAVIGATE';
 
+  // Platform-aware "Open in Maps" button label
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var mapsBtn = document.querySelector('.map-nav-gmaps');
+  if (mapsBtn) mapsBtn.textContent = isIOS ? '🗺️ APPLE MAPS' : '🗺️ GOOGLE MAPS';
+
   document.getElementById('mapStopPopup').classList.add('show');
 
   // Pan map to stop
   if (stop.lat && stop.lng && mapView) {
     mapView.panTo({ lat: stop.lat, lng: stop.lng });
   }
+
+  // === ROUTE PREVIEW (in-app blue route line + ETA via Directions API) ===
+  // Only fires if we have current GPS AND the stop has coords. Clears any
+  // previous preview first.
+  clearRoutePreview();
+  if (userLat && userLng && stop.lat && stop.lng) {
+    fetchAndDrawRoutePreview(userLat, userLng, stop.lat, stop.lng);
+  }
+}
+
+// State for the active preview polyline (so we can remove it on popup close)
+var routePreviewPolyline = null;
+
+function clearRoutePreview() {
+  if (routePreviewPolyline) {
+    try { routePreviewPolyline.setMap(null); } catch (e) {}
+    routePreviewPolyline = null;
+  }
+}
+
+// Fetch a driving route from Google Directions API and render as a blue line.
+// Also injects ETA + miles into the popup meta row.
+function fetchAndDrawRoutePreview(fromLat, fromLng, toLat, toLng) {
+  if (typeof google === 'undefined' || !google.maps) return;
+  // Use DirectionsService (allowed within Maps JS API) — render the resulting
+  // polyline manually so we control its style and don't show extra UI chrome.
+  var ds = new google.maps.DirectionsService();
+  ds.route({
+    origin: { lat: fromLat, lng: fromLng },
+    destination: { lat: toLat, lng: toLng },
+    travelMode: google.maps.TravelMode.DRIVING
+  }, function(result, status) {
+    if (status !== 'OK' || !result || !result.routes || !result.routes.length) {
+      console.warn('[ROUTE-PREVIEW] Directions failed:', status);
+      return;
+    }
+    var route = result.routes[0];
+    var leg = route.legs && route.legs[0];
+    if (!leg) return;
+    // Draw the polyline. Use a thick blue line; semi-transparent so the underlying
+    // map stays readable. Decoded path comes already as LatLng objects.
+    var path = route.overview_path || [];
+    routePreviewPolyline = new google.maps.Polyline({
+      path: path,
+      geodesic: false,
+      strokeColor: '#3b82f6', // blue
+      strokeOpacity: 0.85,
+      strokeWeight: 6,
+      zIndex: 5
+    });
+    routePreviewPolyline.setMap(mapView);
+    // Add ETA + actual driving miles to the popup meta row
+    try {
+      var meta = document.getElementById('popupMeta');
+      if (meta && leg.duration && leg.distance) {
+        // Strip the old "📍 N mi" tag (straight-line) — replace with real route data
+        meta.innerHTML = meta.innerHTML.replace(/<span class="map-popup-tag">📍 [^<]*<\/span>/, '');
+        meta.innerHTML += '<span class="map-popup-tag" style="background:#0e2a4a;border-color:#3b82f6;color:#93c5fd;">' +
+          '🚗 ' + leg.duration.text + ' · ' + leg.distance.text +
+          '</span>';
+      }
+    } catch (e) { console.error('[ROUTE-PREVIEW] meta-update err:', e); }
+  });
 }
 
 function closeMapPopup() {
   document.getElementById('mapStopPopup').classList.remove('show');
   popupStopIdx = null;
+  // Clear the in-app route preview line so it doesn't linger on the map
+  clearRoutePreview();
 }
 
+// Smart MAPS hand-off — picks Apple Maps on iPhone/iPad, Google Maps elsewhere.
+// Pre-fills source as current location so turn-by-turn begins immediately.
 function openGMapsToPopup() {
   if (popupStopIdx === null) return;
   var stop = stops[currentDay][popupStopIdx];
-  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(stop.addr) + '&travelmode=driving', '_blank');
+  if (!stop) return;
+
+  // Build destination string. Prefer coords for precision, fall back to address.
+  var destCoords = (stop.lat && stop.lng) ? (stop.lat + ',' + stop.lng) : null;
+  var destAddr = stop.addr || stop.address || stop.name || '';
+
+  // Detect platform
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    // Apple Maps URL scheme. Uses daddr for destination, "Current Location" as source.
+    // Driving mode is the default; we explicitly add directionsmode=driving.
+    var appleDest = destCoords ? destCoords : encodeURIComponent(destAddr);
+    var appleUrl = 'maps://?daddr=' + appleDest + '&dirflg=d';
+    // iOS Safari handles maps:// — but if we're in a webview that doesn't,
+    // fall back to https://maps.apple.com after a brief delay.
+    var fallbackUrl = 'https://maps.apple.com/?daddr=' + appleDest + '&dirflg=d';
+    var fired = false;
+    setTimeout(function() {
+      if (!fired) window.location.href = fallbackUrl;
+    }, 800);
+    window.location.href = appleUrl;
+    fired = true;
+    return;
+  }
+
+  // Android & desktop: Google Maps
+  var gDest = destCoords ? destCoords : encodeURIComponent(destAddr);
+  var gUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + gDest + '&travelmode=driving';
+  window.open(gUrl, '_blank');
 }
 
 function recenterOnMe() {
@@ -5127,14 +5230,12 @@ var mapMode = null;          // null | 'reorganize'
 var reorgOrder = [];          // origIdx[] in tap order
 
 function startReorganize() {
-  // Manual tap-to-reorder UI is currently disabled. The function body below is
-  // preserved for easy re-enable later — just remove this early-return block.
-  alert('Manual reorder is disabled. Use one of these instead:\n\n' +
-        '• Drag-reorder on the STOPS tab (🔀 REORDER button)\n' +
-        '• Save-as-new-order prompt after COMPLETE DAY\n' +
-        '• ⚡ OPTIMIZE FROM MY LOCATION on the ROUTE tab');
-  return;
-  // --- Original logic preserved below (unreachable while early-return is in place) ---
+  // Toggle: if already in reorganize mode, cancel and exit.
+  if (mapMode === 'reorganize') {
+    cancelMode();
+    updateReorgBtnState(false);
+    return;
+  }
   if (mapMode) cancelMode();
   var dayStops = stops[currentDay] || [];
   if (dayStops.length === 0) { alert('No stops on ' + currentDay + ' to reorganize.'); return; }
@@ -5147,6 +5248,7 @@ function startReorganize() {
   document.getElementById('modeBannerText').textContent = 'Tap stops in new order, then DONE. Untapped stops keep their order at the end.';
   document.getElementById('modeDoneBtn').style.display = 'block';
   updateReorgCounter();
+  updateReorgBtnState(true);
   updateLastTappedIndicator(); // hide on start
   closeMapPopup();
   renderModeMarkers();
@@ -5163,6 +5265,27 @@ function cancelMode() {
   var doneBtn = document.getElementById('modeDoneBtn');
   if (doneBtn) doneBtn.style.display = 'block';
   renderMapMarkers();
+  updateReorgBtnState(false);
+}
+
+// Toggle the reorder button's visual state so user can see at a glance whether
+// reorder mode is currently active.
+function updateReorgBtnState(isActive) {
+  var btn = document.getElementById('reorgBtn');
+  if (!btn) return;
+  if (isActive) {
+    btn.textContent = '✕ CANCEL REORDER';
+    btn.style.background = 'var(--acc)';
+    btn.style.color = '#000';
+    btn.style.border = '2px solid #fff';
+    btn.style.boxShadow = '0 0 0 1px var(--acc), 0 0 14px rgba(255,122,61,0.5)';
+  } else {
+    btn.textContent = '🔀 REORGANIZE';
+    btn.style.background = '#e0e3e8';
+    btn.style.color = '#000';
+    btn.style.border = '2px solid #c4cad3';
+    btn.style.boxShadow = '0 4px 14px rgba(0,0,0,0.7)';
+  }
 }
 
 function finishMode() {
@@ -5284,6 +5407,7 @@ async function saveReorganize() {
   document.getElementById('modeBanner').classList.remove('show');
   var lastEl = document.getElementById('modeBannerLast');
   if (lastEl) lastEl.classList.remove('show');
+  updateReorgBtnState(false);
 
   // Refresh ALL views that show this day's stops:
   // - Route tab (numbered list)

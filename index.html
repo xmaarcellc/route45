@@ -247,6 +247,8 @@ body {
 .freq-weekly { background: var(--grn); color: #000; }
 .freq-biweekly { background: var(--acc2); color: #000; }
 .freq-monthly { background: var(--acc); color: #000; }
+.freq-e1 { background: #34d399; color: #000; }
+.freq-e2 { background: #6ee7b7; color: #000; }
 .freq-skip { opacity: 0.3; }
 .note-tag { display: inline-block; background: var(--acc); color: #000; font-family: var(--fm); font-size: 9px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; }
 .manage-num { font-family: var(--fd); font-size: 20px; color: var(--mut); min-width: 28px; }
@@ -642,9 +644,13 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
         <input class="form-input" id="newOpens" placeholder="e.g. 9:00AM">
       </div>
       <div class="form-group">
-        <label class="form-label">Note</label>
-        <input class="form-input" id="newNote" placeholder="Optional">
+        <label class="form-label">Business Phone</label>
+        <input class="form-input" id="newPhone" type="tel" placeholder="(555) 123-4567">
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note</label>
+      <input class="form-input" id="newNote" placeholder="Optional">
     </div>
     <button class="add-stop-btn" onclick="addStop()">+ ADD TO ROUTE</button>
   </div>
@@ -1467,7 +1473,7 @@ function selectSearchResult(placeId, name, addr) {
     method: 'GET',
     headers: {
       'X-Goog-Api-Key': 'AIzaSyBq0WyiThJw9hfi4r-t-pErGmQqDHYISh4',
-      'X-Goog-FieldMask': 'location,formattedAddress,regularOpeningHours,currentOpeningHours'
+      'X-Goog-FieldMask': 'location,formattedAddress,regularOpeningHours,currentOpeningHours,nationalPhoneNumber,internationalPhoneNumber'
     }
   })
   .then(function(r) { return r.json(); })
@@ -1482,6 +1488,12 @@ function selectSearchResult(placeId, name, addr) {
     }
     if (place.formattedAddress) {
       document.getElementById('newAddr').value = place.formattedAddress;
+    }
+    // Auto-fill phone if available
+    var phoneNum = place.nationalPhoneNumber || place.internationalPhoneNumber || '';
+    if (phoneNum) {
+      var phoneEl = document.getElementById('newPhone');
+      if (phoneEl && !phoneEl.value) phoneEl.value = phoneNum;
     }
     // Try to extract Monday opening time
     var hours = place.regularOpeningHours || place.currentOpeningHours;
@@ -1552,6 +1564,7 @@ function addStop() {
   const name = document.getElementById('newName').value.trim();
   const addr = document.getElementById('newAddr').value.trim();
   const opens = document.getElementById('newOpens').value.trim() || 'TBD';
+  const phone = (document.getElementById('newPhone') ? document.getElementById('newPhone').value.trim() : '');
   const note = document.getElementById('newNote').value.trim();
   if (!name) { alert('Please enter a business name.'); return; }
   if (!addr) { alert('Please enter a street address.'); return; }
@@ -1584,7 +1597,7 @@ function addStop() {
   }
 
   const newStop = {
-    name, addr, opens, note,
+    name, addr, opens, phone, note,
     frequency: currentFreq,
     lat: lat,
     lng: lng
@@ -1636,7 +1649,7 @@ function addStop() {
   }
 
   // Reset form
-  ['searchInput','newName','newAddr','newOpens','newNote'].forEach(function(id) {
+  ['searchInput','newName','newAddr','newOpens','newPhone','newNote'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1696,6 +1709,7 @@ function editStop(day, idx) {
   document.getElementById('editName').value = s.name || '';
   document.getElementById('editAddr').value = s.addr || '';
   document.getElementById('editOpens').value = s.opens || '';
+  document.getElementById('editPhone').value = s.phone || '';
   document.getElementById('editNote').value = s.note || '';
   document.getElementById('editFreq').value = s.frequency || 'weekly';
   document.getElementById('editDay').value = day;
@@ -1748,6 +1762,7 @@ function saveEditedStop() {
   const newName = document.getElementById('editName').value.trim();
   const newAddr = document.getElementById('editAddr').value.trim();
   const newOpens = document.getElementById('editOpens').value.trim() || 'TBD';
+  const newPhone = document.getElementById('editPhone').value.trim();
   const newNote = document.getElementById('editNote').value.trim();
   const newFreq = document.getElementById('editFreq').value;
   const newDay = document.getElementById('editDay').value;
@@ -1803,6 +1818,7 @@ function saveEditedStop() {
     name: newName,
     addr: newAddr,
     opens: newOpens,
+    phone: newPhone,
     note: newNote,
     frequency: newFreq,
     lastServiced: newLastServiced,
@@ -2337,6 +2353,9 @@ function renderManageList() {
       var safeAddrFirst = safeAddr ? safeAddr.split(',')[0] : '(no address)';
       var safeOpens = s.opens || 'TBD';
       var safeNote = s.note || '';
+      var safePhone = (s.phone || '').toString().trim();
+      // Build a click-to-call link using the digits only (strips parens, dashes, spaces)
+      var phoneHref = safePhone ? 'tel:' + safePhone.replace(/[^\d+]/g, '') : '';
       const freq = s.frequency || 'weekly';
       var isSelected = inSelectMode && selectedSet[i];
       var cardClasses = 'manage-card';
@@ -2350,6 +2369,7 @@ function renderManageList() {
         <div class="manage-info">
           <div class="manage-name">${safeName} <span class="freq-tag freq-${freq}">${freq}</span>${s.notes && s.notes.length > 0 ? '<span class="freq-tag" style="background:var(--acc2);color:#000;">📝 ' + s.notes.length + '</span>' : ''}</div>
           <div class="manage-meta">${safeOpens} · ${safeAddrFirst}${safeNote ? ' · ' + safeNote : ''}</div>
+          ${safePhone ? '<div class="manage-meta" style="margin-top:3px;"><a href="' + phoneHref + '" onclick="event.stopPropagation()" style="color:var(--acc);text-decoration:none;font-weight:700;">📞 ' + safePhone + '</a></div>' : ''}
           ${(function(){ try { var svc = getServiceStatus(s); return '<div class="last-service ' + svc.cls + '"><div class="last-service-dot" style="background:' + svc.dotColor + '"></div>' + svc.label + '</div>'; } catch(e) { return ''; } })()}
         </div>
         <div class="manage-actions">
@@ -2358,8 +2378,14 @@ function renderManageList() {
           <button class="dots-btn" onclick="toggleFreqMenu(${i}, event)">⋯</button>
         </div>
         <div class="freq-menu" id="fmenu-${i}">
+          <div class="freq-menu-item ${freq==='e1'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'e1')">
+            <div class="freq-dot" style="background:#34d399"></div>E1 — Every week (period A)
+          </div>
+          <div class="freq-menu-item ${freq==='e2'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'e2')">
+            <div class="freq-dot" style="background:#6ee7b7"></div>E2 — Every week (period B)
+          </div>
           <div class="freq-menu-item ${freq==='weekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'weekly')">
-            <div class="freq-dot" style="background:var(--grn)"></div>Weekly
+            <div class="freq-dot" style="background:var(--grn)"></div>Weekly (generic)
           </div>
           <div class="freq-menu-item ${freq==='biweekly'?'active-freq':''}" onclick="setStopFreq('${currentManageDay}',${i},'biweekly')">
             <div class="freq-dot" style="background:var(--acc2)"></div>Biweekly
@@ -2874,6 +2900,8 @@ function getFilteredStops() {
 
 function getFreqTag(stop) {
   const freq = stop.frequency || 'weekly';
+  if (freq === 'e1') return '<span class="freq-tag freq-e1">E1</span>';
+  if (freq === 'e2') return '<span class="freq-tag freq-e2">E2</span>';
   if (freq === 'weekly') return '<span class="freq-tag freq-weekly">Weekly</span>';
   if (freq === 'biweekly') return '<span class="freq-tag freq-biweekly">Biweekly</span>';
   if (freq === 'monthly') return '<span class="freq-tag freq-monthly">Monthly</span>';
@@ -5037,11 +5065,19 @@ function closeMeasureResult() { /* measure feature removed */ }
       <div class="form-group">
         <label class="form-label">Frequency</label>
         <select class="form-input" id="editFreq" style="background:#e0e3e8;color:#000;">
-          <option value="weekly">Weekly</option>
+          <option value="e1">E1 — Every week (period A)</option>
+          <option value="e2">E2 — Every week (period B)</option>
+          <option value="weekly">Weekly (generic)</option>
           <option value="biweekly">Biweekly</option>
           <option value="monthly">Monthly</option>
         </select>
       </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📞 Business Phone</label>
+      <input class="form-input" id="editPhone" type="tel" placeholder="(555) 123-4567">
+      <div style="font-size:10px;color:var(--mut);margin-top:4px;font-family:'DM Mono',monospace;">↳ Tap the phone icon on a stop card to call directly</div>
     </div>
 
     <div class="form-group">
@@ -8643,6 +8679,9 @@ console.log('[MT] Mileage tracking module loaded');
 
 // Days threshold per frequency (interval) — what counts as a full cycle
 function getFrequencyIntervalDays(freq) {
+  // E1 and E2 are both every-week customers (Cintas calendar labels for which
+  // half of the month they belong to; the service interval is still 7 days).
+  if (freq === 'e1' || freq === 'e2') return 7;
   if (freq === 'biweekly') return 14;
   if (freq === 'monthly') return 28;
   return 7; // weekly default

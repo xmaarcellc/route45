@@ -538,6 +538,8 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
     <button onclick="optimizeRouteFromLocation()" style="width:100%;background:#000;color:#fff;border:2px solid var(--acc);border-radius:6px;padding:12px;font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.5), 0 0 14px rgba(255,122,61,0.3);">⚡ OPTIMIZE FROM MY LOCATION</button>
   </div>
 
+  <!-- (AUTO REORGANIZE button moved to STOPS tab — sits next to REORDER button) -->
+
   <!-- FUEL PRICE + LIVE COST BAR (collapsible) -->
   <div style="padding:8px 16px 0;">
     <div style="background:var(--sur);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;">
@@ -675,6 +677,7 @@ body.nav-active .nav-stop-btn { padding: 12px 20px; font-size: 16px; box-shadow:
   <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
     <span>Current Stops — <span id="manageDayLabel">MON</span></span>
     <div style="display:flex;gap:6px;">
+      <button id="autoOrgToggleBtn" onclick="runAutoOrganize()" style="background:#000;border:1px solid #3b82f6;color:#fff;font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">🧠 Auto Org</button>
       <button id="reorderToggleBtn" onclick="toggleReorderMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">🔀 Reorder</button>
       <button id="bulkSelectToggleBtn" onclick="toggleBulkSelectMode()" style="background:var(--sur2);border:1px solid var(--bdr);color:var(--txt);font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">☑ Select</button>
     </div>
@@ -3063,6 +3066,323 @@ function parseTimeToMinutes(hhmm) {
   var m = parseInt(parts[1], 10);
   if (isNaN(h) || isNaN(m)) return null;
   return h * 60 + m;
+}
+
+// =====================================================================
+// AUTO-ORGANIZE — geographic clustering with time-window awareness
+// =====================================================================
+// Mimics what a thoughtful planner would do:
+//   1. Sort stops by EARLIEST ELIGIBLE ARRIVAL time (open time minus 1 hr grace)
+//   2. Walk through chronologically: from current position, pick the NEAREST
+//      stop that's eligible to be visited NOW
+//   3. If no stop is eligible, fast-forward time to when the next-nearest is
+//      eligible, then pick that one
+//   4. Each stop completion advances simulated time by ~SERVICE_MIN + ~drive
+//
+// Constants: 5:00 AM start, 60 min early-arrival grace, ~10 min service,
+// ~6 min between stops in same cluster (varies by distance via mph calc).
+// =====================================================================
+
+var AUTOORG_START_MIN = 5 * 60;   // 5:00 AM
+var AUTOORG_GRACE_MIN = 60;        // can arrive up to 60 min before opening
+var AUTOORG_SERVICE_MIN = 10;      // avg time per stop service
+var AUTOORG_AVG_MPH = 28;          // average local-roads driving speed
+
+// Parse a stop's "opens" field (and hours schema if present) into a minutes-from-midnight value.
+// Returns null for 24-hour or unknown (which means "anytime").
+function getStopOpenMinutes(stop, dayKey) {
+  if (!stop) return null;
+  // Prefer real per-day hours schema
+  if (stop.hours && stop.hours[dayKey] && stop.hours[dayKey].open) {
+    var openMin = parseTimeToMinutes(stop.hours[dayKey].open);
+    if (openMin === 0) {
+      var closeMin = parseTimeToMinutes(stop.hours[dayKey].close);
+      if (closeMin === 0 || closeMin >= 1439) return null; // 24-hour
+    }
+    return openMin;
+  }
+  // Fallback: parse the legacy "opens" string
+  if (!stop.opens || stop.opens === 'TBD') return null;
+  var s = stop.opens.trim();
+  if (/open 24|24hrs|24 hours/i.test(s)) return null; // 24-hour
+  // Try 12-hour format
+  var m12 = s.match(/(\d{1,2}):(\d{2})\s*([AP])M/i);
+  if (m12) {
+    var h = parseInt(m12[1], 10);
+    var min = parseInt(m12[2], 10);
+    var pm = m12[3].toUpperCase() === 'P';
+    if (pm && h < 12) h += 12;
+    if (!pm && h === 12) h = 0;
+    return h * 60 + min;
+  }
+  // Try just "10AM" (no minutes)
+  var mNoMin = s.match(/(\d{1,2})\s*([AP])M/i);
+  if (mNoMin) {
+    var h2 = parseInt(mNoMin[1], 10);
+    var pm2 = mNoMin[2].toUpperCase() === 'P';
+    if (pm2 && h2 < 12) h2 += 12;
+    if (!pm2 && h2 === 12) h2 = 0;
+    return h2 * 60;
+  }
+  return null;
+}
+
+function autoOrgDistanceMiles(a, b) {
+  if (!a || !b || typeof a.lat !== 'number' || typeof b.lat !== 'number') return 9999;
+  var meters = mtHaversineMeters(a.lat, a.lng, b.lat, b.lng);
+  return meters / 1609.344;
+}
+
+// Detect if two coords are within ~10 meters of each other (geocoded to same point).
+function autoOrgSameLocation(a, b) {
+  if (!a || !b) return false;
+  if (typeof a.lat !== 'number' || typeof b.lat !== 'number') return false;
+  var meters = mtHaversineMeters(a.lat, a.lng, b.lat, b.lng);
+  return meters < 10;
+}
+
+// Apply micro-offsets to coords that share the same building so the
+// nearest-neighbor algorithm distinguishes them by ~1 address unit (~30 ft).
+// Only the working COPY is offset — the stored stop is never mutated.
+// Strategy: for each cluster of co-located stops, the FIRST keeps its coords;
+// subsequent ones get shifted ~0.0001 degrees south (about 30 ft) per duplicate
+// in the cluster. So 3 duplicates → original, -30ft, -60ft.
+function autoOrgMicroOffsetDuplicates(workingList) {
+  var ONE_ADDR_DEGREES_LAT = 0.00009; // ~30 ft / ~10 m
+  for (var i = 0; i < workingList.length; i++) {
+    var a = workingList[i].stop;
+    if (!a || typeof a.lat !== 'number') continue;
+    var clusterCount = 0;
+    for (var j = 0; j < i; j++) {
+      var b = workingList[j].stop;
+      if (autoOrgSameLocation(a, b)) clusterCount++;
+    }
+    if (clusterCount > 0) {
+      // Make a SHALLOW copy of the stop object so we don't mutate the original
+      workingList[i].stop = Object.assign({}, a);
+      workingList[i].stop.lat = a.lat - (ONE_ADDR_DEGREES_LAT * clusterCount);
+      // Mark so debug logs are clear
+      workingList[i].stop._microOffset = true;
+      workingList[i].stop._origLat = a.lat;
+      console.log('[AUTOORG] Micro-offset duplicate-coord stop "' + (a.name || '?') +
+                  '" by ' + clusterCount + ' address unit(s) south');
+    }
+  }
+}
+
+// Run the optimizer. Returns { order: [origIdx, origIdx, ...], schedule: [{stop, arrivalMin, ...}] }
+// Day defaults to currentDay. Start time defaults to 5:00 AM.
+function autoOrganizeDay(day, startMin) {
+  day = day || currentDay;
+  startMin = (typeof startMin === 'number') ? startMin : AUTOORG_START_MIN;
+  var dayStops = (stops[day] || []).slice();
+  if (dayStops.length === 0) return { order: [], schedule: [] };
+
+  // Build a working list with each stop tagged with original index + eligibility time
+  var pool = dayStops.map(function(s, origIdx) {
+    var openMin = getStopOpenMinutes(s, day);
+    var earliestArrival = (openMin == null) ? 0 : Math.max(0, openMin - AUTOORG_GRACE_MIN);
+    return {
+      origIdx: origIdx,
+      stop: s,
+      openMin: openMin,
+      earliestArrival: earliestArrival,
+      placed: false
+    };
+  });
+
+  // Apply duplicate-coord micro-offsets so colocated stops get a deterministic order
+  autoOrgMicroOffsetDuplicates(pool);
+
+  var order = [];
+  var schedule = [];
+  var simTime = startMin;
+  var fromPos = { lat: BASE_LOCATION.lat, lng: BASE_LOCATION.lng, name: 'Base' };
+
+  // Greedy loop: while there are unplaced stops, pick the best next one.
+  while (pool.some(function(p) { return !p.placed; })) {
+    var candidates = pool.filter(function(p) { return !p.placed; });
+
+    // Strategy:
+    //   (a) Among candidates eligible NOW (earliestArrival <= simTime AND has coords),
+    //       pick the nearest one to fromPos.
+    //   (b) If none eligible, find the candidate with the lowest earliestArrival
+    //       (fast-forward simTime to that point), then among those tied, pick nearest.
+    var eligibleNow = candidates.filter(function(p) {
+      return p.earliestArrival <= simTime && p.stop.lat && p.stop.lng;
+    });
+
+    var pick = null;
+    if (eligibleNow.length > 0) {
+      // Pick nearest among eligible
+      eligibleNow.forEach(function(p) {
+        p._d = autoOrgDistanceMiles(fromPos, p.stop);
+      });
+      eligibleNow.sort(function(a, b) { return a._d - b._d; });
+      pick = eligibleNow[0];
+    } else {
+      // No one eligible — find lowest earliestArrival and fast-forward.
+      var withCoords = candidates.filter(function(p) { return p.stop.lat && p.stop.lng; });
+      var noCoords = candidates.filter(function(p) { return !p.stop.lat || !p.stop.lng; });
+      if (withCoords.length > 0) {
+        withCoords.sort(function(a, b) { return a.earliestArrival - b.earliestArrival; });
+        var earliestT = withCoords[0].earliestArrival;
+        // Tie-break by distance among those with the earliest time
+        var ties = withCoords.filter(function(p) { return p.earliestArrival === earliestT; });
+        ties.forEach(function(p) { p._d = autoOrgDistanceMiles(fromPos, p.stop); });
+        ties.sort(function(a, b) { return a._d - b._d; });
+        simTime = Math.max(simTime, earliestT);
+        pick = ties[0];
+      } else if (noCoords.length > 0) {
+        // No-coords stops: just append at end in original order. They won't
+        // affect simTime calculation.
+        pick = noCoords[0];
+        pick._d = 0;
+      } else {
+        break; // shouldn't happen
+      }
+    }
+
+    if (!pick) break;
+    pick.placed = true;
+
+    // Compute travel time to this stop
+    var distMi = pick._d || 0;
+    var driveMin = Math.ceil((distMi / AUTOORG_AVG_MPH) * 60);
+    if (distMi < 0.3) driveMin = Math.max(driveMin, 3); // floor for very close stops
+    var arrival = simTime + driveMin;
+    // If we arrive before earliestArrival, wait (sim time jumps forward)
+    if (arrival < pick.earliestArrival) arrival = pick.earliestArrival;
+    var depart = arrival + AUTOORG_SERVICE_MIN;
+
+    schedule.push({
+      origIdx: pick.origIdx,
+      stop: pick.stop,
+      arrivalMin: arrival,
+      departMin: depart,
+      distFromPrevMi: distMi,
+      driveMin: driveMin,
+      openMin: pick.openMin
+    });
+    order.push(pick.origIdx);
+
+    simTime = depart;
+    if (pick.stop.lat && pick.stop.lng) {
+      fromPos = { lat: pick.stop.lat, lng: pick.stop.lng, name: pick.stop.name };
+    }
+  }
+
+  return { order: order, schedule: schedule };
+}
+
+function autoOrgFormatTime(minutes) {
+  var h = Math.floor(minutes / 60) % 24;
+  var m = minutes % 60;
+  var period = h >= 12 ? 'PM' : 'AM';
+  var hh = h % 12; if (hh === 0) hh = 12;
+  return hh + ':' + String(m).padStart(2, '0') + period;
+}
+
+// =====================================================================
+// AUTO-ORGANIZE BUTTON HANDLER
+// =====================================================================
+// Runs the optimizer, shows a preview modal with the proposed order +
+// schedule, lets user APPLY (writes to Firebase + re-renders everything)
+// or CANCEL.
+
+function runAutoOrganize() {
+  // Use STOPS tab's day if user is on that tab, else fall back to route tab's day
+  var day = (typeof currentManageDay !== 'undefined' && currentManageDay) ? currentManageDay : currentDay;
+  var result = autoOrganizeDay(day, AUTOORG_START_MIN);
+  if (!result.order || result.order.length === 0) {
+    alert('No stops on ' + day + ' to organize.');
+    return;
+  }
+  showAutoOrgPreview(day, result);
+}
+
+function showAutoOrgPreview(day, result) {
+  var overlay = document.getElementById('autoOrgPreviewOverlay');
+  if (!overlay) { alert('Auto-organize preview modal not found.'); return; }
+  overlay._pendingResult = result;
+  overlay._pendingDay = day;
+
+  var body = document.getElementById('autoOrgPreviewBody');
+  var html = '<div style="font-family:var(--fb);font-size:13px;color:#fff;margin-bottom:12px;line-height:1.5;">Optimized order for <strong style="color:var(--acc);">' + day + '</strong> starting at <strong style="color:var(--acc);">5:00 AM</strong>. Stops are ordered by nearest-neighbor distance, respecting opening times (you can arrive up to 60 min before opening).</div>';
+
+  html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+  result.schedule.forEach(function(item, i) {
+    var s = item.stop;
+    var name = (s && s.name) ? s.name : '(unnamed)';
+    var openLbl = (item.openMin != null) ? ' · opens ' + autoOrgFormatTime(item.openMin) : ' · 24hr';
+    var milesLbl = item.distFromPrevMi != null ? item.distFromPrevMi.toFixed(2) + ' mi' : '—';
+    html += '<div style="background:#0e1830;border:1px solid var(--bdr);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:10px;">' +
+      '<div style="font-family:var(--fd);font-size:14px;color:var(--acc);width:32px;">' + String(i+1).padStart(2,'0') + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-family:var(--fb);font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + name + '</div>' +
+        '<div style="font-family:var(--fm);font-size:10px;color:var(--mut);margin-top:2px;">arrive ' + autoOrgFormatTime(item.arrivalMin) + ' · ' + milesLbl + openLbl + '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  // Summary footer
+  var lastItem = result.schedule[result.schedule.length - 1];
+  if (lastItem) {
+    html += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr);font-family:var(--fb);font-size:12px;color:var(--mut);text-align:center;">' +
+      'Last stop completes around <strong style="color:var(--grn);">' + autoOrgFormatTime(lastItem.departMin) + '</strong>' +
+    '</div>';
+  }
+
+  body.innerHTML = html;
+  overlay.classList.add('show');
+}
+
+function closeAutoOrgPreview() {
+  var overlay = document.getElementById('autoOrgPreviewOverlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    overlay._pendingResult = null;
+    overlay._pendingDay = null;
+  }
+}
+
+function applyAutoOrganize() {
+  var overlay = document.getElementById('autoOrgPreviewOverlay');
+  if (!overlay) return;
+  var result = overlay._pendingResult;
+  var day = overlay._pendingDay;
+  if (!result || !day) { closeAutoOrgPreview(); return; }
+
+  // Reorder stops[day] and stopData[day] to match the new order
+  var dayStops = stops[day] || [];
+  var dayData = stopData[day] || [];
+  var newStops = result.order.map(function(origIdx) { return dayStops[origIdx]; });
+  var newData = result.order.map(function(origIdx) { return dayData[origIdx] || blankStopData(); });
+  stops[day] = newStops;
+  stopData[day] = newData;
+
+  // Persist + re-render
+  try {
+    if (typeof saveStopsForDay === 'function') saveStopsForDay(day);
+    else if (typeof fbSave === 'function') fbSave('stops/' + day, stops[day]);
+    if (typeof fbSave === 'function') fbSave('stopData/' + day, stopData[day]);
+    console.log('[AUTOORG] Applied new order to ' + day + ' (' + newStops.length + ' stops)');
+  } catch (e) {
+    console.error('[AUTOORG] save err:', e);
+    alert('Save failed: ' + (e.message || e));
+    return;
+  }
+  try {
+    if (typeof renderRoute === 'function') renderRoute();
+    if (typeof renderManageList === 'function') renderManageList();
+    if (typeof renderMapMarkers === 'function' && typeof mapView !== 'undefined' && mapView) renderMapMarkers();
+  } catch (e) { console.error('[AUTOORG] render err:', e); }
+
+  closeAutoOrgPreview();
+  setTimeout(function() {
+    alert('✓ ' + day + ' route reorganized!\n\nStops now in geographic + time-aware order starting 5:00 AM.');
+  }, 200);
 }
 
 // Pretty-print the hours schema for the edit-modal preview pane.
@@ -5810,6 +6130,25 @@ function closeMeasureResult() { /* measure feature removed */ }
   </div>
 </div>
 <style>#insertPositionOverlay.show { display: block !important; }</style>
+
+<!-- === AUTO-ORGANIZE PREVIEW MODAL === -->
+<div id="autoOrgPreviewOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10004;padding:20px;overflow-y:auto;">
+  <div style="max-width:560px;margin:0 auto;background:#1a2540;border:2px solid #3b82f6;border-radius:12px;padding:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div>
+        <div style="font-family:var(--fd);font-size:20px;color:#3b82f6;letter-spacing:1px;">🧠 AUTO REORGANIZE</div>
+        <div style="font-family:var(--fm);font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Geographic + time-window optimized</div>
+      </div>
+      <button onclick="closeAutoOrgPreview()" style="background:#0e1830;border:1px solid var(--bdr);color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+    <div id="autoOrgPreviewBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="closeAutoOrgPreview()" style="flex:1;background:#0e1830;color:#fff;border:1px solid var(--bdr);font-family:var(--fd);font-size:14px;padding:11px;border-radius:6px;cursor:pointer;letter-spacing:1px;">CANCEL</button>
+      <button onclick="applyAutoOrganize()" style="flex:2;background:#3b82f6;color:#fff;border:2px solid #fff;font-family:var(--fd);font-size:14px;font-weight:700;padding:11px;border-radius:6px;cursor:pointer;letter-spacing:1px;box-shadow:0 3px 12px rgba(59,130,246,0.5);">✓ APPLY THIS ORDER</button>
+    </div>
+  </div>
+</div>
+<style>#autoOrgPreviewOverlay.show { display: block !important; }</style>
 
 <!-- === LAST SERVICE DATE MODAL (forced — cannot be dismissed) === -->
 <div id="serviceDateOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10005;align-items:center;justify-content:center;padding:20px;">

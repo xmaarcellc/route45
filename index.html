@@ -855,6 +855,26 @@ const db = firebase.database();
 var firebaseReady = false;
 var pendingSaves = []; // [{path, data}] items queued during sync
 
+// Firebase Realtime DB rejects any value of `undefined` anywhere in the payload —
+// it throws "value argument contains undefined in property '...'". This commonly
+// hits when spreading a legacy stop object that doesn't have newer fields
+// (phone, hours, lastServiced) set. Mutates the object in place, replacing any
+// `undefined` value with `null`. Recurses into nested objects.
+function sanitizeUndefinedToNull(obj) {
+  if (obj === null || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) {
+    for (var i = 0; i < obj.length; i++) {
+      if (typeof obj[i] === 'undefined') obj[i] = null;
+      else if (obj[i] && typeof obj[i] === 'object') sanitizeUndefinedToNull(obj[i]);
+    }
+    return;
+  }
+  Object.keys(obj).forEach(function(k) {
+    if (typeof obj[k] === 'undefined') obj[k] = null;
+    else if (obj[k] && typeof obj[k] === 'object') sanitizeUndefinedToNull(obj[k]);
+  });
+}
+
 function fbSave(path, data) {
   // If Firebase hasn't finished its initial load yet, queue the save instead of
   // sending it. This prevents the user-typed-faster-than-network race that
@@ -1889,6 +1909,12 @@ async function saveEditedStop() {
     // If user tapped 🔄 FETCH FROM GOOGLE in this session, the new hours replace the stored ones
     hours: (typeof window._pendingEditHours !== 'undefined' && window._pendingEditHours) ? window._pendingEditHours : s.hours
   };
+
+  // Firebase Realtime DB rejects any `undefined` value in the payload. Legacy stops
+  // (created before fields like `phone`, `hours`, `lastServiced` existed) may have
+  // those fields as undefined when spread via {...s}. Coerce undefined → null
+  // recursively so the write succeeds.
+  sanitizeUndefinedToNull(updatedStop);
 
   // AWAIT the Firebase save so we know it succeeded before closing the modal
   try {

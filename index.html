@@ -1791,7 +1791,7 @@ function closeEditModal() {
   editingStopRef = null;
 }
 
-function saveEditedStop() {
+async function saveEditedStop() {
   if (!editingStopRef) return;
   const { day, idx } = editingStopRef;
   const s = stops[day][idx];
@@ -1824,6 +1824,30 @@ function saveEditedStop() {
   if (!newName) { alert('Name required.'); return; }
   if (!newAddr) { alert('Address required.'); return; }
 
+  // Guard: Firebase must be ready or saves get queued and may not flush
+  if (typeof firebaseReady !== 'undefined' && !firebaseReady) {
+    alert('⏳ Still syncing with database — please wait a moment, then tap SAVE again.');
+    return;
+  }
+
+  // SAVE BUTTON FEEDBACK — disable button + change text so user knows it's in progress
+  var saveBtn = document.querySelector('#editModalOverlay button[onclick="saveEditedStop()"]');
+  var origBtnText = '';
+  if (saveBtn) {
+    origBtnText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ SAVING...';
+    saveBtn.style.opacity = '0.7';
+  }
+
+  function restoreBtn() {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = origBtnText || 'SAVE CHANGES';
+      saveBtn.style.opacity = '1';
+    }
+  }
+
   // Detect changes
   const addrChanged = (newAddr !== s.addr);
   const dayChanged = (newDay !== day);
@@ -1842,10 +1866,11 @@ function saveEditedStop() {
       if (dup.day === newDay) {
         msg += 'Cannot save — would create a duplicate on ' + newDay + '.';
         alert(msg);
+        restoreBtn();
         return;
       } else {
         msg += 'Save anyway? (Tap Cancel to keep editing.)';
-        if (!confirm(msg)) return;
+        if (!confirm(msg)) { restoreBtn(); return; }
       }
     }
   }
@@ -1865,38 +1890,55 @@ function saveEditedStop() {
     hours: (typeof window._pendingEditHours !== 'undefined' && window._pendingEditHours) ? window._pendingEditHours : s.hours
   };
 
-  if (dayChanged) {
-    // Move stop from old day to new day
-    if (!stops[newDay]) stops[newDay] = [];
-    if (!stopData[newDay]) stopData[newDay] = [];
-
-    // Remove from old day
-    stops[day].splice(idx, 1);
-    if (stopData[day]) stopData[day].splice(idx, 1);
-
-    // Add to new day
-    stops[newDay].push(updatedStop);
-    stopData[newDay].push(blankStopData());
-
-    // Persist both day arrays to Firebase (handles empty-day cleared-marker)
-    saveStopsForDay(day);
-    saveStopsForDay(newDay);
-    fbSave('stopData/' + day, stopData[day]);
-    fbSave('stopData/' + newDay, stopData[newDay]);
-
-    console.log('Moved "' + newName + '" from ' + day + ' to ' + newDay);
-  } else {
-    // Just update in place
-    stops[day][idx] = updatedStop;
-    saveStopsForDay(day);
+  // AWAIT the Firebase save so we know it succeeded before closing the modal
+  try {
+    if (dayChanged) {
+      // Move stop from old day to new day
+      if (!stops[newDay]) stops[newDay] = [];
+      if (!stopData[newDay]) stopData[newDay] = [];
+      // Remove from old day
+      stops[day].splice(idx, 1);
+      if (stopData[day]) stopData[day].splice(idx, 1);
+      // Add to new day
+      stops[newDay].push(updatedStop);
+      stopData[newDay].push(blankStopData());
+      // Persist both day arrays — await all writes
+      await Promise.all([
+        ...saveStopsForDayPromises(day),
+        ...saveStopsForDayPromises(newDay),
+        fbSave('stopData/' + day, stopData[day]),
+        fbSave('stopData/' + newDay, stopData[newDay])
+      ]);
+      console.log('[SAVE] Moved "' + newName + '" from ' + day + ' to ' + newDay);
+    } else {
+      // Just update in place — await save
+      stops[day][idx] = updatedStop;
+      await Promise.all(saveStopsForDayPromises(day));
+      console.log('[SAVE] Updated "' + newName + '" on ' + day + ' (idx ' + idx + ')');
+    }
+  } catch (e) {
+    console.error('[SAVE] Firebase save failed:', e);
+    alert('❌ Save failed: ' + (e.message || e) + '\n\nPlease try again. Your changes are still in the form.');
+    restoreBtn();
+    return;
   }
 
-  closeEditModal();
-  renderManageList();
-  renderRoute();
-  if (mapView) renderMapMarkers();
+  // Flash green confirmation BEFORE closing the modal
+  if (saveBtn) {
+    saveBtn.textContent = '✓ SAVED';
+    saveBtn.style.background = 'var(--grn)';
+    saveBtn.style.color = '#000';
+  }
 
-  // If address changed, geocode now
+  // Brief delay so user sees the green flash, then close + re-render
+  setTimeout(function() {
+    closeEditModal();
+    renderManageList();
+    renderRoute();
+    if (mapView) renderMapMarkers();
+  }, 300);
+
+  // If address changed, geocode now (fire and forget — doesn't block close)
   if (addrChanged) {
     geocodeAddress(newAddr, function(coords) {
       if (coords) {
